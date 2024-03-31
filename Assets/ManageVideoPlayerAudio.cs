@@ -145,12 +145,14 @@ namespace DefaultNamespace
             if (state)
             {
                 vp.Pause();
+                //vp.Stop();
                 
                 foreach (var channel in tracks[current_track_idx].channels)
                 {
                     if(channel == null)continue;
                     
                     channel.audio_source.Pause();
+                    //channel.audio_source.Stop();
                 }
                 
                 return;
@@ -168,7 +170,7 @@ namespace DefaultNamespace
 
         void skip(float t)
         {
-            pause(true);
+            //pause(true);
 
             request_preview();
             
@@ -181,7 +183,7 @@ namespace DefaultNamespace
                 track_data_available[i] = false;
             }
             
-            pause(false);
+            //pause(false);
         }
         
         void Update()
@@ -213,7 +215,7 @@ namespace DefaultNamespace
             if (Input.GetKeyDown(KeyCode.UpArrow))// && vp.isPlaying)
             {
                 
-                pause(true);
+                //pause(true);
                 
                 request_preview();
                 
@@ -226,7 +228,7 @@ namespace DefaultNamespace
                     track_data_available[i] = false;
                 }
                 
-                pause(false);
+                //pause(false);
                 
             }
 
@@ -334,6 +336,7 @@ namespace DefaultNamespace
                 provider.sampleFramesAvailable += SampleFramesAvailable;
                 provider.enableSampleFramesAvailableEvents = true;
                 provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
+                provider.enableSilencePadding = true;
 
 
                 track.channels = new Channel[provider.channelCount];
