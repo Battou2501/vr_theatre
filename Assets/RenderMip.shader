@@ -1,4 +1,4 @@
-Shader "Unlit/NewUnlitShader 1"
+Shader "Unlit/RenderMip"
 {
     Properties
     {
@@ -28,6 +28,7 @@ Shader "Unlit/NewUnlitShader 1"
             struct v2f
             {
                 float2 uv : TEXCOORD0;
+                
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
             };
@@ -35,44 +36,27 @@ Shader "Unlit/NewUnlitShader 1"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            float _Aspect;
             
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-
-                float2 aspect_greater = float2(o.uv.x, (o.uv.y - 0.5) * _Aspect + 0.5);
-                float2 aspect_lower = float2((o.uv.x - 0.5) * _Aspect + 0.5, o.uv.y);
-
-                int is_greater = _Aspect > 1;
-                
-                o.uv = aspect_greater * is_greater + aspect_lower * (1-is_greater);
-                
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
+                //float p1_strength = _ScreenCenter + 
+                
+                
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
+                fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,10));
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
-
-                //int border = i.uv.y>1;
-                //border += i.uv.y<0;
-                //border += i.uv.x<0;
-                //border += i.uv.x>1;
-
-                float f = saturate((i.uv.y-1)*300);
-                float f2 = saturate((1-i.uv.y-1)*300);
-
-                float f3 = saturate((i.uv.x-1)*300);
-                float f4 = saturate((1-i.uv.x-1)*300);
                 
-                return col * (1-saturate(f+f2+f3+f4));//*(1-border);
+                return col;
             }
             ENDCG
         }

@@ -19,6 +19,10 @@ namespace DefaultNamespace
 
         public Material blitMat;
         
+        public RenderTexture lightRT;
+
+        public Transform[] screenLightSamplePoints;
+        
         //Channel[] channels;
 
         //int length;
@@ -71,7 +75,44 @@ namespace DefaultNamespace
             ready_frames = new List<Texture>();
             ready_frames.Add(null);
             vp.seekCompleted += VpOnseekCompleted;
-
+            
+            //Shader.SetGlobalVectorArray("_SamplePoints", new Vector4[]
+            //{
+            //    screenLightSamplePoints[0].position,
+            //    screenLightSamplePoints[1].position,
+            //    screenLightSamplePoints[2].position,
+            //    screenLightSamplePoints[3].position,
+            //    screenLightSamplePoints[4].position,
+            //    screenLightSamplePoints[5].position,
+            //    screenLightSamplePoints[6].position,
+            //    screenLightSamplePoints[7].position,
+            //    screenLightSamplePoints[8].position,
+            //    screenLightSamplePoints[9].position,
+            //    screenLightSamplePoints[10].position,
+            //    screenLightSamplePoints[11].position,
+            //    screenLightSamplePoints[12].position,
+            //    screenLightSamplePoints[13].position,
+            //    screenLightSamplePoints[14].position
+            //});
+            //
+            //Shader.SetGlobalVectorArray("_SamplePointsUV", new Vector4[]
+            //{
+            //    new Vector4(0.5f-0.1f*4,0.5f+0.16666f*2,0,0),
+            //    new Vector4(0.5f-0.1f*2,0.5f+0.16666f*2,0,0),
+            //    new Vector4(0.5f,0.5f+0.16666f*2,0,0),
+            //    new Vector4(0.5f+0.1f*2,0.5f+0.16666f*2,0,0),
+            //    new Vector4(0.5f+0.1f*4,0.5f+0.16666f*2,0,0),
+            //    new Vector4(0.5f-0.1f*4,0.5f,0,0),
+            //    new Vector4(0.5f-0.1f*2,0.5f,0,0),
+            //    new Vector4(0.5f,0.5f,0,0),
+            //    new Vector4(0.5f+0.1f*2,0.5f,0,0),
+            //    new Vector4(0.5f+0.1f*4,0.5f,0,0),
+            //    new Vector4(0.5f-0.1f*4,0.5f-0.16666f*2,0,0),
+            //    new Vector4(0.5f-0.1f*2,0.5f-0.16666f*2,0,0),
+            //    new Vector4(0.5f,0.5f-0.16666f*2,0,0),
+            //    new Vector4(0.5f+0.1f*2,0.5f-0.16666f*2,0,0),
+            //    new Vector4(0.5f+0.1f*4,0.5f-0.16666f*2,0,0)
+            //});
         }
 
         void VpOnseekCompleted(VideoPlayer source)
@@ -103,9 +144,12 @@ namespace DefaultNamespace
 
             if (audio_started || no_audio)
             {
-                if(!await_skip_catchup)
+                if (!await_skip_catchup)
+                {
                     mat.SetTexture("_MainTex", rt_pool[last_unplayed_frame_idx]);
-                
+                    Graphics.Blit(rt_pool[last_unplayed_frame_idx], lightRT, blitMat);
+                }
+
                 last_unplayed_frame_idx += 1;
                 if (last_unplayed_frame_idx >= rt_pool.Length)
                     last_unplayed_frame_idx = 0;
@@ -301,7 +345,8 @@ namespace DefaultNamespace
             
             for (int i = 0; i < frame_buffer_size; i++)
             {
-                rt_pool[i] = new RenderTexture(w, h, 0);
+                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,8);
+                rt_pool[i].useMipMap = true;
             }
             
             if (vp.audioTrackCount == 0)
