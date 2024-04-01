@@ -22,6 +22,8 @@ namespace DefaultNamespace
         public RenderTexture lightRT;
 
         public Transform[] screenLightSamplePoints;
+
+        public int adjustDelayFrames;
         
         //Channel[] channels;
 
@@ -52,7 +54,6 @@ namespace DefaultNamespace
 
         int buffer_iterations = 1;
         int frame_buffer_size = 240;
-        //int frame_buffer_size = 1440;
 
         int current_track_idx;
 
@@ -75,44 +76,6 @@ namespace DefaultNamespace
             ready_frames = new List<Texture>();
             ready_frames.Add(null);
             vp.seekCompleted += VpOnseekCompleted;
-            
-            //Shader.SetGlobalVectorArray("_SamplePoints", new Vector4[]
-            //{
-            //    screenLightSamplePoints[0].position,
-            //    screenLightSamplePoints[1].position,
-            //    screenLightSamplePoints[2].position,
-            //    screenLightSamplePoints[3].position,
-            //    screenLightSamplePoints[4].position,
-            //    screenLightSamplePoints[5].position,
-            //    screenLightSamplePoints[6].position,
-            //    screenLightSamplePoints[7].position,
-            //    screenLightSamplePoints[8].position,
-            //    screenLightSamplePoints[9].position,
-            //    screenLightSamplePoints[10].position,
-            //    screenLightSamplePoints[11].position,
-            //    screenLightSamplePoints[12].position,
-            //    screenLightSamplePoints[13].position,
-            //    screenLightSamplePoints[14].position
-            //});
-            //
-            //Shader.SetGlobalVectorArray("_SamplePointsUV", new Vector4[]
-            //{
-            //    new Vector4(0.5f-0.1f*4,0.5f+0.16666f*2,0,0),
-            //    new Vector4(0.5f-0.1f*2,0.5f+0.16666f*2,0,0),
-            //    new Vector4(0.5f,0.5f+0.16666f*2,0,0),
-            //    new Vector4(0.5f+0.1f*2,0.5f+0.16666f*2,0,0),
-            //    new Vector4(0.5f+0.1f*4,0.5f+0.16666f*2,0,0),
-            //    new Vector4(0.5f-0.1f*4,0.5f,0,0),
-            //    new Vector4(0.5f-0.1f*2,0.5f,0,0),
-            //    new Vector4(0.5f,0.5f,0,0),
-            //    new Vector4(0.5f+0.1f*2,0.5f,0,0),
-            //    new Vector4(0.5f+0.1f*4,0.5f,0,0),
-            //    new Vector4(0.5f-0.1f*4,0.5f-0.16666f*2,0,0),
-            //    new Vector4(0.5f-0.1f*2,0.5f-0.16666f*2,0,0),
-            //    new Vector4(0.5f,0.5f-0.16666f*2,0,0),
-            //    new Vector4(0.5f+0.1f*2,0.5f-0.16666f*2,0,0),
-            //    new Vector4(0.5f+0.1f*4,0.5f-0.16666f*2,0,0)
-            //});
         }
 
         void VpOnseekCompleted(VideoPlayer source)
@@ -304,7 +267,6 @@ namespace DefaultNamespace
             if (!is_delay_set)
             {
                 delay = ((float)render_pool_idx) / vp.frameRate;
-                delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay);
                 is_delay_set = true;
             }
             
@@ -465,6 +427,8 @@ namespace DefaultNamespace
         void set_correct_frame()
         {
 
+            delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;
+            
             var t = delay_frames;
 
             t = render_pool_idx - t;

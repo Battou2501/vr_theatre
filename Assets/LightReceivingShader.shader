@@ -5,6 +5,7 @@ Shader "Unlit/LightReceivingShader"
         _MainTex ("Texture", 2D) = "white" {}
         _DistanceCoef ("Distance coef", Range (1,50)) = 1
         _DistancePow ("Distance pow", Range (1,2)) = 1.5
+        _ScreenScale ("Screen Scale (1.0 - 160m wide)", Range (0.01,2)) = 0.2
     }
     SubShader
     {
@@ -40,6 +41,8 @@ Shader "Unlit/LightReceivingShader"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+
+            float _ScreenScale;
 
             //float4 _SamplePoints[15];
             static float3 _SamplePoints[60] =
@@ -203,10 +206,10 @@ Shader "Unlit/LightReceivingShader"
                 
                 for(int j=0;j<60;j++)
                 {
-                    float3 p1 = _SamplePoints[j];
+                    float3 p1 = _SamplePoints[j] * _ScreenScale;
                     float dt1_1 = saturate(dot(i.normal,normalize(p1-i.worldPos)));
                     float dt1_2 = saturate(dot(float3(0,0,1),normalize(p1-i.worldPos)));
-                    float dist1 = distance(i.worldPos, p1);
+                    float dist1 = distance(i.worldPos, p1) / _ScreenScale;
                     float s1 = _DistanceCoef/pow(dist1,_DistancePow);
                     fixed4 c1 = tex2Dlod(_MainTex, float4(_SamplePointsUV[j].xy,0,10));
                     col += c1*s1*(dt1_1*dt1_2*0.95+0.05);
