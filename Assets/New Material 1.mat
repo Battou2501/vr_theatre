@@ -61,9 +61,9 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DistanceCoef: 10
+    - _DistanceCoef: 7
     - _DistanceMul: 39
-    - _DistancePow: 1.595
+    - _DistancePow: 1.5
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -74,6 +74,7 @@ Material:
     - _Parallax: 0.02
     - _ScreenScale: 0.2
     - _ScreenScalse: 0.2
+    - _Shininess: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

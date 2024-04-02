@@ -36,7 +36,6 @@ Shader "Unlit/LightReceivingShader"
                 float2 uv : TEXCOORD0;
                 float3 worldPos : TEXCOORD1;
                 float3 normal : TEXCOORD2;
-                float3 viewDir : TEXCOORD3;
                 float spec : TEXCOORD4;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
@@ -211,15 +210,15 @@ Shader "Unlit/LightReceivingShader"
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.worldPos = mul (unity_ObjectToWorld, v.vertex);
                 o.normal = normalize(mul (unity_ObjectToWorld, v.normal));
-                o.viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
+                const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
                 o.spec = 0;
                 for(int j=0;j<60;j++)
                 {
                     const float3 p1 = _SamplePoints[j] * _ScreenScale;
                     const float3 point_dir = normalize(p1-o.worldPos);
-                    //fixed pp = lerp(1,saturate((dot(reflect(-point_dir, o.normal),o.viewDir)-lerp(-0,0.85,_Shininess))/lerp(1,0.15,_Shininess)),_Shininess)*lerp(1,4,int_pow(_Shininess,2.5));
-                    fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),o.viewDir)),_Shininess),lerp(1,10,_Shininess))*lerp(1,5,int_pow(_Shininess,1.8));
+                    fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),lerp(1,10,_Shininess));//*lerp(1,5,pow(_Shininess,1.3));
                     pp*=pp;
+                    pp*=lerp(1,40,pow(_Shininess,1.6));
                     o.spec += pp/60;
                 }
                 
@@ -233,7 +232,6 @@ Shader "Unlit/LightReceivingShader"
                 //float3 dir = 0;
 
                 const float3 norm = normalize(i.normal);
-                const float3 viewDir = normalize(i.viewDir);
                 
                 for(int j=0;j<60;j++)
                 {
@@ -245,18 +243,12 @@ Shader "Unlit/LightReceivingShader"
                     const float dist1 = distance(i.worldPos, p1) / _ScreenScale;
                     const float s1 = _DistanceCoef/pow(dist1,_DistancePow);
                     const fixed4 c1 = tex2Dlod(_MainTex, float4(_SamplePointsUV[j].xy,0,10));
-                    //fixed dot_view = saturate(dot(i.viewDir,normalize(p1-i.worldPos))*3-2);
-                    //fixed pp = pow(lerp(1,saturate(dot(reflect(-normalize(p1-i.worldPos), normalize(i.normal)),normalize(i.viewDir))),_Shininess),80);//*lerp(1,40,int_pow(_Shininess,2));
-                    //fixed pp = lerp(1,saturate((dot(reflect(-point_dir, norm),viewDir)-0.9)/0.1)*4,_Shininess);//*lerp(1,40,int_pow(_Shininess,2));
-                    //fixed pp = lerp(1,saturate((dot(point_dir,viewDir)-0.9)/0.1)*4,_Shininess);//*lerp(1,40,int_pow(_Shininess,2));
-                    //pp*=pp;
-                    //dir += normalize(p1-i.worldPos);
                     col += c1*s1*(dt1_1*dt1_2*0.95+0.05);//*pp;
                 }
 
                 //const fixed gloss = 1;//pow(lerp(1,saturate(dot(reflect(-normalize(dir), normalize(i.normal)),normalize(i.viewDir))),_Shininess),lerp(1,80,_Shininess))*lerp(1,12,pow(_Shininess,1.8));
                 
-                return col*i.spec;
+                return col*i.spec;//*i.spec*lerp(1,40,pow(_Shininess,1.8));
             }
             ENDCG
         }

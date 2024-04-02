@@ -12,7 +12,6 @@ namespace DefaultNamespace
     {
         public AudioSource[] audioSources;
         
-        //AudioSampleProvider provider;
         AudioSampleProvider[] providers;
         
         public Material mat;
@@ -25,45 +24,38 @@ namespace DefaultNamespace
 
         public int adjustDelayFrames;
         
-        //Channel[] channels;
-
-        //int length;
-        //int offset;
         int iters;
         
-        
-        bool data_available;
-
         bool[] track_data_available;
-        //bool set_data;
         bool audio_started;
 
         bool no_audio;
 
         VideoPlayer vp;
-        List<Texture> ready_frames;
-
         RenderTexture[] rt_pool;
 
         int last_unplayed_frame_idx;
-        public int render_pool_idx;
+        int render_pool_idx;
 
         bool is_delay_set;
         double delay;
         int delay_frames;
 
-        int buffer_iterations = 1;
-        int frame_buffer_size = 240;
+        public int buffer_iterations = 1;
+        public int frame_buffer_size = 240;
 
         int current_track_idx;
 
         Track[] tracks;
 
         bool set_preview_frame;
-        public bool await_skip_catchup;
         int preview_target_index;
-        public int frames_til_target;
+        int frames_til_target;
         bool seek_complete;
+        bool first_frame_got;
+        int first_frame_idx;
+        double target_time;
+        int preview_renders;
         
         void Start()
         {
@@ -73,8 +65,6 @@ namespace DefaultNamespace
             vp.frameReady += VpOnframeReady;
             vp.sendFrameReadyEvents = true;
             vp.Prepare();
-            ready_frames = new List<Texture>();
-            ready_frames.Add(null);
             vp.seekCompleted += VpOnseekCompleted;
         }
 
@@ -86,20 +76,29 @@ namespace DefaultNamespace
 
         void VpOnframeReady(VideoPlayer source, long frameidx)
         {
+            if (!first_frame_got)
+            {
+                first_frame_got = true;
+                first_frame_idx = (int)vp.frame;
+            }
+            
+            
             Get2DTexture(vp, render_pool_idx);
-
+            
             if (set_preview_frame && seek_complete)
             {
-                mat.SetTexture("_MainTex", rt_pool[render_pool_idx]);
+                preview_renders -= 1;
+
+                if (preview_renders > 0) return;
+                
+                //mat.SetTexture("_MainTex", rt_pool[render_pool_idx]);
+                //Graphics.Blit(rt_pool[render_pool_idx], lightRT, blitMat);
+                render_frame_to_screen(render_pool_idx);
+                
                 set_preview_frame = false;
                 seek_complete = false;
             }
-            
-            if (await_skip_catchup && render_pool_idx == preview_target_index)
-            {
-                await_skip_catchup = false;
-            }
-            
+
             render_pool_idx += 1;
             if (render_pool_idx >= rt_pool.Length)
                 render_pool_idx = 0;
@@ -107,22 +106,22 @@ namespace DefaultNamespace
 
             if (audio_started || no_audio)
             {
-                if (!await_skip_catchup)
-                {
-                    mat.SetTexture("_MainTex", rt_pool[last_unplayed_frame_idx]);
-                    Graphics.Blit(rt_pool[last_unplayed_frame_idx], lightRT, blitMat);
-                }
-
+                //mat.SetTexture("_MainTex", rt_pool[last_unplayed_frame_idx]);
+                //Graphics.Blit(rt_pool[last_unplayed_frame_idx], lightRT, blitMat);
+                render_frame_to_screen(last_unplayed_frame_idx);
+                
                 last_unplayed_frame_idx += 1;
                 if (last_unplayed_frame_idx >= rt_pool.Length)
                     last_unplayed_frame_idx = 0;
             }
 
-            if (!await_skip_catchup) return;
-            
-            calculate_frames_till_target();
         }
 
+        void render_frame_to_screen(int idx)
+        {
+            mat.SetTexture("_MainTex", rt_pool[idx]);
+            Graphics.Blit(rt_pool[idx], lightRT, blitMat);
+        }
         
         void Get2DTexture(VideoPlayer vp, int i)
         {
@@ -131,20 +130,26 @@ namespace DefaultNamespace
 
         void request_preview()
         {
+            preview_renders = 2;
             set_preview_frame = true;
-            await_skip_catchup = true;
-            preview_target_index = render_pool_idx + delay_frames;
-
-            if (preview_target_index >= rt_pool.Length)
-                preview_target_index -= rt_pool.Length;
         }
 
-        void calculate_frames_till_target()
+        void reset_state()
         {
-            frames_til_target = preview_target_index - render_pool_idx;
+            foreach (var track in tracks)
+            {
+                track.clear_data();
+            }
 
-            if (render_pool_idx > preview_target_index)
-                frames_til_target = preview_target_index + (frame_buffer_size - render_pool_idx);
+            reset_audio_data_ready_flags();
+
+            audio_started = false;
+            iters = 0;
+            render_pool_idx = 0;
+            last_unplayed_frame_idx = 0;
+            delay_frames = 0;
+            delay = 0;
+            is_delay_set = false;
         }
         
         void pause(bool state)
@@ -152,14 +157,12 @@ namespace DefaultNamespace
             if (state)
             {
                 vp.Pause();
-                //vp.Stop();
                 
                 foreach (var channel in tracks[current_track_idx].channels)
                 {
                     if(channel == null)continue;
                     
                     channel.audio_source.Pause();
-                    //channel.audio_source.Stop();
                 }
                 
                 return;
@@ -169,28 +172,31 @@ namespace DefaultNamespace
             
             foreach (var channel in tracks[current_track_idx].channels)
             {
-                if(channel == null)continue;
-                
-                channel.audio_source.Play();
+                channel?.audio_source.Play();
             }
+            
+            if(first_frame_got) return;
+
+            vp.playbackSpeed = buffer_iterations;
         }
 
         void skip(float t)
         {
-            //pause(true);
-
             request_preview();
+
+            vp.playbackSpeed = buffer_iterations;
             
             vp.time += t;
-                
-            tracks[current_track_idx].clear_data();
-                
+            
+            reset_state();
+        }
+
+        void reset_audio_data_ready_flags()
+        {
             for (var i = 0; i < track_data_available.Length; i++)
             {
                 track_data_available[i] = false;
             }
-            
-            //pause(false);
         }
         
         void Update()
@@ -221,22 +227,12 @@ namespace DefaultNamespace
 
             if (Input.GetKeyDown(KeyCode.UpArrow))// && vp.isPlaying)
             {
-                
-                //pause(true);
-                
                 request_preview();
-                
-                vp.time = vp.length / 2;
-                
-                tracks[current_track_idx].clear_data();
-                
-                for (var i = 0; i < track_data_available.Length; i++)
-                {
-                    track_data_available[i] = false;
-                }
-                
-                //pause(false);
-                
+                vp.playbackSpeed = buffer_iterations;
+                vp.time = vp.length / 1.5f;
+
+                reset_state();
+
             }
 
             if (Input.GetKeyDown(KeyCode.Space))
@@ -249,20 +245,13 @@ namespace DefaultNamespace
             
             
             if(track_data_available == null || !track_data_available[current_track_idx] || iters<buffer_iterations || no_audio) return;
-            
-            for (var i = 0; i < track_data_available.Length; i++)
-            {
-                track_data_available[i] = false;
-            }
+
+            reset_audio_data_ready_flags();
 
             foreach (var channel in tracks[current_track_idx].channels)
             {
-                if(channel == null) continue;
-
-                channel.update_data(vp);
+                channel?.update_data(vp);
             }
-
-            sync_sources();
 
             if (!is_delay_set)
             {
@@ -280,22 +269,14 @@ namespace DefaultNamespace
             
             set_correct_frame();
             
+            if(audio_started) return;
+            
             audio_started = true;
+            
+            vp.playbackSpeed = 1;
 
         }
 
-        void sync_sources()
-        {
-            if(tracks[current_track_idx].channels.Length < 2) return;
-
-            for (var i = 1; i < tracks[current_track_idx].channels.Length; i++)
-            {
-                if(tracks[current_track_idx].channels[i] == null) continue;
-
-                tracks[current_track_idx].channels[i].audio_source.timeSamples = tracks[current_track_idx].channels[0].audio_source.timeSamples;
-            }
-        }
-        
         void Prepared(VideoPlayer vp)
         {
             rt_pool = new RenderTexture[frame_buffer_size];
@@ -305,22 +286,24 @@ namespace DefaultNamespace
             
             mat.SetFloat("_Aspect", (float)w/h);
             
-            for (int i = 0; i < frame_buffer_size; i++)
+            for (var i = 0; i < frame_buffer_size; i++)
             {
-                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,8);
-                rt_pool[i].useMipMap = true;
+                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,8)
+                {
+                    useMipMap = true
+                };
             }
             
             if (vp.audioTrackCount == 0)
             {
                 no_audio = true;
-                vp.Play();
+                //vp.Play();
                 return;
             }
 
             prepare_tracks();
 
-            vp.Play();
+            //vp.Play();
         }
 
         void prepare_tracks()
@@ -330,13 +313,11 @@ namespace DefaultNamespace
 
             track_data_available = new bool[vp.audioTrackCount];
             
-            for (int t = 0; t < vp.audioTrackCount; t++)
+            for (var t = 0; t < vp.audioTrackCount; t++)
             {
                 var track = new Track
                 {
-                    provider = vp.GetAudioSampleProvider((ushort)t),
-                    track_idx = t,
-                    player = this
+                    provider = vp.GetAudioSampleProvider((ushort)t)
                 };
 
                 var provider = track.provider;
@@ -353,16 +334,18 @@ namespace DefaultNamespace
 
                 for (var i = 0; i < track.channels.Length; i++)
                 {
+                    var channel = new Channel();
+                    channel.track = track;
+                    track.channels[i] = channel;
+                    
+                    
+                    channel.init(audioSources[(track.channels.Length == 6 && i == 3) ? 5 : audio_source_idx], vp, provider, i);
+                    
+                    
                     if (track.channels.Length == 6 && i == 3)
                         continue;
-
-                    var channel = new Channel();
-                    channel.init(audioSources[audio_source_idx], vp, provider, i);
-                    channel.track = track;
-                    audio_source_idx += 1;
-
                     
-                    track.channels[i] = channel;
+                    audio_source_idx += 1;
                 }
 
                 tracks[t] = track;
@@ -380,10 +363,7 @@ namespace DefaultNamespace
             
             tracks[current_track_idx].clear_data();
 
-            for (var i = 0; i < track_data_available.Length; i++)
-            {
-                track_data_available[i] = false;
-            }
+            reset_audio_data_ready_flags();
             
             pause(false);
         }
@@ -392,42 +372,39 @@ namespace DefaultNamespace
 
         void SampleFramesAvailable(AudioSampleProvider provider, uint sampleFrameCount)
         {
-            using (NativeArray<float> buffer = new NativeArray<float>(
-                       (int)sampleFrameCount * provider.channelCount, Allocator.Temp))
+            using NativeArray<float> buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
+            
+            var sfCount = provider.ConsumeSampleFrames(buffer);
+                
+            if(provider.trackIndex != current_track_idx) return;
+                
+            var track = tracks[provider.trackIndex];
+            foreach (var channel in track.channels)
             {
-                var sfCount = provider.ConsumeSampleFrames(buffer);
-                
-                if(provider.trackIndex != current_track_idx) return;
-                
-                var track = tracks[provider.trackIndex];
-                foreach (var channel in track.channels)
+                if(channel == null) continue;
+
+                var d = new float[sfCount];
+                var j = 0;
+                for (int i = 0; i < sfCount * provider.channelCount; i+=provider.channelCount)
                 {
-                    if(channel == null) continue;
-
-                    var d = new float[sfCount];
-                    var j = 0;
-                    for (int i = 0; i < sfCount * provider.channelCount; i+=provider.channelCount)
-                    {
-                        d[j] = buffer[i+channel.channel_idx];
-                        j++;
-                    }
-                    
-                    channel.add_data(d);
+                    d[j] = buffer[i+channel.channel_idx];
+                    j++;
                 }
-                
-                data_available = true;
-
-                track_data_available[provider.trackIndex] = true;
-                
-                if(iters<buffer_iterations)
-                    iters += 1;
+                    
+                channel.add_data(d);
             }
+
+            track_data_available[provider.trackIndex] = true;
+                
+            if(iters<buffer_iterations)
+                iters += 1;
         }
 
         void set_correct_frame()
         {
 
-            delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;
+            delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;// - first_frame_idx;
+            //delay_frames = Mathf.CeilToInt(vp.frameRate * (float) delay) + adjustDelayFrames - first_frame_idx;
             
             var t = delay_frames;
 
@@ -443,8 +420,6 @@ namespace DefaultNamespace
         {
             public AudioSampleProvider provider;
             public Channel[] channels;
-            public int track_idx;
-            public ManageVideoPlayerAudio player;
 
             public float[] silence;
 
@@ -462,10 +437,10 @@ namespace DefaultNamespace
         class Channel
         {
             public AudioSource audio_source;
-            public AudioClip audio_clip;
+            AudioClip audio_clip;
             public Track track;
             public int channel_idx;
-            public int sample_rate;
+            int sample_rate;
 
             List<float> _data;
             List<float> _data_tmp;
@@ -506,19 +481,6 @@ namespace DefaultNamespace
 
                 _data.AddRange(_data_tmp);
                 _data_tmp.Clear();
-
-                if (track.player.await_skip_catchup)
-                {
-                    var samples_to_remove = ((float) track.player.frames_til_target / vp.frameRate) * sample_rate;
-
-                    samples_to_remove = Mathf.Min(samples_to_remove, _data.Count);
-                    
-                    for (int i = 0; i < samples_to_remove; i++)
-                    {
-                        _data[i] = 0;
-                    }
-                }
-                
                 
                 audio_clip.SetData(track.silence, 0);
                 audio_clip.SetData(_data.ToArray(), 0);
