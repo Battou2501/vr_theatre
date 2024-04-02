@@ -7,6 +7,7 @@ Shader "Unlit/LightReceivingShader"
         _DistancePow ("Distance pow", Range (1,2)) = 1.5
         _ScreenScale ("Screen Scale (1.0 - 160m wide)", Range (0.01,2)) = 0.2
         _Shininess("Shininess", Range (0,1)) = 0
+        _ShininessBrightness("Shininess Brightness", Range (0,100)) = 40
     }
     SubShader
     {
@@ -45,6 +46,7 @@ Shader "Unlit/LightReceivingShader"
             float4 _MainTex_ST;
 
             float _ScreenScale;
+            float _ShininessBrightness;
 
             float int_pow(float i, int p)
             {
@@ -216,11 +218,13 @@ Shader "Unlit/LightReceivingShader"
                 {
                     const float3 p1 = _SamplePoints[j] * _ScreenScale;
                     const float3 point_dir = normalize(p1-o.worldPos);
-                    fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),lerp(1,10,_Shininess));//*lerp(1,5,pow(_Shininess,1.3));
+                    fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),lerp(1,15,_Shininess));//*lerp(1,5,pow(_Shininess,1.3));
                     pp*=pp;
-                    pp*=lerp(1,40,pow(_Shininess,1.6));
+                    //pp*=lerp(1,60,pow(_Shininess,1.7));
                     o.spec += pp/60;
                 }
+
+                o.spec *= lerp(1,_ShininessBrightness,pow(_Shininess,1.7));
                 
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
@@ -243,7 +247,7 @@ Shader "Unlit/LightReceivingShader"
                     const float dist1 = distance(i.worldPos, p1) / _ScreenScale;
                     const float s1 = _DistanceCoef/pow(dist1,_DistancePow);
                     const fixed4 c1 = tex2Dlod(_MainTex, float4(_SamplePointsUV[j].xy,0,10));
-                    col += c1*s1*(dt1_1*dt1_2*0.95+0.05);//*pp;
+                    col += c1*s1*(dt1_2*dt1_1*0.9+0.1);//*pp;
                 }
 
                 //const fixed gloss = 1;//pow(lerp(1,saturate(dot(reflect(-normalize(dir), normalize(i.normal)),normalize(i.viewDir))),_Shininess),lerp(1,80,_Shininess))*lerp(1,12,pow(_Shininess,1.8));
