@@ -255,7 +255,7 @@ namespace DefaultNamespace
 
             if (!is_delay_set)
             {
-                delay = ((float)render_pool_idx) / vp.frameRate;
+                delay = render_pool_idx / vp.frameRate;
                 is_delay_set = true;
             }
             
@@ -303,6 +303,8 @@ namespace DefaultNamespace
 
             prepare_tracks();
 
+            render_frame_to_screen(0);
+            
             //vp.Play();
         }
 
