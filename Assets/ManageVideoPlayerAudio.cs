@@ -67,6 +67,10 @@ namespace DefaultNamespace
             vp.Prepare();
             vp.seekCompleted += VpOnseekCompleted;
             vp.loopPointReached+= VpOnloopPointReached;
+            foreach (var audio_source in audioSources)
+            {
+                audio_source.spatializePostEffects = false;
+            }
         }
 
         void VpOnloopPointReached(VideoPlayer source)
@@ -250,17 +254,32 @@ namespace DefaultNamespace
 
             if (Input.GetKeyDown(KeyCode.Space))
                 pause(vp.isPlaying);
-            
-            
-            
-            
-            
-            
-            
+
+
+            //if (tracks != null)
+            //{
+            //    foreach (var channel in tracks[current_track_idx].channels)
+            //    {
+            //        if (!audio_started) break;
+            //
+            //        if (channel == null) continue;
+            //
+            //        if (!channel.audio_source.isPlaying && vp.isPlaying)
+            //        {
+            //            channel.audio_source.clip = channel.audio_clip;
+            //            channel.audio_source.PlayScheduled(AudioSettings.dspTime + 1f/vp.frame);
+            //        }
+            //    }
+            //}
+
+
+
             if(track_data_available == null || !track_data_available[current_track_idx] || iters<buffer_iterations || no_audio) return;
 
             reset_audio_data_ready_flags();
 
+            //Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            
             foreach (var channel in tracks[current_track_idx].channels)
             {
                 channel?.update_data(vp);
@@ -274,9 +293,19 @@ namespace DefaultNamespace
             
             if (!audio_started)
             {
-                foreach (var audio_source in audioSources)
+                //foreach (var audio_source in audioSources)
+                //{
+                //    //audio_source.Play();
+                //}
+                
+                foreach (var channel in tracks[current_track_idx].channels)
                 {
-                    audio_source.Play();
+                    if(channel == null) continue;
+                    
+                    channel.audio_source.clip = channel.audio_clip;
+                    
+                    if(!channel.audio_source.isPlaying && vp.isPlaying) 
+                        channel.audio_source.Play();
                 }
             }
             
@@ -332,7 +361,8 @@ namespace DefaultNamespace
             {
                 var track = new Track
                 {
-                    provider = vp.GetAudioSampleProvider((ushort)t)
+                    provider = vp.GetAudioSampleProvider((ushort)t),
+                    player = this
                 };
 
                 var provider = track.provider;
@@ -435,6 +465,7 @@ namespace DefaultNamespace
         {
             public AudioSampleProvider provider;
             public Channel[] channels;
+            public ManageVideoPlayerAudio player;
 
             public float[] silence;
 
@@ -452,13 +483,13 @@ namespace DefaultNamespace
         class Channel
         {
             public AudioSource audio_source;
-            AudioClip audio_clip;
+            public AudioClip audio_clip;
             public Track track;
             public int channel_idx;
             int sample_rate;
 
             List<float> _data;
-            List<float> _data_tmp;
+            //List<float> _data_tmp;
 
             public void init(AudioSource s, VideoPlayer vp, AudioSampleProvider p, int i)
             {
@@ -469,48 +500,47 @@ namespace DefaultNamespace
                 var sample_length = Mathf.CeilToInt((float) vp.clip.length * sample_rate);
                 
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
+
+                audio_clip.SetData(new float[sample_length], 0);
                 
                 _data = new List<float>(sample_length);
-                _data_tmp = new List<float>(sample_length);
+                //_data_tmp = new List<float>(sample_length);
 
                 channel_idx = i;
             }
 
             public void add_data(float[] data)
             {
-                _data_tmp.AddRange(data);
+                _data.AddRange(data);
+                //_data_tmp.AddRange(data);
             }
 
             public void update_data(VideoPlayer vp)
             {
-                if (!vp.isPlaying)
-                {
-                    _data_tmp.Clear();
-                    
-                    return;
-                }
+                //if (!vp.isPlaying)
+                //{
+                //    _data_tmp.Clear();
+                //    return;
+                //}
 
-                var t = audio_source.timeSamples;
+                //var t = audio_source.timeSamples;
+                //_data.RemoveRange(0,Mathf.Min(_data.Count,t));
+                //_data.AddRange(_data_tmp);
+                //_data_tmp.Clear();
                 
-                _data.RemoveRange(0,Mathf.Min(_data.Count,t));
-
-                _data.AddRange(_data_tmp);
-                _data_tmp.Clear();
-                
-                audio_clip.SetData(track.silence, 0);
+                //audio_clip.SetData(track.silence, 0);
                 audio_clip.SetData(_data.ToArray(), 0);
-                audio_source.clip = audio_clip;
 
-                audio_source.timeSamples = 0;
-                audio_source.time = 0;
+                //audio_source.timeSamples = 0;
+                //audio_source.time = 0;
                 
-                if(!audio_source.isPlaying && vp.isPlaying) 
-                    audio_source.Play();
+                //if(!audio_source.isPlaying && vp.isPlaying) 
+                //    audio_source.Play();
             }
 
             public void clear_data()
             {
-                _data_tmp.Clear();
+                //_data_tmp.Clear();
                 _data.Clear();
                 audio_source.timeSamples = 0;
                 audio_source.time = 0;
