@@ -66,6 +66,19 @@ namespace DefaultNamespace
             vp.sendFrameReadyEvents = true;
             vp.Prepare();
             vp.seekCompleted += VpOnseekCompleted;
+            vp.loopPointReached+= VpOnloopPointReached;
+        }
+
+        void VpOnloopPointReached(VideoPlayer source)
+        {
+            reset_state();
+            foreach (var audio_source in audioSources)
+            {
+                audio_source.Stop();
+            }
+            vp.Stop();
+            
+            vp.Play();
         }
 
         void VpOnseekCompleted(VideoPlayer source)
@@ -229,7 +242,7 @@ namespace DefaultNamespace
             {
                 request_preview();
                 vp.playbackSpeed = buffer_iterations;
-                vp.time = vp.length / 1.5f;
+                vp.time = vp.length / 1.15f;
 
                 reset_state();
 
