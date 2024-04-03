@@ -529,9 +529,17 @@ namespace DefaultNamespace
                 //_data_tmp.Clear();
                 
                 //audio_clip.SetData(track.silence, 0);
+                
+                if (_data.Count > sample_rate * 15)
+                {
+                    Debug.Log(audio_source.timeSamples);
+                    
+                    _data.RemoveRange(0, sample_rate * 5);
+                
+                    audio_source.timeSamples -= sample_rate * 5;
+                }
+                
                 audio_clip.SetData(_data.ToArray(), 0);
-
-                //audio_source.timeSamples = 0;
                 //audio_source.time = 0;
                 
                 //if(!audio_source.isPlaying && vp.isPlaying) 
