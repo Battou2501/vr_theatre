@@ -9,7 +9,7 @@ Shader "Unlit/LightReceivingShader"
         _ScreenScale ("Screen Scale (1.0 - 160m wide)", Range (0.01,2)) = 0.2
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,100)) = 40
-        _LightStrength("Light strength", Range (0,1)) = 1
+        //_LightStrength("Light strength", Range (0,1)) = 1
     }
     SubShader
     {
@@ -203,6 +203,12 @@ Shader "Unlit/LightReceivingShader"
                 float2(0.85,0.08333),
                 float2(0.95,0.08333)
             };
+
+            float4 _VecArr[60];
+            float _VecArrX[60];
+            float _VecArrY[60];
+            float _VecArrZ[60];
+            
             float _MaxLightedZ;
             float _Aspect;
 
@@ -223,15 +229,21 @@ Shader "Unlit/LightReceivingShader"
                 o.spec = 0;
                 for(int j=0;j<60;j++)
                 {
-                    const float3 p1 = _SamplePoints[j] * _ScreenScale;
+                    const float3 p1 = float3(_VecArrX[j],_VecArrY[j],_VecArrZ[j]);// * _ScreenScale;
                     const float3 point_dir = normalize(p1-o.worldPos);
-                    fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),lerp(1,15,_Shininess));//*lerp(1,5,pow(_Shininess,1.3));
-                    pp*=pp;
+                    //fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),lerp(1,100,_Shininess));//*lerp(1,5,pow(_Shininess,1.3));
+                    fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),100) * (dot(point_dir, o.normal)>0);//*lerp(1,5,pow(_Shininess,1.3));
+                    //fixed pp = pow(saturate(dot(reflect(-point_dir, o.normal),viewDir)),lerp(1,100,_Shininess)) * (dot(point_dir, o.normal)>0);//*lerp(1,5,pow(_Shininess,1.3));
+                    //pp*=pp;
+                    //pp=pow(saturate(dot(reflect(-point_dir, o.normal),viewDir)),60);
                     //pp*=lerp(1,60,pow(_Shininess,1.7));
-                    o.spec += pp/60;
+                    o.spec += pp;//*0.016666*lerp(0,10,_Shininess);
                 }
 
-                o.spec *= lerp(1,_ShininessBrightness,pow(_Shininess,1.7));
+                o.spec = 1-exp(-o.spec);
+                //o.spec = pow(o.spec,2.2);
+                
+                //o.spec *= lerp(1,_ShininessBrightness,pow(_Shininess,1.7));
                 
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
@@ -258,16 +270,17 @@ Shader "Unlit/LightReceivingShader"
                 
                 for(int j=0;j<60;j++)
                 {
-                    const float3 p1 = _SamplePoints[j] * _ScreenScale;
+                    const float3 p1 = float3(_VecArrX[j],_VecArrY[j],_VecArrZ[j]);// * _ScreenScale;
                     const float3 point_dir = normalize(p1-i.worldPos);
                     
-                    const float dt1_1 = saturate(dot(norm, point_dir));
-                    const float dt1_2 = saturate(dot(float3(0,0,1), point_dir));
-                    const float dist1 = distance(i.worldPos, p1) / _ScreenScale;
-                    const float s1 = _DistanceCoef / pow(dist1,_DistancePow);
+                    const float dt1_1 = lerp(saturate(dot(norm, point_dir)),1, _Shininess);
+                    const float dt1_2 = lerp(saturate(dot(float3(0,0,1), point_dir)),1, _Shininess);
+                    const float dist1 = distance(i.worldPos, p1);// / _ScreenScale;
+                    const float s1 = 1 / (dist1*dist1);// pow(dist1,_DistancePow);
                     const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,10));
-                    screen_col_ambient += c1 * s1 * 0.1;
-                    screen_col_dots += c1 * s1 * dt1_2 * dt1_1 * 0.9;
+                    const float s2 = lerp(s1,0.025,_Shininess);
+                    screen_col_ambient += c1 * min(s2 , 0.001);
+                    screen_col_dots += c1 * min(s2 , 0.999) * dt1_2 * dt1_1;// * 0.95;
                 }
 
                 const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots * i.spec);

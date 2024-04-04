@@ -23,6 +23,9 @@ namespace DefaultNamespace
         public Transform[] screenLightSamplePoints;
 
         public int adjustDelayFrames;
+
+        public bool lightAffectsScreen;
+        bool lightAffectsScreen_current;
         
         int iters;
         
@@ -53,9 +56,12 @@ namespace DefaultNamespace
         int frames_til_target;
         bool seek_complete;
         bool first_frame_got;
-        int first_frame_idx;
         double target_time;
         int preview_renders;
+
+        float light_strength;
+        [Range(0,1)]
+        public float movie_light_strength = 0.2f;
         
         void Start()
         {
@@ -71,6 +77,27 @@ namespace DefaultNamespace
             {
                 audio_source.spatializePostEffects = false;
             }
+
+
+            var pointsX = new float[60];
+            var pointsY = new float[60];
+            var pointsZ = new float[60];
+            
+            for (var i = 0; i < screenLightSamplePoints.Length; i++)
+            {
+                pointsX[i] = screenLightSamplePoints[i].position.x;
+                pointsY[i] = screenLightSamplePoints[i].position.y;
+                pointsZ[i] = screenLightSamplePoints[i].position.z;
+            }
+            
+            Shader.SetGlobalFloatArray("_VecArrX", pointsX);
+            Shader.SetGlobalFloatArray("_VecArrY", pointsY);
+            Shader.SetGlobalFloatArray("_VecArrZ", pointsZ);
+
+            light_strength = 1;
+            
+            Shader.SetGlobalFloat("_LightStrength", light_strength);
+            Shader.SetGlobalInt("_AffectedByLight", lightAffectsScreen? 1 : 0);
         }
 
         void VpOnloopPointReached(VideoPlayer source)
@@ -96,7 +123,6 @@ namespace DefaultNamespace
             if (!first_frame_got)
             {
                 first_frame_got = true;
-                first_frame_idx = (int)vp.frame;
             }
             
             
@@ -108,8 +134,6 @@ namespace DefaultNamespace
 
                 if (preview_renders > 0) return;
                 
-                //mat.SetTexture("_MainTex", rt_pool[render_pool_idx]);
-                //Graphics.Blit(rt_pool[render_pool_idx], lightRT, blitMat);
                 render_frame_to_screen(render_pool_idx);
                 
                 set_preview_frame = false;
@@ -123,8 +147,6 @@ namespace DefaultNamespace
 
             if (audio_started || no_audio)
             {
-                //mat.SetTexture("_MainTex", rt_pool[last_unplayed_frame_idx]);
-                //Graphics.Blit(rt_pool[last_unplayed_frame_idx], lightRT, blitMat);
                 render_frame_to_screen(last_unplayed_frame_idx);
                 
                 last_unplayed_frame_idx += 1;
@@ -136,7 +158,7 @@ namespace DefaultNamespace
 
         void render_frame_to_screen(int idx)
         {
-            mat.SetTexture("_MainTex", rt_pool[idx]);
+            mat.SetTexture("_MovieTex", rt_pool[idx]);
             Graphics.Blit(rt_pool[idx], lightRT, blitMat);
         }
         
@@ -194,7 +216,7 @@ namespace DefaultNamespace
             
             if(first_frame_got) return;
 
-            vp.playbackSpeed = buffer_iterations;
+            vp.playbackSpeed = buffer_iterations*2;
         }
 
         void skip(float t)
@@ -215,34 +237,52 @@ namespace DefaultNamespace
                 track_data_available[i] = false;
             }
         }
-        
-        void Update()
+
+        void update_light()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1))// && vp.isPlaying)
+            var target_light = vp.isPlaying ? movie_light_strength : 1;
+
+            if (!(Mathf.Abs(light_strength - target_light) > 0.01f)) return;
+            
+            light_strength = Mathf.Lerp(light_strength, target_light,Time.deltaTime);
+            Shader.SetGlobalFloat("_LightStrength", light_strength);
+        }
+
+        void update_light_affects_screen()
+        {
+            if (lightAffectsScreen == lightAffectsScreen_current) return;
+            
+            lightAffectsScreen_current = lightAffectsScreen;
+            Shader.SetGlobalInt("_AffectedByLight", lightAffectsScreen? 1 : 0);
+        }
+
+        void check_input()
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
                 change_track(0);
             
-            if (Input.GetKeyDown(KeyCode.Alpha2))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.Alpha2))
                 change_track(1);
             
-            if (Input.GetKeyDown(KeyCode.Alpha3))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.Alpha3))
                 change_track(2);
             
-            if (Input.GetKeyDown(KeyCode.Alpha4))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.Alpha4))
                 change_track(3);
             
-            if (Input.GetKeyDown(KeyCode.Alpha5))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.Alpha5))
                 change_track(4);
             
-            if (Input.GetKeyDown(KeyCode.Alpha6))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.Alpha6))
                 change_track(5);
             
-            if (Input.GetKeyDown(KeyCode.RightArrow))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.RightArrow))
                 skip(5);
             
-            if (Input.GetKeyDown(KeyCode.LeftArrow))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
                 skip(-5);
 
-            if (Input.GetKeyDown(KeyCode.UpArrow))// && vp.isPlaying)
+            if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 request_preview();
                 vp.playbackSpeed = buffer_iterations;
@@ -254,49 +294,43 @@ namespace DefaultNamespace
 
             if (Input.GetKeyDown(KeyCode.Space))
                 pause(vp.isPlaying);
+        }
 
-
-            //if (tracks != null)
-            //{
-            //    foreach (var channel in tracks[current_track_idx].channels)
-            //    {
-            //        if (!audio_started) break;
-            //
-            //        if (channel == null) continue;
-            //
-            //        if (!channel.audio_source.isPlaying && vp.isPlaying)
-            //        {
-            //            channel.audio_source.clip = channel.audio_clip;
-            //            channel.audio_source.PlayScheduled(AudioSettings.dspTime + 1f/vp.frame);
-            //        }
-            //    }
-            //}
-
-
-
+        void handle_audio_data_available()
+        {
             if(track_data_available == null || !track_data_available[current_track_idx] || iters<buffer_iterations || no_audio) return;
 
             reset_audio_data_ready_flags();
 
-            //Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            
-            foreach (var channel in tracks[current_track_idx].channels)
-            {
-                channel?.update_data(vp);
-            }
+            update_channels_data();
 
-            if (!is_delay_set)
+            set_delay();
+            
+            set_correct_frame();
+
+            handle_audio_started();
+
+            return;
+
+            void update_channels_data()
             {
+                foreach (var channel in tracks[current_track_idx].channels)
+                {
+                    channel?.update_data(vp);
+                }
+            }
+            
+            void set_delay()
+            {
+                if (is_delay_set) return;
+                
                 delay = render_pool_idx / vp.frameRate;
                 is_delay_set = true;
             }
             
-            if (!audio_started)
+            void handle_audio_started()
             {
-                //foreach (var audio_source in audioSources)
-                //{
-                //    //audio_source.Play();
-                //}
+                if (audio_started) return;
                 
                 foreach (var channel in tracks[current_track_idx].channels)
                 {
@@ -307,16 +341,37 @@ namespace DefaultNamespace
                     if(!channel.audio_source.isPlaying && vp.isPlaying) 
                         channel.audio_source.Play();
                 }
+
+                audio_started = true;
+            
+                vp.playbackSpeed = 1;
             }
             
-            set_correct_frame();
-            
-            if(audio_started) return;
-            
-            audio_started = true;
-            
-            vp.playbackSpeed = 1;
+            void set_correct_frame()
+            {
 
+                delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;
+            
+                var t = delay_frames;
+
+                t = render_pool_idx - t;
+
+                if (t < 0)
+                    t = rt_pool.Length + t;
+
+                last_unplayed_frame_idx = t;
+            }
+        }
+        
+        void Update()
+        {
+            update_light();
+            
+            update_light_affects_screen();
+
+            check_input();
+            
+            handle_audio_data_available();
         }
 
         void Prepared(VideoPlayer vp)
@@ -339,15 +394,12 @@ namespace DefaultNamespace
             if (vp.audioTrackCount == 0)
             {
                 no_audio = true;
-                //vp.Play();
                 return;
             }
 
             prepare_tracks();
 
             render_frame_to_screen(0);
-            
-            //vp.Play();
         }
 
         void prepare_tracks()
@@ -444,22 +496,7 @@ namespace DefaultNamespace
             if(iters<buffer_iterations)
                 iters += 1;
         }
-
-        void set_correct_frame()
-        {
-
-            delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;// - first_frame_idx;
-            //delay_frames = Mathf.CeilToInt(vp.frameRate * (float) delay) + adjustDelayFrames - first_frame_idx;
-            
-            var t = delay_frames;
-
-            t = render_pool_idx - t;
-
-            if (t < 0)
-                t = rt_pool.Length + t;
-
-            last_unplayed_frame_idx = t;
-        }
+        
 
         class Track
         {
@@ -489,7 +526,6 @@ namespace DefaultNamespace
             int sample_rate;
 
             List<float> _data;
-            //List<float> _data_tmp;
 
             public void init(AudioSource s, VideoPlayer vp, AudioSampleProvider p, int i)
             {
@@ -504,7 +540,6 @@ namespace DefaultNamespace
                 audio_clip.SetData(new float[sample_length], 0);
                 
                 _data = new List<float>(sample_length);
-                //_data_tmp = new List<float>(sample_length);
 
                 channel_idx = i;
             }
@@ -512,43 +547,23 @@ namespace DefaultNamespace
             public void add_data(float[] data)
             {
                 _data.AddRange(data);
-                //_data_tmp.AddRange(data);
             }
 
             public void update_data(VideoPlayer vp)
             {
-                //if (!vp.isPlaying)
-                //{
-                //    _data_tmp.Clear();
-                //    return;
-                //}
-
-                //var t = audio_source.timeSamples;
-                //_data.RemoveRange(0,Mathf.Min(_data.Count,t));
-                //_data.AddRange(_data_tmp);
-                //_data_tmp.Clear();
-                
-                //audio_clip.SetData(track.silence, 0);
                 
                 if (_data.Count > sample_rate * 15)
                 {
-                    Debug.Log(audio_source.timeSamples);
-                    
                     _data.RemoveRange(0, sample_rate * 5);
                 
                     audio_source.timeSamples -= sample_rate * 5;
                 }
                 
                 audio_clip.SetData(_data.ToArray(), 0);
-                //audio_source.time = 0;
-                
-                //if(!audio_source.isPlaying && vp.isPlaying) 
-                //    audio_source.Play();
             }
 
             public void clear_data()
             {
-                //_data_tmp.Clear();
                 _data.Clear();
                 audio_source.timeSamples = 0;
                 audio_source.time = 0;
