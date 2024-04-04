@@ -68,7 +68,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DistanceCoef: 1
     - _DistanceMul: 39
-    - _DistancePow: 2
+    - _DistancePow: 1.8
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -78,6 +78,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _ScreenLightMult: 1
     - _ScreenScale: 0.2
     - _ScreenScalse: 0.2
     - _Shininess: 0

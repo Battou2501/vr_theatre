@@ -2,11 +2,13 @@ Shader "Unlit/LightReceivingShader"
 {
     Properties
     {
+        _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex ("Texture", 2D) = "white" {}
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
-        _DistanceCoef ("Distance coef", Range (1,50)) = 1
+        _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
+        //_DistanceCoef ("Distance coef", Range (1,50)) = 1
         _DistancePow ("Distance pow", Range (1,2)) = 1.5
-        _ScreenScale ("Screen Scale (1.0 - 160m wide)", Range (0.01,2)) = 0.2
+        //_ScreenScale ("Screen Scale (1.0 - 160m wide)", Range (0.01,2)) = 0.2
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,100)) = 40
         //_LightStrength("Light strength", Range (0,1)) = 1
@@ -50,7 +52,7 @@ Shader "Unlit/LightReceivingShader"
             float4 _MainTex_ST;
             float4 _ScreenLightTex_ST;
 
-            float _ScreenScale;
+            //float _ScreenScale;
             float _ShininessBrightness;
 
             float int_pow(float i, int p)
@@ -209,14 +211,17 @@ Shader "Unlit/LightReceivingShader"
             float _VecArrY[60];
             float _VecArrZ[60];
             
-            float _MaxLightedZ;
+            //float _MaxLightedZ;
             float _Aspect;
 
-            float _DistanceCoef;
+            //float _DistanceCoef;
             float _DistancePow;
             float _Shininess;
 
             float _LightStrength;
+            float _ScreenLightMult;
+
+            fixed4 _Color;
             
             v2f vert (appdata v)
             {
@@ -261,10 +266,10 @@ Shader "Unlit/LightReceivingShader"
                 half4 ambient = unity_AmbientSky * _LightStrength;
                 half4 light = _LightColor0 * _LightStrength;
                 
-                const fixed4 tex = tex2D(_MainTex,i.uv*_MainTex_ST);
+                const fixed4 tex = tex2D(_MainTex,i.uv*_MainTex_ST) * _Color;
                 //fixed light_dot = saturate(dot(norm,normalize(_WorldSpaceLightPos0.xyz - i.worldPos)));
                 fixed light_dot = saturate(dot(norm,normalize(_WorldSpaceLightPos0)));
-                light_dot *= light_dot*0.3+0.7;
+                //light_dot *= light_dot*0.3+0.7;
                 
                 
                 
@@ -276,14 +281,14 @@ Shader "Unlit/LightReceivingShader"
                     const float dt1_1 = lerp(saturate(dot(norm, point_dir)),1, _Shininess);
                     const float dt1_2 = lerp(saturate(dot(float3(0,0,1), point_dir)),1, _Shininess);
                     const float dist1 = distance(i.worldPos, p1);// / _ScreenScale;
-                    const float s1 = 1 / (dist1*dist1);// pow(dist1,_DistancePow);
+                    const float s1 = 1 / pow(dist1,_DistancePow);
                     const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,10));
                     const float s2 = lerp(s1,0.025,_Shininess);
                     screen_col_ambient += c1 * min(s2 , 0.001);
                     screen_col_dots += c1 * min(s2 , 0.999) * dt1_2 * dt1_1;// * 0.95;
                 }
 
-                const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots * i.spec);
+                const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots * i.spec) * lerp(_ScreenLightMult,1, _Shininess);
 
                 const fixed4 normal_light = tex*(light*light_dot+ambient);
                 
