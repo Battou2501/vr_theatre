@@ -37,6 +37,7 @@ Shader "Unlit/RenderMip"
             sampler2D _MainTex;
             float4 _MainTex_ST;
             int _MipLevel;
+            float _Aspect;
 
             
             v2f vert (appdata v)
@@ -44,17 +45,30 @@ Shader "Unlit/RenderMip"
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+
+                const float2 aspect_greater = float2(o.uv.x, (o.uv.y - 0.5) * _Aspect + 0.5);
+                const float2 aspect_lower = float2((o.uv.x - 0.5) * _Aspect + 0.5, o.uv.y);
+
+                const int is_greater = _Aspect > 1;
+                
+                o.uv = aspect_greater * is_greater + aspect_lower * (1-is_greater);
+
+                
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-                //float p1_strength = _ScreenCenter + 
-                
+                float f = saturate((i.uv.y-1)*300);
+                float f2 = saturate((1-i.uv.y-1)*300);
+
+                float f3 = saturate((i.uv.x-1)*300);
+                float f4 = saturate((1-i.uv.x-1)*300);
                 
                 // sample the texture
                 fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,_MipLevel));
+                col *= 1-saturate(f+f2+f3+f4);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 

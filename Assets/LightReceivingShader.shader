@@ -63,71 +63,71 @@ Shader "Unlit/LightReceivingShader"
             
             static float2 _SamplePointsUV[60]=
             {
-                float2(0.05,0.91666),
-                float2(0.15,0.91666),
-                float2(0.25,0.91666),
-                float2(0.35,0.91666),
-                float2(0.45,0.91666),
-                float2(0.55,0.91666),
-                float2(0.65,0.91666),
-                float2(0.75,0.91666),
-                float2(0.85,0.91666),
-                float2(0.95,0.91666),
+                float2(0.05,0.7192),
+                float2(0.15,0.7192),
+                float2(0.25,0.7192),
+                float2(0.35,0.7192),
+                float2(0.45,0.7192),
+                float2(0.55,0.7192),
+                float2(0.65,0.7192),
+                float2(0.75,0.7192),
+                float2(0.85,0.7192),
+                float2(0.95,0.7192),
 
-                float2(0.05,0.75),
-                float2(0.15,0.75),
-                float2(0.25,0.75),
-                float2(0.35,0.75),
-                float2(0.45,0.75),
-                float2(0.55,0.75),
-                float2(0.65,0.75),
-                float2(0.75,0.75),
-                float2(0.85,0.75),
-                float2(0.95,0.75),
+                float2(0.05,0.6315),
+                float2(0.15,0.6315),
+                float2(0.25,0.6315),
+                float2(0.35,0.6315),
+                float2(0.45,0.6315),
+                float2(0.55,0.6315),
+                float2(0.65,0.6315),
+                float2(0.75,0.6315),
+                float2(0.85,0.6315),
+                float2(0.95,0.6315),
 
-                float2(0.05,0.58333),
-                float2(0.15,0.58333),
-                float2(0.25,0.58333),
-                float2(0.35,0.58333),
-                float2(0.45,0.58333),
-                float2(0.55,0.58333),
-                float2(0.65,0.58333),
-                float2(0.75,0.58333),
-                float2(0.85,0.58333),
-                float2(0.95,0.58333),
+                float2(0.05,0.5438),
+                float2(0.15,0.5438),
+                float2(0.25,0.5438),
+                float2(0.35,0.5438),
+                float2(0.45,0.5438),
+                float2(0.55,0.5438),
+                float2(0.65,0.5438),
+                float2(0.75,0.5438),
+                float2(0.85,0.5438),
+                float2(0.95,0.5438),
 
-                float2(0.05,0.41666),
-                float2(0.15,0.41666),
-                float2(0.25,0.41666),
-                float2(0.35,0.41666),
-                float2(0.45,0.41666),
-                float2(0.55,0.41666),
-                float2(0.65,0.41666),
-                float2(0.75,0.41666),
-                float2(0.85,0.41666),
-                float2(0.95,0.41666),
+                float2(0.05,0.4561),
+                float2(0.15,0.4561),
+                float2(0.25,0.4561),
+                float2(0.35,0.4561),
+                float2(0.45,0.4561),
+                float2(0.55,0.4561),
+                float2(0.65,0.4561),
+                float2(0.75,0.4561),
+                float2(0.85,0.4561),
+                float2(0.95,0.4561),
 
-                float2(0.05,0.25),
-                float2(0.15,0.25),
-                float2(0.25,0.25),
-                float2(0.35,0.25),
-                float2(0.45,0.25),
-                float2(0.55,0.25),
-                float2(0.65,0.25),
-                float2(0.75,0.25),
-                float2(0.85,0.25),
-                float2(0.95,0.25),
+                float2(0.05,0.3684),
+                float2(0.15,0.3684),
+                float2(0.25,0.3684),
+                float2(0.35,0.3684),
+                float2(0.45,0.3684),
+                float2(0.55,0.3684),
+                float2(0.65,0.3684),
+                float2(0.75,0.3684),
+                float2(0.85,0.3684),
+                float2(0.95,0.3684),
 
-                float2(0.05,0.08333),
-                float2(0.15,0.08333),
-                float2(0.25,0.08333),
-                float2(0.35,0.08333),
-                float2(0.45,0.08333),
-                float2(0.55,0.08333),
-                float2(0.65,0.08333),
-                float2(0.75,0.08333),
-                float2(0.85,0.08333),
-                float2(0.95,0.08333)
+                float2(0.05,0.2807),
+                float2(0.15,0.2807),
+                float2(0.25,0.2807),
+                float2(0.35,0.2807),
+                float2(0.45,0.2807),
+                float2(0.55,0.2807),
+                float2(0.65,0.2807),
+                float2(0.75,0.2807),
+                float2(0.85,0.2807),
+                float2(0.95,0.2807)
             };
 
             float4 _VecArr[60];
@@ -135,7 +135,6 @@ Shader "Unlit/LightReceivingShader"
             float _VecArrY[60];
             float _VecArrZ[60];
             
-            float _Aspect;
             float _Shininess;
             float _LightStrength;
             float _ScreenLightMult;
@@ -156,26 +155,8 @@ Shader "Unlit/LightReceivingShader"
                 const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
                 const float3 reflect_viewDir = -reflect(viewDir, o.normal);
                 o.reflect_viewDir = reflect_viewDir;
-                //o.spec = 0;
-                //for(int j=0;j<60;j++)
-                //{
-                //    const float3 p1 = float3(_VecArrX[j],_VecArrY[j],_VecArrZ[j]);// * _ScreenScale;
-                //    const float3 point_dir = normalize(p1-o.worldPos);
-                //    //fixed pp = pow(lerp(1,saturate(dot(reflect(-point_dir, o.normal),viewDir)),_Shininess),lerp(1,100,_Shininess));//*lerp(1,5,pow(_Shininess,1.3));
-                //    fixed pp = pow(lerp(1,saturate(dot(point_dir,reflect_viewDir)),_Shininess),100) * (dot(point_dir, o.normal)>0);//*lerp(1,5,pow(_Shininess,1.3));
-                //    //fixed pp = pow(saturate(dot(reflect(-point_dir, o.normal),viewDir)),lerp(1,100,_Shininess)) * (dot(point_dir, o.normal)>0);//*lerp(1,5,pow(_Shininess,1.3));
-                //    //pp*=pp;
-                //    //pp=pow(saturate(dot(reflect(-point_dir, o.normal),viewDir)),60);
-                //    //pp*=lerp(1,60,pow(_Shininess,1.7));
-                //    o.spec += pp;//*0.016666*lerp(0,10,_Shininess);
-                //}
-                //
-                //o.spec = 1-exp(-o.spec);
 
                 o.color = v.color;
-                //o.spec = pow(o.spec,2.2);
-                
-                //o.spec *= lerp(1,_ShininessBrightness,pow(_Shininess,1.7));
                 
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
@@ -219,7 +200,6 @@ Shader "Unlit/LightReceivingShader"
                     
                     const float dist1 = dot(point_vec,point_vec);
                     const float s1 = 1 / dist1;
-                    //const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,_MipLevel));
                     const fixed4 c1 = tex2D(_ScreenLightTex, _SamplePointsUV[j].xy);
 
                     screen_col_ambient += c1 * min(s1 , 0.001);
@@ -231,6 +211,7 @@ Shader "Unlit/LightReceivingShader"
                 const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult;
                 const fixed4 normal_light = tex*(light*light_dot+ambient);
 
+                
                 return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1 + specular;
             }
             ENDCG

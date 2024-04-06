@@ -1541,7 +1541,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2079,7 +2079,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.472
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -13255,7 +13255,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -21721,7 +21721,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -21992,7 +21992,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!167 &1687597367
 AudioReverbZone:
   m_ObjectHideFlags: 0
@@ -22000,11 +22000,11 @@ AudioReverbZone:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687597366}
-  m_Enabled: 0
+  m_Enabled: 1
   m_MinDistance: 14.46
   m_MaxDistance: 41.18
   m_ReverbPreset: 27
-  m_Room: 0
+  m_Room: -500
   m_RoomHF: -1858
   m_DecayTime: 1.5
   m_DecayHFRatio: 0.5
@@ -23246,8 +23246,7 @@ VideoPlayer:
   - 1
   - 1
   - 1
-  m_Url: file://C:/Users/Battou/Videos/They_Live_1988_BDRip_1080p_[REMASTERED]_[HEVC]_10bit_by
-    XuMuK.mp4
+  m_Url: file://C:/Users/Battou/Downloads/DUNE_TLR-1_1920x804_AC3_51-thedigitaltheater.mp4
   m_EnabledAudioTracks: 010101010101
   m_DirectAudioMutes: 000000000000
   m_ControlledAudioTrackCount: 6
@@ -25204,7 +25203,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -27473,7 +27472,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0

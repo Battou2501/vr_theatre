@@ -64,6 +64,7 @@ namespace DefaultNamespace
         double target_time;
         int preview_renders;
         float light_strength;
+        bool is_prepared;
         
         [Range(0,1)]
         public float movie_light_strength = 0.2f;
@@ -248,6 +249,8 @@ namespace DefaultNamespace
         
         void pause(bool state)
         {
+            if(!is_prepared) return;
+            
             if(state && !audio_started) return;
             
             if (state)
@@ -335,7 +338,6 @@ namespace DefaultNamespace
                 vp.time = vp.length / 2f;
 
                 reset_state();
-
             }
 
             if (Input.GetKeyDown(KeyCode.Space))
@@ -402,7 +404,7 @@ namespace DefaultNamespace
             var w = (int) vp.width;
             var h = (int) vp.height;
             
-            mat.SetFloat(aspect, (float)w/h);
+            Shader.SetGlobalFloat(aspect, (float)w/h);
 
             for (var i = 0; i < frame_buffer_size; i++)
             {
@@ -411,6 +413,8 @@ namespace DefaultNamespace
                     useMipMap = true
                 };
             }
+            
+            is_prepared = true;
             
             if (vp.audioTrackCount == 0)
             {
@@ -440,7 +444,7 @@ namespace DefaultNamespace
 
                 var provider = track.provider;
                 provider.sampleFramesAvailable += SampleFramesAvailable;
-                provider.sampleFramesOverflow += ProviderOnsampleFramesOverflow;
+                provider.sampleFramesOverflow += ProviderOnSampleFramesOverflow;
                 provider.enableSampleFramesAvailableEvents = true;
                 provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
 
@@ -467,7 +471,7 @@ namespace DefaultNamespace
             }
         }
 
-        void ProviderOnsampleFramesOverflow(AudioSampleProvider provider, uint sampleframecount)
+        static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleframecount)
         {
             Debug.Log(provider.trackIndex);
         }
@@ -515,11 +519,6 @@ namespace DefaultNamespace
                 
                 return false;
             }
-            
-            //foreach (var track in tracks)
-            //{
-            //    track.add_count = 0;
-            //}
 
             return true;
         }
@@ -534,23 +533,7 @@ namespace DefaultNamespace
 
             var track = tracks[provider.trackIndex];
             
-            track.add_data_track();
-            
-            foreach (var channel in track.channels)
-            {
-                if(channel == null) continue;
-
-                var d = new float[sf_count];
-                var j = 0;
-                
-                for (var i = 0; i < sf_count * provider.channelCount; i+=provider.channelCount)
-                {
-                    d[j] = buffer[i+channel.channel_idx];
-                    j++;
-                }
-                    
-                channel.add_data(d);
-            }
+            track.get_samples(sf_count, buffer, provider.channelCount);
 
             track_data_available[provider.trackIndex] = true;
 
@@ -583,13 +566,20 @@ namespace DefaultNamespace
                 channels.for_each(t, (x,d) => x?.set_clip(d));
             }
 
-            public void add_data_track()
+
+            public void get_samples(uint sf_count, NativeArray<float> buffer, int channel_count)
+            {
+                add_data_track();
+                
+                channels.for_each(sf_count, buffer, channel_count, (x, c, b, e) => x?.get_channel_samples(c, b, e));
+            }
+            
+            
+            void add_data_track()
             {
                 add_count += 1;
                 
-                var t = sample_time;
-                
-                if (t > trim_after_reaching_seconds * sample_rate)
+                if (sample_time > trim_after_reaching_seconds * sample_rate)
                 {
                     need_sample_time_shift = true;
                 }
@@ -607,9 +597,9 @@ namespace DefaultNamespace
         class Channel
         {
             public AudioSource audio_source;
-            public AudioClip audio_clip;
+            AudioClip audio_clip;
             Track track;
-            public int channel_idx;
+            int channel_idx;
             int sample_rate;
 
             List<float> data;
@@ -639,7 +629,21 @@ namespace DefaultNamespace
                 channel_idx = i;
             }
 
-            public void add_data(IReadOnlyCollection<float> d)
+            public void get_channel_samples(uint sf_count, NativeArray<float> buffer, int channel_count)
+            {
+                var d = new float[sf_count];
+                var j = 0;
+                
+                for (var i = 0; i < sf_count * channel_count; i+=channel_count)
+                {
+                    d[j] = buffer[i+channel_idx];
+                    j++;
+                }
+                    
+                add_data(d);
+            }
+            
+            void add_data(IReadOnlyCollection<float> d)
             {
                 data.AddRange(d);
 
