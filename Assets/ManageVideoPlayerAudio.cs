@@ -103,11 +103,6 @@ namespace DefaultNamespace
             vp.loopPointReached+= VpOnLoopPointReached;
             vp.playbackSpeed = buffer_iterations;
             vp.frameDropped+= VpOnFrameDropped;
-            
-            foreach (var audio_source in audioSources)
-            {
-                audio_source.spatializePostEffects = false;
-            }
 
 
             var points_x = new float[60];
@@ -167,10 +162,7 @@ namespace DefaultNamespace
         void VpOnLoopPointReached(VideoPlayer source)
         {
             reset_state();
-            foreach (var audio_source in audioSources)
-            {
-                audio_source.Stop();
-            }
+            
             vp.Stop();
             
             vp.Play();
@@ -239,42 +231,37 @@ namespace DefaultNamespace
 
         void reset_state()
         {
-            foreach (var track in tracks)
-            {
-                track.clear_data();
-            }
-
+            tracks.for_each(x=>x.clear_data());
+            
+            audioSources.for_each(x => { x.clip = null; x.Stop(); } );
+            
             reset_audio_data_ready_flags();
 
+            is_delay_set = false;
             audio_started = false;
             iterations = 0;
             render_pool_idx = 0;
             last_unplayed_frame_idx = 0;
             delay_frames = 0;
             delay = 0;
-            is_delay_set = false;
         }
         
         void pause(bool state)
         {
+            if(state && !audio_started) return;
+            
             if (state)
             {
                 vp.Pause();
                 
-                foreach (var channel in tracks[current_track_idx].channels)
-                {
-                    channel?.audio_source.Pause();
-                }
+                tracks[current_track_idx].channels.for_each(x=>x?.audio_source.Pause());
                 
                 return;
             }
             
             vp.Play();
             
-            foreach (var channel in tracks[current_track_idx].channels)
-            {
-                channel?.audio_source.Play();
-            }
+            tracks[current_track_idx].channels.for_each(x=>x?.audio_source.Play());
             
         }
 
@@ -389,16 +376,8 @@ namespace DefaultNamespace
             {
                 if (audio_started) return;
                 
-                foreach (var channel in tracks[current_track_idx].channels)
-                {
-                    if(channel == null) continue;
-                    
-                    channel.audio_source.clip = channel.audio_clip;
-                    
-                    if(!channel.audio_source.isPlaying && vp.isPlaying) 
-                        channel.audio_source.Play();
-                }
-
+                tracks[current_track_idx].channels.for_each(x=>x?.set_clip(0));
+                
                 audio_started = true;
 
                 vp.playbackSpeed = 1;
@@ -406,17 +385,13 @@ namespace DefaultNamespace
             
             void set_correct_frame()
             {
-
                 delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;
             
-                var t = delay_frames;
+                last_unplayed_frame_idx = render_pool_idx - delay_frames;
 
-                t = render_pool_idx - t;
-
-                if (t < 0)
-                    t = rt_pool.Length + t;
-
-                last_unplayed_frame_idx = t;
+                if (last_unplayed_frame_idx >= 0) return;
+                
+                last_unplayed_frame_idx = rt_pool.Length + last_unplayed_frame_idx;
             }
         }
 
@@ -465,6 +440,7 @@ namespace DefaultNamespace
 
                 var provider = track.provider;
                 provider.sampleFramesAvailable += SampleFramesAvailable;
+                provider.sampleFramesOverflow += ProviderOnsampleFramesOverflow;
                 provider.enableSampleFramesAvailableEvents = true;
                 provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
 
@@ -491,6 +467,11 @@ namespace DefaultNamespace
             }
         }
 
+        void ProviderOnsampleFramesOverflow(AudioSampleProvider provider, uint sampleframecount)
+        {
+            Debug.Log(provider.trackIndex);
+        }
+
         void request_track_change(int idx)
         {
             requested_track_idx = idx;
@@ -498,6 +479,8 @@ namespace DefaultNamespace
         
         void handle_change_track_request()
         {
+            if(!audio_started || !vp.isPlaying) return;
+            
             if(requested_track_idx == -1 || requested_track_idx >= vp.audioTrackCount || requested_track_idx == current_track_idx ) return;
 
             if(!check_all_tracks_added()) return;
@@ -507,10 +490,19 @@ namespace DefaultNamespace
             current_track_idx = requested_track_idx;
 
             requested_track_idx = -1;
+
+            var audio_source_time = audioSources[0].timeSamples;
             
-            tracks[current_track_idx].set_clip();
+            stop_all_audio();
+            
+            tracks[current_track_idx].set_clip(audio_source_time);
         }
 
+        void stop_all_audio()
+        {
+            audioSources.for_each(x=>x.Stop());
+        }
+        
         bool check_all_tracks_added()
         {
             if (tracks.Length == 1) return true;
@@ -524,31 +516,10 @@ namespace DefaultNamespace
                 return false;
             }
             
-            foreach (var track in tracks)
-            {
-                track.add_count = 0;
-            }
-
-            return true;
-        }
-        
-        bool check_all_tracks_updated()
-        {
-            if (tracks.Length == 1) return true;
-            
-            var up_count = tracks[0].update_count;
-            
-            for (var i = 1; i < tracks.Length; i++)
-            {
-                if (tracks[i].update_count == up_count) continue;
-                
-                return false;
-            }
-            
-            foreach (var track in tracks)
-            {
-                track.update_count = 0;
-            }
+            //foreach (var track in tracks)
+            //{
+            //    track.add_count = 0;
+            //}
 
             return true;
         }
@@ -571,6 +542,7 @@ namespace DefaultNamespace
 
                 var d = new float[sf_count];
                 var j = 0;
+                
                 for (var i = 0; i < sf_count * provider.channelCount; i+=provider.channelCount)
                 {
                     d[j] = buffer[i+channel.channel_idx];
@@ -582,25 +554,6 @@ namespace DefaultNamespace
 
             track_data_available[provider.trackIndex] = true;
 
-            //var uc = tracks[0].add_count;
-            //var update_play_time = true;
-            //for (var i = 1; i < tracks.Length; i++)
-            //{
-            //    if(tracks[i].add_count==uc) continue;
-            //
-            //    update_play_time = false;
-            //    break;
-            //}
-            //
-            //if (update_play_time)
-            //{
-            //    if (play_time >= 30)
-            //        play_time = 25;
-            //    
-            //    play_time = AudioSettings.dspTime - start_time;
-            //    
-            //}
-            
             adding_samples = false;
             
             if(provider.trackIndex != current_track_idx) return;
@@ -614,30 +567,20 @@ namespace DefaultNamespace
             public AudioSampleProvider provider;
             public Channel[] channels;
             public uint add_count;
-            public uint update_count;
             public int sample_rate;
             public bool need_sample_time_shift;
             
-            public int get_first_channel_audio_source_time => channels[0].audio_source.timeSamples;
-            
-            
-            
             public void clear_data()
             {
-                foreach (var channel in channels)
-                {
-                    channel?.clear_data();
-                }
+                channels.for_each(x=>x?.clear_data());
 
+                need_sample_time_shift = false;
                 add_count = 0;
             }
 
-            public void set_clip()
+            public void set_clip(int t)
             {
-                foreach (var channel in channels)
-                {
-                    channel?.set_clip();
-                }
+                channels.for_each(t, (x,d) => x?.set_clip(d));
             }
 
             public void add_data_track()
@@ -654,12 +597,7 @@ namespace DefaultNamespace
 
             public void update_data_track()
             {
-                update_count += 1;
-                
-                foreach (var channel in channels)
-                {
-                    channel?.update_data();
-                }
+                channels.for_each(x=>x?.update_data());
 
                 need_sample_time_shift = false;
             }
@@ -676,14 +614,10 @@ namespace DefaultNamespace
 
             List<float> data;
 
-            public void set_clip()
+            public void set_clip(int t)
             {
-                var ap = audio_source.isPlaying;
-                var t = track.get_first_channel_audio_source_time;
+                set_clip_data();
                 audio_source.clip = audio_clip;
-                
-                if(!ap) return;
-                
                 audio_source.Play();
                 audio_source.timeSamples = t;
             }
@@ -709,28 +643,28 @@ namespace DefaultNamespace
             {
                 data.AddRange(d);
 
-                var t = sample_time;
-
-                if (t <= trim_after_reaching_seconds * sample_rate) return;
+                if (sample_time <= trim_after_reaching_seconds * sample_rate) return;
                 
                 data.RemoveRange(0, trim_seconds * sample_rate);
             }
 
             public void update_data()
             {
-                audio_clip.SetData(data.ToArray(), 0);
+                set_clip_data();
 
                 if (!track.need_sample_time_shift) return;
                 
                 audio_source.timeSamples -= trim_seconds * sample_rate;
             }
 
+            void set_clip_data()
+            {
+                audio_clip.SetData(data.ToArray(), 0);
+            }
+            
             public void clear_data()
             {
                 data.Clear();
-                audio_source.time = 0;
-                audio_source.timeSamples = 0;
-                audio_source.Stop();
             }
             
         }
