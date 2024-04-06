@@ -9,6 +9,7 @@ Shader "Unlit/LightReceivingShader"
         _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,10)) = 1
+        _MipLevel("Mip level", Range (0,10)) = 1
     }
     SubShader
     {
@@ -58,6 +59,8 @@ Shader "Unlit/LightReceivingShader"
             float4 _ScreenLightTex_ST;
 
             float _ShininessBrightness;
+
+            int _MipLevel;
 
             
             static float2 _SamplePointsUV[60]=
@@ -218,7 +221,7 @@ Shader "Unlit/LightReceivingShader"
                     
                     const float dist1 = dot(point_vec,point_vec);
                     const float s1 = 1 / dist1;
-                    const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,10));
+                    const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,_MipLevel));
 
                     screen_col_ambient += c1 * min(s1 , 0.001);
                     screen_col_dots += c1 * min(s1 , 0.999) * PdotSN * PdotN;
