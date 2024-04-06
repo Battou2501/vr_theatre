@@ -3,6 +3,7 @@ Shader "Unlit/RenderMip"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _MipLevel("Mip level", Range (0,10)) = 1
     }
     SubShader
     {
@@ -35,6 +36,7 @@ Shader "Unlit/RenderMip"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            int _MipLevel;
 
             
             v2f vert (appdata v)
@@ -52,7 +54,7 @@ Shader "Unlit/RenderMip"
                 
                 
                 // sample the texture
-                fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,2));
+                fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,_MipLevel));
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 

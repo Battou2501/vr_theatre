@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
@@ -26,9 +24,9 @@ namespace DefaultNamespace
         public int adjustDelayFrames;
 
         public bool lightAffectsScreen;
-        bool lightAffectsScreen_current;
+        bool light_affects_screen_current;
         
-        int iters;
+        int iterations;
         
         bool[] track_data_available;
         bool audio_started;
@@ -49,10 +47,10 @@ namespace DefaultNamespace
         public int frame_buffer_size = 240;
 
         public int trimSeconds;
-        public int minSecondsAfterTrim;
+        public int trimAfterReachingSeconds;
         
         static int trim_seconds;
-        static int min_seconds_after_trim;
+        static int trim_after_reaching_seconds;
         
         int current_track_idx;
 
@@ -65,8 +63,8 @@ namespace DefaultNamespace
         bool first_frame_got;
         double target_time;
         int preview_renders;
-
         float light_strength;
+        
         [Range(0,1)]
         public float movie_light_strength = 0.2f;
 
@@ -76,30 +74,35 @@ namespace DefaultNamespace
 
 
 
-        static double start_time;
-        static double play_time;
         static double delay;
 
         static int sample_time;
         //static bool need_sample_time_shift;
 
         bool adding_samples;
-        
+        static readonly int aspect = Shader.PropertyToID("_Aspect");
+        static readonly int movie_tex = Shader.PropertyToID("_MovieTex");
+        static readonly int l_strength = Shader.PropertyToID("_LightStrength");
+        static readonly int affected_by_light = Shader.PropertyToID("_AffectedByLight");
+        static readonly int vec_arr_x = Shader.PropertyToID("_VecArrX");
+        static readonly int vec_arr_y = Shader.PropertyToID("_VecArrY");
+        static readonly int vec_arr_z = Shader.PropertyToID("_VecArrZ");
+
         void Start()
         {
             trim_seconds = trimSeconds;
-            min_seconds_after_trim = minSecondsAfterTrim;
+            trim_after_reaching_seconds = trimAfterReachingSeconds;
             
             vp = GetComponent<VideoPlayer>();
             vp.audioOutputMode = VideoAudioOutputMode.APIOnly;
             vp.prepareCompleted += Prepared;
-            vp.frameReady += VpOnframeReady;
+            vp.frameReady += VpOnFrameReady;
             vp.sendFrameReadyEvents = true;
             vp.Prepare();
-            vp.seekCompleted += VpOnseekCompleted;
-            vp.loopPointReached+= VpOnloopPointReached;
+            vp.seekCompleted += VpOnSeekCompleted;
+            vp.loopPointReached+= VpOnLoopPointReached;
             vp.playbackSpeed = buffer_iterations;
-            vp.frameDropped+= VpOnframeDropped;
+            vp.frameDropped+= VpOnFrameDropped;
             
             foreach (var audio_source in audioSources)
             {
@@ -107,25 +110,25 @@ namespace DefaultNamespace
             }
 
 
-            var pointsX = new float[60];
-            var pointsY = new float[60];
-            var pointsZ = new float[60];
+            var points_x = new float[60];
+            var points_y = new float[60];
+            var points_z = new float[60];
             
             for (var i = 0; i < screenLightSamplePoints.Length; i++)
             {
-                pointsX[i] = screenLightSamplePoints[i].position.x;
-                pointsY[i] = screenLightSamplePoints[i].position.y;
-                pointsZ[i] = screenLightSamplePoints[i].position.z;
+                points_x[i] = screenLightSamplePoints[i].position.x;
+                points_y[i] = screenLightSamplePoints[i].position.y;
+                points_z[i] = screenLightSamplePoints[i].position.z;
             }
             
-            Shader.SetGlobalFloatArray("_VecArrX", pointsX);
-            Shader.SetGlobalFloatArray("_VecArrY", pointsY);
-            Shader.SetGlobalFloatArray("_VecArrZ", pointsZ);
+            Shader.SetGlobalFloatArray(vec_arr_x, points_x);
+            Shader.SetGlobalFloatArray(vec_arr_y, points_y);
+            Shader.SetGlobalFloatArray(vec_arr_z, points_z);
 
             light_strength = 1;
             
-            Shader.SetGlobalFloat("_LightStrength", light_strength);
-            Shader.SetGlobalInt("_AffectedByLight", lightAffectsScreen? 1 : 0);
+            Shader.SetGlobalFloat(l_strength, light_strength);
+            Shader.SetGlobalInt(affected_by_light, lightAffectsScreen? 1 : 0);
         }
         
         void Update()
@@ -152,18 +155,16 @@ namespace DefaultNamespace
             if(!audioSources[0].isPlaying) return;
             
             if(!check_all_tracks_added()) return;
-            
-            //if(!check_all_tracks_updated()) return;
 
             sample_time = audioSources[0].timeSamples;
         }
-        
-        void VpOnframeDropped(VideoPlayer source)
+
+        static void VpOnFrameDropped(VideoPlayer source)
         {
             Debug.LogWarning("SKIPPED!!!!");
         }
         
-        void VpOnloopPointReached(VideoPlayer source)
+        void VpOnLoopPointReached(VideoPlayer source)
         {
             reset_state();
             foreach (var audio_source in audioSources)
@@ -175,13 +176,13 @@ namespace DefaultNamespace
             vp.Play();
         }
 
-        void VpOnseekCompleted(VideoPlayer source)
+        void VpOnSeekCompleted(VideoPlayer source)
         {
             seek_complete = true;
         }
 
 
-        void VpOnframeReady(VideoPlayer source, long frameidx)
+        void VpOnFrameReady(VideoPlayer source, long frameIdx)
         {
             if (!first_frame_got)
             {
@@ -221,7 +222,7 @@ namespace DefaultNamespace
 
         void render_frame_to_screen(int idx)
         {
-            mat.SetTexture("_MovieTex", rt_pool[idx]);
+            mat.SetTexture(movie_tex, rt_pool[idx]);
             Graphics.Blit(rt_pool[idx], lightRT, blitMat);
         }
         
@@ -246,14 +247,12 @@ namespace DefaultNamespace
             reset_audio_data_ready_flags();
 
             audio_started = false;
-            iters = 0;
+            iterations = 0;
             render_pool_idx = 0;
             last_unplayed_frame_idx = 0;
             delay_frames = 0;
             delay = 0;
             is_delay_set = false;
-            start_time = 0;
-            play_time = 0;
         }
         
         void pause(bool state)
@@ -305,15 +304,15 @@ namespace DefaultNamespace
             if (!(Mathf.Abs(light_strength - target_light) > 0.01f)) return;
             
             light_strength = Mathf.Lerp(light_strength, target_light,Time.deltaTime);
-            Shader.SetGlobalFloat("_LightStrength", light_strength);
+            Shader.SetGlobalFloat(l_strength, light_strength);
         }
 
         void update_light_affects_screen()
         {
-            if (lightAffectsScreen == lightAffectsScreen_current) return;
+            if (lightAffectsScreen == light_affects_screen_current) return;
             
-            lightAffectsScreen_current = lightAffectsScreen;
-            Shader.SetGlobalInt("_AffectedByLight", lightAffectsScreen? 1 : 0);
+            light_affects_screen_current = lightAffectsScreen;
+            Shader.SetGlobalInt(affected_by_light, lightAffectsScreen? 1 : 0);
         }
 
         void check_input()
@@ -358,7 +357,7 @@ namespace DefaultNamespace
 
         void handle_audio_data_available()
         {
-            if(track_data_available == null || !track_data_available[current_track_idx] || iters<buffer_iterations || no_audio) return;
+            if(track_data_available == null || !track_data_available[current_track_idx] || iterations<buffer_iterations || no_audio) return;
 
             reset_audio_data_ready_flags();
 
@@ -401,9 +400,7 @@ namespace DefaultNamespace
                 }
 
                 audio_started = true;
-                
-                start_time = AudioSettings.dspTime;
-            
+
                 vp.playbackSpeed = 1;
             }
             
@@ -430,13 +427,13 @@ namespace DefaultNamespace
             var w = (int) vp.width;
             var h = (int) vp.height;
             
-            mat.SetFloat("_Aspect", (float)w/h);
+            mat.SetFloat(aspect, (float)w/h);
 
             for (var i = 0; i < frame_buffer_size; i++)
             {
-                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,0)
+                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,8)
                 {
-                    useMipMap = false
+                    useMipMap = true
                 };
             }
             
@@ -453,28 +450,23 @@ namespace DefaultNamespace
 
         void prepare_tracks()
         {
+            var audio_track_count = vp.audioTrackCount;
+            
+            tracks = new Track[audio_track_count];
 
-            tracks = new Track[vp.audioTrackCount];
-            //tracks = new Track[1];
-
-            track_data_available = new bool[vp.audioTrackCount];
-            //track_data_available = new bool[1];
+            track_data_available = new bool[audio_track_count];
             
             for (var t = 0; t < vp.audioTrackCount; t++)
-            //for (var t = 0; t < 1; t++)
             {
                 var track = new Track
                 {
-                    provider = vp.GetAudioSampleProvider((ushort)t),
-                    idx = t,
-                    vp = vp
+                    provider = vp.GetAudioSampleProvider((ushort)t)
                 };
 
                 var provider = track.provider;
                 provider.sampleFramesAvailable += SampleFramesAvailable;
                 provider.enableSampleFramesAvailableEvents = true;
                 provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
-                //provider.enableSilencePadding = true;
 
                 track.sample_rate = (int)provider.sampleRate;
                 track.channels = new Channel[provider.channelCount];
@@ -487,7 +479,7 @@ namespace DefaultNamespace
                     
                     track.channels[i] = channel;
                     
-                    channel.init(audioSources[(track.channels.Length == 6 && i == 3) ? 5 : audio_source_idx], vp, provider, track, i);
+                    channel.init(audioSources[(track.channels.Length == 6 && i == 3) ? 5 : audio_source_idx], provider, track, i);
                     
                     if (track.channels.Length == 6 && i == 3)
                         continue;
@@ -509,8 +501,6 @@ namespace DefaultNamespace
             if(requested_track_idx == -1 || requested_track_idx >= vp.audioTrackCount || requested_track_idx == current_track_idx ) return;
 
             if(!check_all_tracks_added()) return;
-            
-            //if(!check_all_tracks_updated()) return;
 
             tracks[requested_track_idx].need_sample_time_shift = tracks[current_track_idx].need_sample_time_shift;
             
@@ -562,28 +552,26 @@ namespace DefaultNamespace
 
             return true;
         }
-        
-        double last_t;
 
         void SampleFramesAvailable(AudioSampleProvider provider, uint sampleFrameCount)
         {
             adding_samples = true;
             
-            using NativeArray<float> buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
+            using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
             
-            var sfCount = provider.ConsumeSampleFrames(buffer);
+            var sf_count = provider.ConsumeSampleFrames(buffer);
 
             var track = tracks[provider.trackIndex];
             
-            track.add_data_track((int)sfCount);
+            track.add_data_track();
             
             foreach (var channel in track.channels)
             {
                 if(channel == null) continue;
 
-                var d = new float[sfCount];
+                var d = new float[sf_count];
                 var j = 0;
-                for (var i = 0; i < sfCount * provider.channelCount; i+=provider.channelCount)
+                for (var i = 0; i < sf_count * provider.channelCount; i+=provider.channelCount)
                 {
                     d[j] = buffer[i+channel.channel_idx];
                     j++;
@@ -617,25 +605,20 @@ namespace DefaultNamespace
             
             if(provider.trackIndex != current_track_idx) return;
 
-            if(iters<buffer_iterations)
-                iters += 1;
+            if(iterations<buffer_iterations)
+                iterations += 1;
         }
 
         class Track
         {
             public AudioSampleProvider provider;
-            public VideoPlayer vp;
             public Channel[] channels;
-            public int idx;
             public uint add_count;
             public uint update_count;
-            int data_length;
             public int sample_rate;
-            public int offset_count;
-            bool trim;
             public bool need_sample_time_shift;
             
-            public int Get_first_channel_audio_source_time => channels[0].audio_source.timeSamples;
+            public int get_first_channel_audio_source_time => channels[0].audio_source.timeSamples;
             
             
             
@@ -647,8 +630,6 @@ namespace DefaultNamespace
                 }
 
                 add_count = 0;
-                offset_count = 0;
-                data_length = 0;
             }
 
             public void set_clip()
@@ -659,13 +640,13 @@ namespace DefaultNamespace
                 }
             }
 
-            public void add_data_track(int addedData)
+            public void add_data_track()
             {
                 add_count += 1;
                 
                 var t = sample_time;
                 
-                if (t > 10*sample_rate)
+                if (t > trim_after_reaching_seconds * sample_rate)
                 {
                     need_sample_time_shift = true;
                 }
@@ -673,30 +654,14 @@ namespace DefaultNamespace
 
             public void update_data_track()
             {
-
                 update_count += 1;
-                
-                //Debug.Log("Play time: "+play_time+"   VideoTime: "+vp.time +"   Delay: "+delay);
-                //var t = channels[0].audio_source.timeSamples;
                 
                 foreach (var channel in channels)
                 {
-                    channel?.update_data(trim);
+                    channel?.update_data();
                 }
 
                 need_sample_time_shift = false;
-                //foreach (var channel in channels)
-                //{
-                //    //channel?.update_data(offset_count);
-                //    channel?.reset_audio_source_time();
-                //}
-                
-                //if(idx==0)
-                //{
-                //    Debug.Log(channels[0].data_length);
-                //}
-                trim = false;
-                offset_count = 0;
             }
             
         }
@@ -705,21 +670,16 @@ namespace DefaultNamespace
         {
             public AudioSource audio_source;
             public AudioClip audio_clip;
-            public Track track;
+            Track track;
             public int channel_idx;
-            public int sample_rate;
+            int sample_rate;
 
-            List<float> _data;
-            float[] _update_data;
-
-            double last_trim_time = -1;
-
-            public int data_length => _data.Count;
+            List<float> data;
 
             public void set_clip()
             {
                 var ap = audio_source.isPlaying;
-                var t = track.Get_first_channel_audio_source_time;
+                var t = track.get_first_channel_audio_source_time;
                 audio_source.clip = audio_clip;
                 
                 if(!ap) return;
@@ -728,7 +688,7 @@ namespace DefaultNamespace
                 audio_source.timeSamples = t;
             }
             
-            public void init(AudioSource s, VideoPlayer vp, AudioSampleProvider p, Track t, int i)
+            public void init(AudioSource s, AudioSampleProvider p, Track t, int i)
             {
                 track = t;
                 
@@ -736,77 +696,40 @@ namespace DefaultNamespace
 
                 sample_rate = (int) p.sampleRate;
 
-                var sample_length = 120 * sample_rate; // Mathf.CeilToInt((float) vp.length * sample_rate);
-                //var sample_length = Mathf.CeilToInt((float) vp.length * sample_rate);
+                var sample_length = 30 * sample_rate;
                 
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
-                //audio_clip.SetData(new float[sample_length], 0);
-                
-                _data = new List<float>();
+                data = new List<float>();
 
                 channel_idx = i;
             }
 
-            public void add_data(IReadOnlyCollection<float> data)
+            public void add_data(IReadOnlyCollection<float> d)
             {
-                _data.AddRange(data);
+                data.AddRange(d);
 
                 var t = sample_time;
 
-                if (t > 10*sample_rate)
-                {
-                    _data.RemoveRange(0, 5*sample_rate);
-                    //audio_source.timeSamples -= 5*sample_rate;
-                }
+                if (t <= trim_after_reaching_seconds * sample_rate) return;
                 
-                
-                //if (trim)
-                //{
-                //    _data.RemoveRange(0, sample_rate * 5);
-                //}
-                
-                //_update_data = _data.ToArray();
+                data.RemoveRange(0, trim_seconds * sample_rate);
             }
 
-            public void update_data(bool trim)
+            public void update_data()
             {
-                
-                //if(channel_idx==0)
-                //    Debug.Log("UPDATE! AS Time: "+audio_source.time + "  AS STime: " + audio_source.timeSamples);
+                audio_clip.SetData(data.ToArray(), 0);
 
-                //var t = audio_source.timeSamples;
-                var t = sample_time;
-
-                //if (t > 10*sample_rate)
-                if(track.need_sample_time_shift)
-                {
-                    //_data.RemoveRange(0, 5*sample_rate);
-                    audio_source.timeSamples -= 5*sample_rate;
-                }
-
-                audio_clip.SetData(_data.ToArray(), 0);
+                if (!track.need_sample_time_shift) return;
                 
-                //if(!trim) return;
-                
-                //audio_source.timeSamples -= sample_rate * 5;
-                
-                //if(channel_idx==0)
-                //    Debug.Log("TRIM! AS Time: "+audio_source.time + "  AS STime: " + audio_source.timeSamples);
+                audio_source.timeSamples -= trim_seconds * sample_rate;
             }
 
-            public void reset_audio_source_time()
-            {
-                //audio_source.timeSamples = 0;
-            }
-            
-            
             public void clear_data()
             {
-                _data.Clear();
+                data.Clear();
                 audio_source.time = 0;
                 audio_source.timeSamples = 0;
-                //audio_source.clip = audio_clip;
                 audio_source.Stop();
             }
             
