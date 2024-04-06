@@ -232,6 +232,8 @@ namespace DefaultNamespace
 
         void reset_state()
         {
+            sample_time = 0;
+            
             tracks.for_each(x=>x.clear_data());
             
             audioSources.for_each(x => { x.clip = null; x.Stop(); } );

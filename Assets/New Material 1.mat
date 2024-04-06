@@ -90,7 +90,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _ScreenLightMult: 2
+    - _ScreenLightMult: 1.96
     - _ScreenScale: 0.2
     - _ScreenScalse: 0.2
     - _Shininess: 0
