@@ -363,8 +363,6 @@ namespace DefaultNamespace
             
             update_track_data();
 
-            //set_delay();
-            
             set_correct_frame();
 
             return;
@@ -373,16 +371,7 @@ namespace DefaultNamespace
             {
                 tracks[current_track_idx].update_data_track();
             }
-            
-            void set_delay()
-            {
-                if (is_delay_set) return;
-                
-                delay = render_pool_idx / frame_rate;
-                
-                is_delay_set = true;
-            }
-            
+
             void handle_audio_started()
             {
                 if (audio_started) return;
@@ -396,8 +385,6 @@ namespace DefaultNamespace
             
             void set_correct_frame()
             {
-                delay_frames = Mathf.FloorToInt(frame_rate * (float) delay) + adjustDelayFrames;
-            
                 last_unplayed_frame_idx = render_pool_idx - delay_frames;
 
                 if (last_unplayed_frame_idx >= 0) return;
@@ -540,6 +527,8 @@ namespace DefaultNamespace
                 
                 delay = render_pool_idx / frame_rate;
                 
+                delay_frames = Mathf.FloorToInt(frame_rate * (float) delay) + adjustDelayFrames;
+                
                 is_delay_set = true;
             }
         }
@@ -571,7 +560,7 @@ namespace DefaultNamespace
                     
                     channels[i] = channel;
                     
-                    channel.init(audioSources[(channel_count == 6 && i == 3) ? 5 : audio_source_idx], provider, this, i);
+                    channel.init(audioSources[(channel_count == 6 && i == 3) ? 5 : audio_source_idx], provider, this);
                     
                     if (channel_count == 6 && i == 3)
                         continue;
@@ -601,10 +590,10 @@ namespace DefaultNamespace
                 add_data_track();
 
                 var b_length = buffer.Length;
-                
                 var buff = new float[sf_count];
                 var c = 0;
                 var j = 0;
+                
                 for (var i = 0; i < b_length; i+=1)
                 {
                     buff[j] = buffer[c + j * channel_count];
@@ -645,7 +634,6 @@ namespace DefaultNamespace
             public AudioSource audio_source;
             AudioClip audio_clip;
             Track track;
-            public int channel_idx;
             int sample_rate;
 
             List<float> data;
@@ -658,7 +646,7 @@ namespace DefaultNamespace
                 audio_source.timeSamples = t;
             }
             
-            public void init(AudioSource s, AudioSampleProvider p, Track t, int i)
+            public void init(AudioSource s, AudioSampleProvider p, Track t)
             {
                 track = t;
                 
@@ -671,8 +659,6 @@ namespace DefaultNamespace
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
                 data = new List<float>();
-
-                channel_idx = i;
             }
 
             public void add_data(float[] d)
