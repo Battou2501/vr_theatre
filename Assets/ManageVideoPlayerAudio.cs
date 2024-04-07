@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Experimental.Audio;
 using UnityEngine.Experimental.Video;
 using UnityEngine.Video;
+using Debug = UnityEngine.Debug;
 
 namespace DefaultNamespace
 {
@@ -85,8 +86,10 @@ namespace DefaultNamespace
         static readonly int vec_arr_y = Shader.PropertyToID("_VecArrY");
         static readonly int vec_arr_z = Shader.PropertyToID("_VecArrZ");
 
+        
         void Start()
         {
+            
             trim_seconds = trimSeconds;
             trim_after_reaching_seconds = trimAfterReachingSeconds;
             
@@ -615,7 +618,7 @@ namespace DefaultNamespace
 
             public void update_data_track()
             {
-                channels.for_each(x=>x?.update_data());
+                channels.for_each(x => x?.update_data());
 
                 need_sample_time_shift = false;
             }
@@ -630,6 +633,9 @@ namespace DefaultNamespace
             int sample_rate;
 
             List<float> data;
+            int trim_seconds_samples;
+            int trim_threshold_samples;
+            int sample_length;
 
             public void set_clip(int t)
             {
@@ -647,20 +653,23 @@ namespace DefaultNamespace
 
                 sample_rate = (int) p.sampleRate;
 
-                var sample_length = 30 * sample_rate;
+                sample_length = 30 * sample_rate;
                 
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
                 data = new List<float>();
+
+                trim_seconds_samples = trim_seconds * sample_rate;
+                trim_threshold_samples = trim_after_reaching_seconds * sample_rate;
             }
 
-            public void add_data(float[] d)
+            public void add_data(IEnumerable<float> d)
             {
                 data.AddRange(d);
+
+                if (sample_time <= trim_threshold_samples) return;
                 
-                if (sample_time <= trim_after_reaching_seconds * sample_rate) return;
-                
-                data.RemoveRange(0, trim_seconds * sample_rate);
+                data.RemoveRange(0, trim_seconds_samples);
             }
 
             public void update_data()
@@ -669,7 +678,7 @@ namespace DefaultNamespace
 
                 if (!track.need_sample_time_shift) return;
                 
-                audio_source.timeSamples -= trim_seconds * sample_rate;
+                audio_source.timeSamples -= trim_seconds_samples;
             }
 
             void set_clip_data()
