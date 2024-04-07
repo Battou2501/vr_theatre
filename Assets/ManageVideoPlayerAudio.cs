@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
@@ -36,6 +37,8 @@ namespace DefaultNamespace
         VideoPlayer vp;
         RenderTexture[] rt_pool;
 
+        float frame_rate;
+        
         int last_unplayed_frame_idx;
         int render_pool_idx;
 
@@ -272,6 +275,10 @@ namespace DefaultNamespace
 
         void skip(float t)
         {
+            if(!is_prepared) return;
+            
+            if(!audio_started) return;
+            
             request_preview();
 
             vp.playbackSpeed = buffer_iterations;
@@ -356,7 +363,7 @@ namespace DefaultNamespace
             
             update_track_data();
 
-            set_delay();
+            //set_delay();
             
             set_correct_frame();
 
@@ -371,7 +378,7 @@ namespace DefaultNamespace
             {
                 if (is_delay_set) return;
                 
-                delay = render_pool_idx / vp.frameRate;
+                delay = render_pool_idx / frame_rate;
                 
                 is_delay_set = true;
             }
@@ -389,7 +396,7 @@ namespace DefaultNamespace
             
             void set_correct_frame()
             {
-                delay_frames = Mathf.FloorToInt(vp.frameRate * (float) delay) + adjustDelayFrames;
+                delay_frames = Mathf.FloorToInt(frame_rate * (float) delay) + adjustDelayFrames;
             
                 last_unplayed_frame_idx = render_pool_idx - delay_frames;
 
@@ -415,6 +422,8 @@ namespace DefaultNamespace
                     useMipMap = true
                 };
             }
+
+            frame_rate = vp.frameRate;
             
             is_prepared = true;
             
@@ -439,35 +448,9 @@ namespace DefaultNamespace
             
             for (var t = 0; t < vp.audioTrackCount; t++)
             {
-                var track = new Track
-                {
-                    provider = vp.GetAudioSampleProvider((ushort)t)
-                };
+                var track = new Track();
 
-                var provider = track.provider;
-                provider.sampleFramesAvailable += SampleFramesAvailable;
-                provider.sampleFramesOverflow += ProviderOnSampleFramesOverflow;
-                provider.enableSampleFramesAvailableEvents = true;
-                provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
-
-                track.sample_rate = (int)provider.sampleRate;
-                track.channels = new Channel[provider.channelCount];
-
-                var audio_source_idx = 0;
-
-                for (var i = 0; i < track.channels.Length; i++)
-                {
-                    var channel = new Channel();
-                    
-                    track.channels[i] = channel;
-                    
-                    channel.init(audioSources[(track.channels.Length == 6 && i == 3) ? 5 : audio_source_idx], provider, track, i);
-                    
-                    if (track.channels.Length == 6 && i == 3)
-                        continue;
-                    
-                    audio_source_idx += 1;
-                }
+                track.init(vp.GetAudioSampleProvider((ushort)t), audioSources).sampleFramesAvailable += SampleFramesAvailable;
 
                 tracks[t] = track;
             }
@@ -545,15 +528,59 @@ namespace DefaultNamespace
 
             if(iterations<buffer_iterations)
                 iterations += 1;
+
+            if (iterations == buffer_iterations)
+                set_delay();
+            
+            return;
+            
+            void set_delay()
+            {
+                if (is_delay_set) return;
+                
+                delay = render_pool_idx / frame_rate;
+                
+                is_delay_set = true;
+            }
         }
 
         class Track
         {
-            public AudioSampleProvider provider;
+            AudioSampleProvider provider;
             public Channel[] channels;
             public uint add_count;
-            public int sample_rate;
+            int sample_rate;
             public bool need_sample_time_shift;
+
+            public AudioSampleProvider init(AudioSampleProvider p, AudioSource[] audioSources)
+            {
+                provider = p;
+                sample_rate = (int)provider.sampleRate;
+                channels = new Channel[provider.channelCount];
+                
+                provider.sampleFramesOverflow += ProviderOnSampleFramesOverflow;
+                provider.enableSampleFramesAvailableEvents = true;
+                provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
+
+                var channel_count = provider.channelCount;
+                var audio_source_idx = 0;
+
+                for (var i = 0; i < channel_count; i++)
+                {
+                    var channel = new Channel();
+                    
+                    channels[i] = channel;
+                    
+                    channel.init(audioSources[(channel_count == 6 && i == 3) ? 5 : audio_source_idx], provider, this, i);
+                    
+                    if (channel_count == 6 && i == 3)
+                        continue;
+                    
+                    audio_source_idx += 1;
+                }
+
+                return provider;
+            }
             
             public void clear_data()
             {
@@ -572,8 +599,25 @@ namespace DefaultNamespace
             public void get_samples(uint sf_count, NativeArray<float> buffer, int channel_count)
             {
                 add_data_track();
+
+                var b_length = buffer.Length;
                 
-                channels.for_each(sf_count, buffer, channel_count, (x, c, b, e) => x?.get_channel_samples(c, b, e));
+                var buff = new float[sf_count];
+                var c = 0;
+                var j = 0;
+                for (var i = 0; i < b_length; i+=1)
+                {
+                    buff[j] = buffer[c + j * channel_count];
+
+                    j++;
+
+                    if (j < sf_count) continue;
+                    
+                    channels[c].add_data(buff);
+                    
+                    j = 0;
+                    c++;
+                }
             }
             
             
@@ -601,7 +645,7 @@ namespace DefaultNamespace
             public AudioSource audio_source;
             AudioClip audio_clip;
             Track track;
-            int channel_idx;
+            public int channel_idx;
             int sample_rate;
 
             List<float> data;
@@ -631,24 +675,10 @@ namespace DefaultNamespace
                 channel_idx = i;
             }
 
-            public void get_channel_samples(uint sf_count, NativeArray<float> buffer, int channel_count)
-            {
-                var d = new float[sf_count];
-                var j = 0;
-                
-                for (var i = 0; i < sf_count * channel_count; i+=channel_count)
-                {
-                    d[j] = buffer[i+channel_idx];
-                    j++;
-                }
-                    
-                add_data(d);
-            }
-            
-            void add_data(IReadOnlyCollection<float> d)
+            public void add_data(float[] d)
             {
                 data.AddRange(d);
-
+                
                 if (sample_time <= trim_after_reaching_seconds * sample_rate) return;
                 
                 data.RemoveRange(0, trim_seconds * sample_rate);
