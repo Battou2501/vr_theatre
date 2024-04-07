@@ -71,6 +71,8 @@ namespace DefaultNamespace
         [Range(0,1)]
         public float movie_light_strength = 0.2f;
 
+        public bool loop_video;
+        
         int requested_track_idx = -1;
         
         static double delay;
@@ -89,7 +91,6 @@ namespace DefaultNamespace
         
         void Start()
         {
-            
             trim_seconds = trimSeconds;
             trim_after_reaching_seconds = trimAfterReachingSeconds;
             
@@ -164,6 +165,8 @@ namespace DefaultNamespace
             reset_state();
             
             vp.Stop();
+            
+            if(!loop_video) return;
             
             vp.Play();
         }
