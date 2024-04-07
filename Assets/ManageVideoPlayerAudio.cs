@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
@@ -22,9 +21,8 @@ namespace DefaultNamespace
 
         public Transform[] screenLightSamplePoints;
 
-        public int adjustDelayFrames;
-
         public bool lightAffectsScreen;
+        
         bool light_affects_screen_current;
         
         int iterations;
@@ -39,7 +37,7 @@ namespace DefaultNamespace
 
         float frame_rate;
         
-        int last_unplayed_frame_idx;
+        int frame_to_play_idx;
         int render_pool_idx;
 
         bool is_delay_set;
@@ -73,15 +71,10 @@ namespace DefaultNamespace
         public float movie_light_strength = 0.2f;
 
         int requested_track_idx = -1;
-
-
-
-
-
+        
         static double delay;
 
         static int sample_time;
-        //static bool need_sample_time_shift;
 
         bool adding_samples;
         static readonly int aspect = Shader.PropertyToID("_Aspect");
@@ -207,12 +200,12 @@ namespace DefaultNamespace
 
             if (!audio_started && !no_audio) return;
             
-            render_frame_to_screen(last_unplayed_frame_idx);
+            render_frame_to_screen(frame_to_play_idx);
                 
-            last_unplayed_frame_idx += 1;
+            frame_to_play_idx += 1;
             
-            if (last_unplayed_frame_idx >= rt_pool.Length)
-                last_unplayed_frame_idx = 0;
+            if (frame_to_play_idx >= rt_pool.Length)
+                frame_to_play_idx = 0;
 
         }
 
@@ -247,7 +240,7 @@ namespace DefaultNamespace
             audio_started = false;
             iterations = 0;
             render_pool_idx = 0;
-            last_unplayed_frame_idx = 0;
+            frame_to_play_idx = 0;
             delay_frames = 0;
             delay = 0;
         }
@@ -385,11 +378,11 @@ namespace DefaultNamespace
             
             void set_correct_frame()
             {
-                last_unplayed_frame_idx = render_pool_idx - delay_frames;
+                frame_to_play_idx = render_pool_idx - delay_frames;
 
-                if (last_unplayed_frame_idx >= 0) return;
+                if (frame_to_play_idx >= 0) return;
                 
-                last_unplayed_frame_idx = rt_pool.Length + last_unplayed_frame_idx;
+                frame_to_play_idx = rt_pool.Length + frame_to_play_idx;
             }
         }
 
@@ -443,7 +436,7 @@ namespace DefaultNamespace
             }
         }
 
-        static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleframecount)
+        static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleFrameCount)
         {
             Debug.Log(provider.trackIndex);
         }
@@ -527,7 +520,7 @@ namespace DefaultNamespace
                 
                 delay = render_pool_idx / frame_rate;
                 
-                delay_frames = Mathf.FloorToInt(frame_rate * (float) delay) + adjustDelayFrames;
+                delay_frames = Mathf.FloorToInt(frame_rate * (float) delay);
                 
                 is_delay_set = true;
             }
@@ -585,22 +578,22 @@ namespace DefaultNamespace
             }
 
 
-            public void get_samples(uint sf_count, NativeArray<float> buffer, int channel_count)
+            public void get_samples(uint sfCount, NativeArray<float> buffer, int channelCount)
             {
                 add_data_track();
 
                 var b_length = buffer.Length;
-                var buff = new float[sf_count];
+                var buff = new float[sfCount];
                 var c = 0;
                 var j = 0;
                 
                 for (var i = 0; i < b_length; i+=1)
                 {
-                    buff[j] = buffer[c + j * channel_count];
+                    buff[j] = buffer[c + j * channelCount];
 
                     j++;
 
-                    if (j < sf_count) continue;
+                    if (j < sfCount) continue;
                     
                     channels[c].add_data(buff);
                     
