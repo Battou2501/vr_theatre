@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
@@ -46,6 +48,7 @@ namespace DefaultNamespace
         int delay_frames;
 
         public int buffer_iterations = 1;
+        static int buffer_iterations_static;
         public int frame_buffer_size = 240;
 
         public int trimSeconds;
@@ -93,6 +96,8 @@ namespace DefaultNamespace
         {
             trim_seconds = trimSeconds;
             trim_after_reaching_seconds = trimAfterReachingSeconds;
+            buffer_iterations_static = buffer_iterations;
+            
             
             vp = GetComponent<VideoPlayer>();
             vp.audioOutputMode = VideoAudioOutputMode.APIOnly;
@@ -132,6 +137,8 @@ namespace DefaultNamespace
             get_sample_time();
             
             handle_change_track_request();
+
+            //check_audio_source_time();
             
             update_light();
             
@@ -235,7 +242,7 @@ namespace DefaultNamespace
         void reset_state()
         {
             sample_time = 0;
-            
+
             tracks.for_each(x=>x.clear_data());
             
             audioSources.for_each(x => { x.clip = null; x.Stop(); } );
@@ -539,6 +546,7 @@ namespace DefaultNamespace
             public uint add_count;
             int sample_rate;
             public bool need_sample_time_shift;
+            public float[] silence;
 
             public AudioSampleProvider init(AudioSampleProvider p, AudioSource[] audioSources)
             {
@@ -553,6 +561,8 @@ namespace DefaultNamespace
                 var channel_count = provider.channelCount;
                 var audio_source_idx = 0;
 
+                silence = new float[sample_rate*30];
+                
                 for (var i = 0; i < channel_count; i++)
                 {
                     var channel = new Channel();
@@ -625,7 +635,11 @@ namespace DefaultNamespace
 
                 need_sample_time_shift = false;
             }
-            
+
+            public void set_silence()
+            {
+                channels.for_each(x=>x.set_silence());
+            }
         }
 
         class Channel
@@ -636,10 +650,14 @@ namespace DefaultNamespace
             int sample_rate;
 
             List<float> data;
+            List<float> play_data;
             int trim_seconds_samples;
             int trim_threshold_samples;
             int sample_length;
-
+            public int Data_samples => data.Count;
+            float[] silence_padding;
+            
+            
             public void set_clip(int t)
             {
                 set_clip_data();
@@ -661,6 +679,8 @@ namespace DefaultNamespace
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
                 data = new List<float>();
+                play_data = new List<float>(sample_length);
+                silence_padding = new float[sample_rate * buffer_iterations_static];
 
                 trim_seconds_samples = trim_seconds * sample_rate;
                 trim_threshold_samples = trim_after_reaching_seconds * sample_rate;
@@ -678,15 +698,30 @@ namespace DefaultNamespace
             public void update_data()
             {
                 set_clip_data();
-
-                if (!track.need_sample_time_shift) return;
                 
-                audio_source.timeSamples -= trim_seconds_samples;
+                trim_time_samples();
             }
 
             void set_clip_data()
             {
-                audio_clip.SetData(data.ToArray(), 0);
+                play_data.Clear();
+                play_data.AddRange(data);
+                play_data.AddRange(silence_padding);
+                audio_clip.SetData(play_data.ToArray(), 0);
+                
+                //audio_clip.SetData(data.ToArray(), 0);
+            }
+
+            public void set_silence()
+            {
+                audio_clip.SetData(track.silence, data.Count);
+            }
+
+            void trim_time_samples()
+            {
+                if (!track.need_sample_time_shift) return;
+                
+                audio_source.timeSamples -= trim_seconds_samples;
             }
             
             public void clear_data()

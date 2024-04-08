@@ -22,6 +22,9 @@ public class LodSwitcher : MonoBehaviour
     Transform cam_transform;
 
     int current_lod_level = -1;
+
+    int seat_id;
+    int current_seat_id = -1;
     
     // Start is called before the first frame update
     void Awake()
@@ -35,9 +38,13 @@ public class LodSwitcher : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(seat_id == current_seat_id) return;
+
+        current_seat_id = seat_id;
+        
         var cam_dist_sqr = (cam_transform.position - transform.position).sqrMagnitude;
 
-        var needed_lod_level = current_lod_level;
+        int needed_lod_level;
 
         if (cam_dist_sqr > lod2_max_distance_sqr)
         {
