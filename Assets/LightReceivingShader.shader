@@ -173,9 +173,9 @@ Shader "Unlit/LightReceivingShader"
                 const half4 light = _LightColor0 * _LightStrength;
                 const float3 light_dir = normalize(_WorldSpaceLightPos0);
                 
-                const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * _Color * i.color.x;
-                const fixed4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * _Color * (1.0-i.color.x);
-                const fixed4 tex = tex_black+tex_white;
+                const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
+                const fixed4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x);
+                const fixed4 tex = tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a);
                 
                 const fixed light_dot = saturate(dot(norm,light_dir));
                 const fixed light_reflect_dot = saturate(dot(reflect_viewDir,light_dir));
