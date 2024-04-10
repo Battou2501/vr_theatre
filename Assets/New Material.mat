@@ -43,6 +43,38 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Grain1:
+        m_Texture: {fileID: 2800000, guid: bb9d0e02bd3491548bbb54e7a0358859, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain2:
+        m_Texture: {fileID: 2800000, guid: 530b59c7f70893a4981c4d266568c9b4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain3:
+        m_Texture: {fileID: 2800000, guid: a15cb48fec046cb4abb9d042e1ea05e1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain4:
+        m_Texture: {fileID: 2800000, guid: f3a13ee563b995744a1dcf1aae533199, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain5:
+        m_Texture: {fileID: 2800000, guid: a1f6a912714814944a4ea47052dead27, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain6:
+        m_Texture: {fileID: 2800000, guid: ed746fb7a19f3f0478b81706dba6450b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain7:
+        m_Texture: {fileID: 2800000, guid: 72e1eb16534e211448f36d6d8014c882, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Grain8:
+        m_Texture: {fileID: 2800000, guid: 611000c2302719f49a11044be93a4554, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: bd075d57fc869204c9f36b07d3871095, type: 3}
         m_Scale: {x: 25, y: 25}

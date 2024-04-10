@@ -4,6 +4,15 @@ Shader "Unlit/NewUnlitShader 1"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _MovieTex ("Movie texture", 2D) = "white" {}
+        _GrainStrength ("Grain strength", Range(0,1)) = 0.5
+        _Grain1 ("Grain 1", 2D) = "white" {}
+        _Grain2 ("Grain 2", 2D) = "white" {}
+        _Grain3 ("Grain 3", 2D) = "white" {}
+        _Grain4 ("Grain 4", 2D) = "white" {}
+        _Grain5 ("Grain 5", 2D) = "white" {}
+        _Grain6 ("Grain 6", 2D) = "white" {}
+        _Grain7 ("Grain 7", 2D) = "white" {}
+        _Grain8 ("Grain 8", 2D) = "white" {}
         //_LightStrength("Light strength", Range (0,1)) = 1
     }
     SubShader
@@ -43,6 +52,17 @@ Shader "Unlit/NewUnlitShader 1"
             float4 _MainTex_ST;
             float4 _MovieTex_ST;
 
+            sampler2D _Grain1;
+            sampler2D _Grain2;
+            sampler2D _Grain3;
+            sampler2D _Grain4;
+            sampler2D _Grain5;
+            sampler2D _Grain6;
+            sampler2D _Grain7;
+            sampler2D _Grain8;
+
+            float _GrainStrength;
+            
             float _Aspect;
 
             float _LightStrength;
@@ -75,35 +95,55 @@ Shader "Unlit/NewUnlitShader 1"
                 fixed4 col = tex2D(_MainTex, i.uv);
 
 
-                half4 ambient = unity_AmbientSky * _LightStrength;
-                half4 light = _LightColor0 * _LightStrength;
+                const half4 ambient = unity_AmbientSky * _LightStrength;
+                const half4 light = _LightColor0 * _LightStrength;
                 fixed light_dot = saturate(dot(i.normal,normalize(_WorldSpaceLightPos0)));
                 light_dot *= light_dot*0.3+0.7;
                 
                 col *=light*light_dot+ambient;
                 
-                fixed4 col_movie = tex2D(_MovieTex, i.uv_movie);
+                fixed4 col_movie = tex2Dlod(_MovieTex, float4(i.uv_movie.xy,0,0));
+
+                const fixed l = saturate(sqrt(0.299 * col_movie.r*col_movie.r + 0.587 * col_movie.g*col_movie.g + 0.114 * col_movie.b*col_movie.b));
+                
+                const fixed4 col_grain1 = tex2D(_Grain1, i.uv_movie);
+                const fixed4 col_grain2 = tex2D(_Grain2, i.uv_movie);
+                const fixed4 col_grain3 = tex2D(_Grain3, i.uv_movie);
+                const fixed4 col_grain4 = tex2D(_Grain4, i.uv_movie);
+                const fixed4 col_grain5 = tex2D(_Grain5, i.uv_movie);
+                const fixed4 col_grain6 = tex2D(_Grain6, i.uv_movie);
+                const fixed4 col_grain7 = tex2D(_Grain7, i.uv_movie);
+                const fixed4 col_grain8 = tex2D(_Grain8, i.uv_movie);
+                
+                const float t = floor(frac(_Time.w) * 8);
+                
+                
+                const fixed4 grain = lerp((
+                    col_grain1 * (t==0)
+                    + col_grain2 * (t==1)
+                    + col_grain3 * (t==2)
+                    + col_grain4 * (t==3)
+                    + col_grain5 * (t==4)
+                    + col_grain6 * (t==5)
+                    + col_grain7 * (t==6)
+                    + col_grain8 * (t==7)
+                    ), 0.5, min(1,l+0.1))+0.5;
+                
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
 
-                //int border = i.uv.y>1;
-                //border += i.uv.y<0;
-                //border += i.uv.x<0;
-                //border += i.uv.x>1;
+                const float f = saturate((i.uv_movie.y-1)*300);
+                const float f2 = saturate((1-i.uv_movie.y-1)*300);
 
-                float f = saturate((i.uv_movie.y-1)*300);
-                float f2 = saturate((1-i.uv_movie.y-1)*300);
+                const float f3 = saturate((i.uv_movie.x-1)*300);
+                const float f4 = saturate((1-i.uv_movie.x-1)*300);
 
-                float f3 = saturate((i.uv_movie.x-1)*300);
-                float f4 = saturate((1-i.uv_movie.x-1)*300);
-
+                col_movie *= lerp(grain,1,1-_GrainStrength);
                 col_movie *= 1-saturate(f+f2+f3+f4);
 
-                fixed light_coef = saturate((_LightStrength-0.0)*1) * _AffectedByLight;
-                
-                //return lerp(col_movie * 0.5, col, light_coef*light_coef) + col_movie * 0.5;//*(1-border);
+                const fixed light_coef = saturate((_LightStrength-0.0)*1) * _AffectedByLight;
 
-                return col* light_coef + col_movie * 0.5 * (1.0 - (light_coef * light_coef)) + col_movie * 0.5;
+                return col * light_coef + col_movie * 0.5 * (1.0 - (light_coef * light_coef)) + col_movie * 0.5;
             }
             ENDCG
         }
