@@ -104,6 +104,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
+    - _GrainStrength: 0.5
     - _LightStrength: 1
     - _Metallic: 1
     - _Mode: 0

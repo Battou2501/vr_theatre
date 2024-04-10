@@ -1,15 +1,17 @@
-Shader "Unlit/LightReceivingShader"
+Shader "Unlit/CinemaRoomShader"
 {
     Properties
     {
-        _Color ("Color", Color) = (1, 1, 1, 1)
-        _MainTex_White ("Texture (White)", 2D) = "white" {}
-        _MainTex_Black ("Texture (Black)", 2D) = "white" {}
+        _Color1 ("Color 1", Color) = (1, 1, 1, 1)
+        _Color2 ("Color 2", Color) = (1, 1, 1, 1)
+        _Color3 ("Color 3", Color) = (1, 1, 1, 1)
+        _Color4 ("Color 4", Color) = (1, 1, 1, 1)
+        _MainTex ("Texture", 2D) = "white" {}
+        _LineTex ("Line Texture", 2D) = "white" {}
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
         _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,10)) = 1
-        _MipLevel("Mip level", Range (0,10)) = 1
     }
     SubShader
     {
@@ -33,6 +35,8 @@ Shader "Unlit/LightReceivingShader"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float2 uv_line : TEXCOORD1;
+                float2 uv_mapping : TEXCOORD2;
                 float3 normal : NORMAL;
                 fixed4 color : COLOR0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -43,7 +47,8 @@ Shader "Unlit/LightReceivingShader"
                 float2 uv : TEXCOORD0;
                 float3 worldPos : TEXCOORD1;
                 float3 normal : TEXCOORD2;
-                //float spec : TEXCOORD4;
+                float2 uv_line : TEXCOORD3;
+                float2 color_line : TEXCOORD4;
                 float3 reflect_viewDir : TEXCOORD5;
                 fixed4 color : COLOR0;
                 UNITY_FOG_COORDS(1)
@@ -51,11 +56,11 @@ Shader "Unlit/LightReceivingShader"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            sampler2D _MainTex_White;
-            sampler2D _MainTex_Black;
+            sampler2D _MainTex;
+            sampler2D _LineTex;
             sampler2D _ScreenLightTex;
-            float4 _MainTex_White_ST;
-            float4 _MainTex_Black_ST;
+            float4 _MainTex_ST;
+            float4 _LineTex_ST;
             float4 _ScreenLightTex_ST;
 
             float _ShininessBrightness;
@@ -138,7 +143,11 @@ Shader "Unlit/LightReceivingShader"
             float _Shininess;
             float _LightStrength;
             float _ScreenLightMult;
-            fixed4 _Color;
+            
+            fixed4 _Color1;
+            fixed4 _Color2;
+            fixed4 _Color3;
+            fixed4 _Color4;
 
             
             v2f vert (appdata v)
@@ -149,7 +158,9 @@ Shader "Unlit/LightReceivingShader"
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
                 
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex_White);
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv_line = TRANSFORM_TEX(v.uv_line, _LineTex);
+                o.color_line = v.uv_mapping;
                 o.worldPos = mul (unity_ObjectToWorld, v.vertex);
                 o.normal = normalize(mul (unity_ObjectToWorld, v.normal));
                 const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
@@ -173,9 +184,17 @@ Shader "Unlit/LightReceivingShader"
                 const half4 light = _LightColor0 * _LightStrength;
                 const float3 light_dir = normalize(_WorldSpaceLightPos0);
                 
-                const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * _Color * i.color.x;
-                const fixed4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * _Color * (1.0-i.color.x);
-                const fixed4 tex = tex_black+tex_white;
+
+                const fixed4 tex_line = tex2D(_LineTex,i.uv_line*_LineTex_ST);
+                
+                const int col_idx = floor(i.color_line.x);
+                const float line_idx = saturate(floor(i.color_line.y)*tex_line.a);
+                const fixed4 col = _Color1 * (col_idx==0) + _Color2 * (col_idx==1) + _Color3 * (col_idx==2) + _Color4 * (col_idx==3);
+                
+                
+                const fixed4 tex = tex2D(_MainTex,i.uv*_MainTex_ST) * col * (1-line_idx) + tex_line * line_idx;
+
+                
                 
                 const fixed light_dot = saturate(dot(norm,light_dir));
                 const fixed light_reflect_dot = saturate(dot(reflect_viewDir,light_dir));
@@ -213,6 +232,7 @@ Shader "Unlit/LightReceivingShader"
 
                 
                 return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1 + specular;
+                //return screen_light;
             }
             ENDCG
         }

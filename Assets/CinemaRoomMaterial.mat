@@ -7,14 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ChairSide
-  m_Shader: {fileID: 4800000, guid: 73e8157966ee6aa488830e526ec3e958, type: 3}
+  m_Name: CinemaRoomMaterial
+  m_Shader: {fileID: 4800000, guid: 615e0a726bea2bd408244c15723bb6a1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -43,17 +43,13 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _LineTex:
+        m_Texture: {fileID: 2800000, guid: 59bdad228b33fad4ba8b2a3cab1b2ed6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 50eb7fcba8c3292419f06f486d86c24a, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainTex_Black:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainTex_White:
-        m_Texture: {fileID: 2800000, guid: 50eb7fcba8c3292419f06f486d86c24a, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: f51d92d221a156b49a352161be5cd08c, type: 3}
+        m_Scale: {x: 8, y: 8}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
@@ -76,20 +72,15 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DistanceCoef: 1
-    - _DistancePow: 1.8
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightStrength: 1
     - _Metallic: 0
-    - _MipLevel: 1
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _ScreenLightMult: 2.5
-    - _ScreenScale: 0.2
     - _Shininess: 0
     - _ShininessBrightness: 1
     - _SmoothnessTextureChannel: 0
@@ -98,7 +89,11 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.3254902, g: 0.4392157, b: 0.5176471, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color1: {r: 0.3266353, g: 0.43899515, b: 0.5176471, a: 1}
+    - _Color2: {r: 0.7533375, g: 0.8513429, b: 0.9339623, a: 1}
+    - _Color3: {r: 0.249644, g: 0.49508053, b: 0.6226415, a: 1}
+    - _Color4: {r: 0.2484, g: 0.3391549, b: 0.4, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

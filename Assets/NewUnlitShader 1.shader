@@ -141,7 +141,8 @@ Shader "Unlit/NewUnlitShader 1"
                 col_movie *= lerp(grain,1,1-_GrainStrength);
                 col_movie *= 1-saturate(f+f2+f3+f4);
 
-                const fixed light_coef = saturate((_LightStrength-0.0)*1) * _AffectedByLight;
+                //const fixed light_coef = saturate((_LightStrength-0.5)*2) * _AffectedByLight;
+                const fixed light_coef = saturate((_LightStrength*_LightStrength-0.1)*1.111) * _AffectedByLight;
 
                 return col * light_coef + col_movie * 0.5 * (1.0 - (light_coef * light_coef)) + col_movie * 0.5;
             }
