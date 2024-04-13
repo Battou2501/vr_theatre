@@ -3,6 +3,8 @@ Shader "Unlit/NewUnlitShader 1"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _LightTex ("Texture Light", 2D) = "white" {}
+        _SpecTex ("Texture Spec", 2D) = "white" {}
         _MovieTex ("Movie texture", 2D) = "white" {}
         _GrainStrength ("Grain strength", Range(0,1)) = 0.5
         _Grain1 ("Grain 1", 2D) = "white" {}
@@ -14,6 +16,7 @@ Shader "Unlit/NewUnlitShader 1"
         _Grain7 ("Grain 7", 2D) = "white" {}
         _Grain8 ("Grain 8", 2D) = "white" {}
         //_LightStrength("Light strength", Range (0,1)) = 1
+        _LightMaxStrength ("Light Max strength", Range (0.1,2)) = 1
     }
     SubShader
     {
@@ -35,6 +38,7 @@ Shader "Unlit/NewUnlitShader 1"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float2 uv_light : TEXCOORD1;
                 float3 normal : NORMAL;
             };
 
@@ -42,12 +46,15 @@ Shader "Unlit/NewUnlitShader 1"
             {
                 float2 uv : TEXCOORD0;
                 float2 uv_movie : TEXCOORD1;
+                float2 uv_light : TEXCOORD3;
                 float3 normal : TEXCOORD2;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
             };
 
             sampler2D _MainTex;
+            sampler2D _LightTex;
+            sampler2D _SpecTex;
             sampler2D _MovieTex;
             float4 _MainTex_ST;
             float4 _MovieTex_ST;
@@ -68,11 +75,14 @@ Shader "Unlit/NewUnlitShader 1"
             float _LightStrength;
 
             int _AffectedByLight;
+
+            float _LightMaxStrength;
             
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uv_light = v.uv;
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv_movie = TRANSFORM_TEX(v.uv, _MovieTex);
 
@@ -92,19 +102,18 @@ Shader "Unlit/NewUnlitShader 1"
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
 
-
-                const half4 ambient = unity_AmbientSky * _LightStrength;
-                const half4 light = _LightColor0 * _LightStrength;
-                fixed light_dot = saturate(dot(i.normal,normalize(_WorldSpaceLightPos0)));
-                light_dot *= light_dot*0.3+0.7;
+                //const half4 ambient = unity_AmbientSky * _LightStrength;
+                //const half4 light = _LightStrength;
+                //fixed light_dot = saturate(dot(i.normal,normalize(_WorldSpaceLightPos0)));
+                //light_dot *= light_dot*0.3+0.7;
                 
-                col *=light*light_dot+ambient;
+                const fixed4 tex_screen = tex2D(_MainTex, i.uv);
+                const fixed4 col = (tex_screen * tex2D(_LightTex, i.uv_light) * _LightMaxStrength + tex2D(_SpecTex, i.uv_light)*0.5);// * _LightStrength;
                 
-                fixed4 col_movie = tex2Dlod(_MovieTex, float4(i.uv_movie.xy,0,0));
+                fixed4 tex_movie = tex2Dlod(_MovieTex, float4(i.uv_movie.xy,0,0));
 
-                const fixed l = saturate(sqrt(0.299 * col_movie.r*col_movie.r + 0.587 * col_movie.g*col_movie.g + 0.114 * col_movie.b*col_movie.b));
+                const fixed l = saturate(sqrt(0.299 * tex_movie.r*tex_movie.r + 0.587 * tex_movie.g*tex_movie.g + 0.114 * tex_movie.b*tex_movie.b));
                 
                 const fixed4 col_grain1 = tex2D(_Grain1, i.uv_movie);
                 const fixed4 col_grain2 = tex2D(_Grain2, i.uv_movie);
@@ -138,13 +147,15 @@ Shader "Unlit/NewUnlitShader 1"
                 const float f3 = saturate((i.uv_movie.x-1)*300);
                 const float f4 = saturate((1-i.uv_movie.x-1)*300);
 
-                col_movie *= lerp(grain,1,1-_GrainStrength);
-                col_movie *= 1-saturate(f+f2+f3+f4);
+                const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-saturate(f+f2+f3+f4));
 
                 //const fixed light_coef = saturate((_LightStrength-0.5)*2) * _AffectedByLight;
-                const fixed light_coef = saturate((_LightStrength*_LightStrength-0.1)*1.111) * _AffectedByLight;
+                //const fixed light_coef = saturate((_LightStrength*_LightStrength-0.1)*1.111) * _AffectedByLight;
+                const fixed light_coef = pow(_LightStrength,1.5) * _AffectedByLight;
 
-                return col * light_coef + col_movie * 0.5 * (1.0 - (light_coef * light_coef)) + col_movie * 0.5;
+                //return col * light_coef + col_movie * 0.5 * (1.0 - (light_coef * light_coef)) + col_movie * 0.5;
+                //return lerp(col_movie,col,light_coef)*0.95 + col_movie * 0.05;
+                return lerp(col_movie * lerp(1,tex_screen,0.6),col,light_coef) * 0.95 + col_movie * 0.05;
             }
             ENDCG
         }

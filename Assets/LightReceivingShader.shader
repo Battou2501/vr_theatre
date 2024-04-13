@@ -27,7 +27,6 @@ Shader "Unlit/LightReceivingShader"
             #pragma target 3.0
             
             #include "UnityCG.cginc"
-            #include "UnityLightingCommon.cginc"
 
             struct appdata
             {
@@ -169,8 +168,7 @@ Shader "Unlit/LightReceivingShader"
                 const float3 norm = normalize(i.normal);
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
 
-                const half4 ambient = unity_AmbientSky * _LightStrength;
-                const half4 light = _LightColor0 * _LightStrength;
+                const half4 light = _LightStrength;
                 const float3 light_dir = normalize(_WorldSpaceLightPos0);
                 
                 const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
@@ -209,7 +207,7 @@ Shader "Unlit/LightReceivingShader"
                 
                 const fixed4 specular = lerp(specular_screen * screen_col_dots, specular_light, _LightStrength);
                 const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult;
-                const fixed4 normal_light = tex*(light*light_dot+ambient);
+                const fixed4 normal_light = tex * light;//*(light*light_dot+ambient);
 
                 
                 return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1 + specular;
