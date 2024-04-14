@@ -5,6 +5,10 @@ Shader "Unlit/LightReceivingShader"
         _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex_White ("Texture (White)", 2D) = "white" {}
         _MainTex_Black ("Texture (Black)", 2D) = "white" {}
+        _LightTex ("Texture Light", 2D) = "white" {}
+        _LightMaxStrength ("Light Max strength", Range (0.1,5)) = 1
+        _AOTex ("Texture AO", 2D) = "white" {}
+        _AOStrength ("AO strength", Range (0,1)) = 1
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
         _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
         _Shininess("Shininess", Range (0,1)) = 0
@@ -52,12 +56,16 @@ Shader "Unlit/LightReceivingShader"
 
             sampler2D _MainTex_White;
             sampler2D _MainTex_Black;
+            sampler2D _LightTex;
+            sampler2D _AOTex;
             sampler2D _ScreenLightTex;
             float4 _MainTex_White_ST;
             float4 _MainTex_Black_ST;
             float4 _ScreenLightTex_ST;
 
             float _ShininessBrightness;
+            float _AOStrength;
+            float _LightMaxStrength;
 
             
             static float2 _SamplePointsUV[60]=
@@ -168,7 +176,10 @@ Shader "Unlit/LightReceivingShader"
                 const float3 norm = normalize(i.normal);
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
 
-                const half4 light = _LightStrength;
+                const half4 light_tex = tex2D(_LightTex, i.uv);
+                const half4 ao_tex = tex2D(_AOTex, i.uv);
+                const half ao = lerp(1,ao_tex.r * i.color.x + ao_tex.g * (1- i.color.x),_AOStrength);
+                const half light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) *  _LightStrength * ao * _LightMaxStrength;
                 const float3 light_dir = normalize(_WorldSpaceLightPos0);
                 
                 const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;

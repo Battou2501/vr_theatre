@@ -28,11 +28,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AOTex1:
-        m_Texture: {fileID: 2800000, guid: 93c2dd6b556b0ad40bb97e7f5629377b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7e90ca8dd0e214546a3f59c6e79e4765, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AOTex2:
-        m_Texture: {fileID: 2800000, guid: 1136ea37a58bd514bac51608254c23af, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0753a2f1477a8a14b8362007354e68cd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -60,11 +60,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LightTex1:
-        m_Texture: {fileID: 2800000, guid: 0c40f0182d940484ebb128d4c84613e5, type: 3}
+        m_Texture: {fileID: 2800000, guid: a7db00ed1387acd4da67cde0282a776b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LightTex2:
-        m_Texture: {fileID: 2800000, guid: 6d81d400a7db3ae4d8e2312c6cfda53c, type: 3}
+        m_Texture: {fileID: 2800000, guid: fb3f45d3ff81a354e839f70348b45af8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LineTex:
@@ -96,11 +96,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecTex1:
-        m_Texture: {fileID: 2800000, guid: 547e8fa58be12a84296aafec1a7e7b70, type: 3}
+        m_Texture: {fileID: 2800000, guid: e993296569aa04048955c2995fab1509, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecTex2:
-        m_Texture: {fileID: 2800000, guid: 38fa819503a5ccd4a8ec8b96f92cb90d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8cfaf0c6c18c5bd4b950f9891c1c7c00, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -113,7 +113,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightMaxStrength: 1.81
+    - _LightMaxStrength: 1.94
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -128,11 +128,11 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Color0: {r: 0.69803923, g: 0.84901965, b: 1, a: 1}
-    - _Color1: {r: 0.30911997, g: 0.49056, b: 0.672, a: 1}
+    - _Color0: {r: 0.5821647, g: 0.7097177, b: 0.834, a: 1}
+    - _Color1: {r: 0.288147, g: 0.48957348, b: 0.691, a: 1}
     - _Color10: {r: 0.195, g: 0.1625, b: 0.1625, a: 1}
     - _Color11: {r: 1, g: 1, b: 1, a: 1}
-    - _Color2: {r: 0.25616497, g: 0.40958247, b: 0.56299996, a: 1}
+    - _Color2: {r: 0.36833334, g: 0.58933336, b: 0.816, a: 1}
     - _Color3: {r: 0.297964, g: 0.3668796, b: 0.45700002, a: 1}
     - _Color4: {r: 0.706056, g: 0.7897966, b: 0.876, a: 1}
     - _Color5: {r: 0.165453, g: 0.2792265, b: 0.393, a: 1}
