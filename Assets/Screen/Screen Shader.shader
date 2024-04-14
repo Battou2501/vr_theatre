@@ -1,4 +1,4 @@
-Shader "Unlit/NewUnlitShader 1"
+Shader "Unlit/Screen Shader"
 {
     Properties
     {
