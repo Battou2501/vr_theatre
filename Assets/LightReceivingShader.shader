@@ -9,11 +9,11 @@ Shader "Unlit/LightReceivingShader"
         _LightMaxStrength ("Light Max strength", Range (0.1,5)) = 1
         _AOTex ("Texture AO", 2D) = "white" {}
         _AOStrength ("AO strength", Range (0,1)) = 1
+        _LightUV ("Light UV Index", Int) = 0
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
         _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,10)) = 1
-        _MipLevel("Mip level", Range (0,10)) = 1
     }
     SubShader
     {
@@ -36,6 +36,9 @@ Shader "Unlit/LightReceivingShader"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float2 uv2 : TEXCOORD1;
+                float2 uv3 : TEXCOORD2;
+                float2 uv4 : TEXCOORD3;
                 float3 normal : NORMAL;
                 fixed4 color : COLOR0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -46,7 +49,7 @@ Shader "Unlit/LightReceivingShader"
                 float2 uv : TEXCOORD0;
                 float3 worldPos : TEXCOORD1;
                 float3 normal : TEXCOORD2;
-                //float spec : TEXCOORD4;
+                float2 uv_light : TEXCOORD4;
                 float3 reflect_viewDir : TEXCOORD5;
                 fixed4 color : COLOR0;
                 UNITY_FOG_COORDS(1)
@@ -66,6 +69,7 @@ Shader "Unlit/LightReceivingShader"
             float _ShininessBrightness;
             float _AOStrength;
             float _LightMaxStrength;
+            int _LightUV;
 
             
             static float2 _SamplePointsUV[60]=
@@ -164,7 +168,7 @@ Shader "Unlit/LightReceivingShader"
                 o.reflect_viewDir = reflect_viewDir;
 
                 o.color = v.color;
-                
+                o.uv_light = v.uv * (_LightUV == 0) + v.uv2 * (_LightUV == 1) + v.uv3 * (_LightUV == 2) + v.uv4 * (_LightUV == 3);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }
@@ -176,21 +180,22 @@ Shader "Unlit/LightReceivingShader"
                 const float3 norm = normalize(i.normal);
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
 
-                const half4 light_tex = tex2D(_LightTex, i.uv);
-                const half4 ao_tex = tex2D(_AOTex, i.uv);
+                const half4 light_tex = tex2D(_LightTex, i.uv_light);
+                const half4 ao_tex = tex2D(_AOTex, i.uv_light);
                 const half ao = lerp(1,ao_tex.r * i.color.x + ao_tex.g * (1- i.color.x),_AOStrength);
                 const half light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) *  _LightStrength * ao * _LightMaxStrength;
                 const float3 light_dir = normalize(_WorldSpaceLightPos0);
+                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, _Shininess);
                 
                 const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
                 const fixed4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x);
-                const fixed4 tex = tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a);
+                const fixed4 tex = lerp(tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a), reflections * _LightStrength, _Shininess);
                 
                 const fixed light_dot = saturate(dot(norm,light_dir));
                 const fixed light_reflect_dot = saturate(dot(reflect_viewDir,light_dir));
                 
 
-                const fixed4 specular_light=pow(light_reflect_dot,lerp(1,50,_Shininess)) * lerp(0,5,_Shininess) * light * light_dot;
+                const fixed4 specular_light=pow(light_reflect_dot,lerp(1,50,_Shininess)) * lerp(0,5,_Shininess) * light * light_dot * _ShininessBrightness;
 
 
                 float specular_screen=0;
@@ -217,9 +222,8 @@ Shader "Unlit/LightReceivingShader"
                 }
                 
                 const fixed4 specular = lerp(specular_screen * screen_col_dots, specular_light, _LightStrength);
-                const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult;
+                const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots)*_ScreenLightMult;
                 const fixed4 normal_light = tex * light;//*(light*light_dot+ambient);
-
                 
                 return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1 + specular;
             }

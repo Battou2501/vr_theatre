@@ -159,7 +159,7 @@ Shader "Unlit/CinemaRoomShader"
             float _VecArrY[60];
             float _VecArrZ[60];
             
-            float _LightStrength;
+            float _LightStrength = 1;
             float _ScreenLightMult;
             float _LightMaxStrength;
             float _AOStrength; 
