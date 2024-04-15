@@ -189,7 +189,7 @@ Shader "Unlit/LightReceivingShader"
             {
                 UNITY_SETUP_INSTANCE_ID(i);
 
-                const float3 norm = normalize(i.normal);
+                const float3 norm = (i.normal);
 
                 const half4 light_tex = tex2D(_LightTex, i.uv_light);
                 const half4 ao_tex = tex2D(_AOTex, i.uv_light);
@@ -202,14 +202,13 @@ Shader "Unlit/LightReceivingShader"
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
-                const float3 viewDir = normalize(i.viewDir);
+                const float3 viewDir = (i.viewDir);
                 const float r_factor = 1-((1-_Shininess)*(1-_Shininess));
                 const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor)) * _LightStrength;
                 #endif
 
                 #ifdef _TYPE_GLOSSY
                 const fixed view_norm_dot = 1-saturate(dot(viewDir,norm));
-                //const fixed view_norm_dot = 1-(-1 + 1 * pow(1.0 + dot(viewDir,norm), 1));
                 const fixed4 tex = lerp(tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a), reflections, r_factor * view_norm_dot);
                 #elif _TYPE_METALIC
                 const fixed4 tex = lerp(reflections*0.6+0.4,reflections,_Shininess) * (tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a));
