@@ -8369,6 +8369,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: f148fbb427788424d9bc87174cf8a934, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -8607,7 +8611,7 @@ Transform:
   m_GameObject: {fileID: 1352903127}
   serializedVersion: 2
   m_LocalRotation: {x: 0.29086924, y: -0, z: -0, w: 0.9567629}
-  m_LocalPosition: {x: -0.09, y: -3.7, z: 5.725}
+  m_LocalPosition: {x: -0.09, y: -3.682, z: 5.891}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -170,7 +170,8 @@ Shader "Unlit/LightReceivingShader"
                 const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const float3 reflect_viewDir = -reflect(viewDir, o.normal);
+                //const float3 reflect_viewDir = -reflect(viewDir, o.normal);
+                const float3 reflect_viewDir = 2*dot(o.normal,viewDir)*o.normal-viewDir;
                 o.reflect_viewDir = reflect_viewDir;
                 #else
                 o.reflect_viewDir = 0;
@@ -190,12 +191,6 @@ Shader "Unlit/LightReceivingShader"
 
                 const float3 norm = normalize(i.normal);
 
-                #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const float3 reflect_viewDir = normalize(i.reflect_viewDir);
-                const float3 viewDir = normalize(i.viewDir);
-                #endif
-                
-
                 const half4 light_tex = tex2D(_LightTex, i.uv_light);
                 const half4 ao_tex = tex2D(_AOTex, i.uv_light);
                 const half ao = lerp(1,ao_tex.r * i.color.x + ao_tex.g * (1- i.color.x),_AOStrength);
@@ -206,12 +201,16 @@ Shader "Unlit/LightReceivingShader"
                 const fixed4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x);
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(5,0,_Shininess)) * _LightStrength;
-                const fixed view_norm_dot = 1-saturate(dot(viewDir,norm));
+                const float3 reflect_viewDir = normalize(i.reflect_viewDir);
+                const float3 viewDir = normalize(i.viewDir);
+                const float r_factor = 1-((1-_Shininess)*(1-_Shininess));
+                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor)) * _LightStrength;
                 #endif
 
-                #ifdef _TYPE_GLOSSY 
-                const fixed4 tex = lerp(tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a), reflections, _Shininess * view_norm_dot * view_norm_dot);
+                #ifdef _TYPE_GLOSSY
+                const fixed view_norm_dot = 1-saturate(dot(viewDir,norm));
+                //const fixed view_norm_dot = 1-(-1 + 1 * pow(1.0 + dot(viewDir,norm), 1));
+                const fixed4 tex = lerp(tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a), reflections, r_factor * view_norm_dot);
                 #elif _TYPE_METALIC
                 const fixed4 tex = lerp(reflections*0.6+0.4,reflections,_Shininess) * (tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a));
                 #else 
@@ -221,19 +220,17 @@ Shader "Unlit/LightReceivingShader"
                 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 light_dir = normalize(_WorldSpaceLightPos0);
-                const fixed light_dot = saturate(dot(norm,light_dir));
-                //const fixed light_reflect_dot = saturate(dot(reflect_viewDir,light_dir));
-                //const fixed4 specular_light=pow(light_reflect_dot,lerp(1,100,_Shininess*_Shininess*_Shininess*_Shininess)) * _Shininess * _LightStrength * light_dot * _ShininessBrightness;
-                const float3 halfwayDir = normalize(light_dir + viewDir);  
-                const float light_reflect_dot = saturate(dot(norm, halfwayDir));
+                const fixed light_dot = saturate(dot(norm,light_dir)*3);
+                const float light_reflect_dot = saturate(dot(light_dir, reflect_viewDir));
 
-                const float specular_light=pow(light_reflect_dot,lerp(1,80,_Shininess*_Shininess)) * _Shininess * _LightStrength * _ShininessBrightness * 2 * saturate(light_dot*2);
+                const float specular_light=pow(light_reflect_dot,lerp(1,80,_Shininess*_Shininess*_Shininess)) * _Shininess * _LightStrength * _ShininessBrightness * 2 * light_dot;
                 #endif
                 
 
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 fixed4 specular_screen=0;
+                half spec_pow = lerp(1,50,_Shininess);
                 #endif
                 
                 half4 screen_col_ambient = 0;
@@ -249,10 +246,7 @@ Shader "Unlit/LightReceivingShader"
                     const float PdotSN = saturate(dot(float3(0,0,-1),   -point_dir));
 
                     #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                    //const float PdotRV = saturate(dot(reflect_viewDir, point_dir));
-                    const float3 halfwayDirP = normalize(point_dir + viewDir);  
-                    //const float PdotRV = max(dot(norm, halfwayDirP), 0.0);
-                    const float PdotRV = saturate(dot(norm, halfwayDirP));
+                    const float PdotRV = saturate(dot(point_dir, reflect_viewDir));
                     #endif
                     
                     const float dist1 = dot(point_vec,point_vec);
@@ -263,7 +257,7 @@ Shader "Unlit/LightReceivingShader"
                     screen_col_dots += c1 * min(s1 , 0.999) * PdotSN * PdotN;
 
                     #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                    specular_screen += pow(PdotRV,lerp(1,30,_Shininess)) * _Shininess * _ShininessBrightness * 0.14 * c1 * saturate(PdotSN*3) * saturate(PdotN*3);
+                    specular_screen += pow(PdotRV,spec_pow) * _Shininess * _ShininessBrightness * 0.15 * c1 * saturate(PdotSN*3) * saturate(PdotN*3);
                     #endif
                     
                 }
@@ -273,13 +267,12 @@ Shader "Unlit/LightReceivingShader"
                 #endif
 
                 const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots)*_ScreenLightMult;
-                const fixed4 normal_light = tex * light;//*(light*light_dot+ambient);
+                const fixed4 normal_light = tex * light;
 
                 #ifdef _TYPE_GLOSSY
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular;
-                //return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) + specular;
                 #elif _TYPE_METALIC
-                return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) + specular * (_Color);
+                return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular )* (_Color);
                 #else
                 return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
                 #endif
