@@ -55,6 +55,7 @@ Shader "Unlit/LightReceivingShader"
                 float2 uv_light : TEXCOORD4;
                 float3 reflect_viewDir : TEXCOORD5;
                 float3 viewDir : TEXCOORD6;
+                float3 lightDir : TEXCOORD7;
                 fixed4 color : COLOR0;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
@@ -170,7 +171,6 @@ Shader "Unlit/LightReceivingShader"
                 const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                //const float3 reflect_viewDir = -reflect(viewDir, o.normal);
                 const float3 reflect_viewDir = 2*dot(o.normal,viewDir)*o.normal-viewDir;
                 o.reflect_viewDir = reflect_viewDir;
                 #else
@@ -178,6 +178,7 @@ Shader "Unlit/LightReceivingShader"
                 #endif
                 
                 o.viewDir = viewDir;
+                o.lightDir = normalize(_WorldSpaceLightPos0);
 
                 o.color = v.color;
                 o.uv_light = v.uv * (_LightUV == 0) + v.uv2 * (_LightUV == 1) + v.uv3 * (_LightUV == 2) + v.uv4 * (_LightUV == 3);
@@ -189,7 +190,7 @@ Shader "Unlit/LightReceivingShader"
             {
                 UNITY_SETUP_INSTANCE_ID(i);
 
-                const float3 norm = (i.normal);
+                const float3 norm = i.normal;
 
                 const half4 light_tex = tex2D(_LightTex, i.uv_light);
                 const half4 ao_tex = tex2D(_AOTex, i.uv_light);
@@ -202,7 +203,7 @@ Shader "Unlit/LightReceivingShader"
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
-                const float3 viewDir = (i.viewDir);
+                const float3 viewDir = i.viewDir;
                 const float r_factor = 1-((1-_Shininess)*(1-_Shininess));
                 const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor)) * _LightStrength;
                 #endif
@@ -218,7 +219,7 @@ Shader "Unlit/LightReceivingShader"
                 
                 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const float3 light_dir = normalize(_WorldSpaceLightPos0);
+                const float3 light_dir = i.lightDir;
                 const fixed light_dot = saturate(dot(norm,light_dir)*3);
                 const float light_reflect_dot = saturate(dot(light_dir, reflect_viewDir));
 
@@ -271,7 +272,7 @@ Shader "Unlit/LightReceivingShader"
                 #ifdef _TYPE_GLOSSY
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular;
                 #elif _TYPE_METALIC
-                return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular )* (_Color);
+                return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular )* _Color;
                 #else
                 return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
                 #endif
