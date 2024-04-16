@@ -118,7 +118,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _ScreenLightMult: 2
+    - _ScreenLightMult: 2.1
     - _Shininess: 0
     - _ShininessBrightness: 1
     - _SmoothnessTextureChannel: 0
@@ -128,7 +128,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Color0: {r: 0.5821647, g: 0.7097177, b: 0.834, a: 1}
+    - _Color0: {r: 0.3647059, g: 0.54509807, b: 0.72156864, a: 1}
     - _Color1: {r: 0.288147, g: 0.48957348, b: 0.691, a: 1}
     - _Color10: {r: 0.195, g: 0.1625, b: 0.1625, a: 1}
     - _Color11: {r: 1, g: 1, b: 1, a: 1}
