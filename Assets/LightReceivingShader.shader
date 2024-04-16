@@ -195,7 +195,7 @@ Shader "Unlit/LightReceivingShader"
                 const half4 light_tex = tex2D(_LightTex, i.uv_light);
                 const half4 ao_tex = tex2D(_AOTex, i.uv_light);
                 const half ao = lerp(1,ao_tex.r * i.color.x + ao_tex.g * (1- i.color.x),_AOStrength);
-                const half light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) *  _LightStrength * ao * _LightMaxStrength;
+                const half light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * ao * _LightMaxStrength;
                 
                 
                 const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
@@ -205,7 +205,7 @@ Shader "Unlit/LightReceivingShader"
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
                 const float3 viewDir = i.viewDir;
                 const float r_factor = 1-((1-_Shininess)*(1-_Shininess));
-                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor)) * _LightStrength;
+                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor));
                 #endif
 
                 #ifdef _TYPE_GLOSSY
@@ -223,7 +223,7 @@ Shader "Unlit/LightReceivingShader"
                 const fixed light_dot = saturate(dot(norm,light_dir)*3);
                 const float light_reflect_dot = saturate(dot(light_dir, reflect_viewDir));
 
-                const float specular_light=pow(light_reflect_dot,lerp(1,80,_Shininess*_Shininess*_Shininess)) * _Shininess * _LightStrength * _ShininessBrightness * 2 * light_dot;
+                const float specular_light=pow(light_reflect_dot,lerp(1,80,_Shininess*_Shininess*_Shininess)) * _Shininess * _ShininessBrightness * 2 * light_dot;
                 #endif
                 
 
@@ -266,7 +266,7 @@ Shader "Unlit/LightReceivingShader"
                 const fixed4 specular = lerp(specular_screen, specular_light, _LightStrength);
                 #endif
 
-                const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots)*_ScreenLightMult;
+                const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots)*_ScreenLightMult * ao;
                 const fixed4 normal_light = tex * light;
 
                 #ifdef _TYPE_GLOSSY

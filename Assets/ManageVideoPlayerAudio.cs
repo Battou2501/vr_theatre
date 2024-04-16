@@ -605,7 +605,11 @@ namespace DefaultNamespace
                 
                 for (var i = 0; i < b_length; i+=1)
                 {
-                    buff[j] = buffer[c + j * channelCount];
+                    var buffer_idx = c + j * channelCount;
+                    
+                    if(buffer_idx>=b_length) break;
+                    
+                    buff[j] = buffer[buffer_idx];
 
                     j++;
 

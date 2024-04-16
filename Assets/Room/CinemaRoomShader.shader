@@ -295,7 +295,7 @@ Shader "Unlit/CinemaRoomShader"
                 }
                 
                 //const fixed4 specular = lerp(specular_screen * screen_col_dots, specular_light, _LightStrength);
-                const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult;
+                const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult*ao;
                 //const fixed4 normal_light = (tex * (tex_light*5) + tex_spec)*tex_ao ;
                 const fixed4 normal_light = tex*light+spec*0.5;
 

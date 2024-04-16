@@ -1162,7 +1162,7 @@ Transform:
   m_GameObject: {fileID: 133634935}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.84, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1208,7 +1208,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 0
-  MinDistance: 12.1
+  MinDistance: 12
   MaxDistance: 100
   Pan2D: 0
   rolloffMode: 0
@@ -1557,7 +1557,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 0
-  MinDistance: 17
+  MinDistance: 12
   MaxDistance: 100
   Pan2D: 0
   rolloffMode: 0
@@ -6244,8 +6244,8 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
+  m_HDR: 0
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -6754,7 +6754,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 0
-  MinDistance: 17.5
+  MinDistance: 12
   MaxDistance: 100
   Pan2D: 0
   rolloffMode: 0
@@ -10942,7 +10942,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 0
-  MinDistance: 18.24
+  MinDistance: 12
   MaxDistance: 100
   Pan2D: 0
   rolloffMode: 0
@@ -11041,7 +11041,7 @@ Transform:
   m_GameObject: {fileID: 1669703336}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12, y: 0.97, z: 17.3}
+  m_LocalPosition: {x: 12, y: 0.97, z: 15.689999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11547,7 +11547,7 @@ MonoBehaviour:
   frame_buffer_size: 240
   trimSeconds: 5
   trimAfterReachingSeconds: 10
-  movie_light_strength: 0.07
+  movie_light_strength: 0.03
   loop_video: 0
 --- !u!1 &1818482648
 GameObject:
@@ -11959,7 +11959,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 0
-  MinDistance: 12.1
+  MinDistance: 12
   MaxDistance: 100
   Pan2D: 0
   rolloffMode: 0
@@ -12308,9 +12308,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CameraFloorOffsetObject: {fileID: 133634935}
-  m_RequestedTrackingMode: 0
+  m_RequestedTrackingMode: 2
   m_TrackingOriginMode: 1
-  m_TrackingSpace: 0
+  m_TrackingSpace: 1
   m_CameraYOffset: 1.84
 --- !u!4 &1942632246
 Transform:
@@ -12321,7 +12321,7 @@ Transform:
   m_GameObject: {fileID: 1942632244}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -5.71, z: 8.57}
+  m_LocalPosition: {x: 0, y: -5.71, z: 8.516}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -13406,7 +13406,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 0
-  MinDistance: 18.24
+  MinDistance: 12
   MaxDistance: 100
   Pan2D: 0
   rolloffMode: 0
@@ -13505,7 +13505,7 @@ Transform:
   m_GameObject: {fileID: 2116624654}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12, y: 0.97, z: 17.43}
+  m_LocalPosition: {x: -12, y: 0.97, z: 15.82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

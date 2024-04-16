@@ -4,7 +4,7 @@ Shader "Unlit/Screen Shader"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _LightTex ("Texture Light", 2D) = "white" {}
-        _SpecTex ("Texture Spec", 2D) = "white" {}
+        _SpecTex ("Texture Spec", 2D) = "black" {}
         _MovieTex ("Movie texture", 2D) = "white" {}
         _GrainStrength ("Grain strength", Range(0,1)) = 0.5
         _Grain1 ("Grain 1", 2D) = "white" {}
