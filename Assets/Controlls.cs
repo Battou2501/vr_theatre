@@ -59,7 +59,7 @@ namespace DefaultNamespace
         }
 
 
-        public void set_drive(DriveInfo drive)
+        void set_drive(DriveInfo drive)
         {
             current_drive = drive;
             current_directory = new DirectoryInfo(drive.Name);

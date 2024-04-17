@@ -35,6 +35,10 @@ namespace DefaultNamespace
         bool no_audio;
 
         VideoPlayer vp;
+
+        public bool Vp_is_playing => vp.isPlaying;
+        public double Video_length => vp.length;
+        
         RenderTexture[] rt_pool;
         //public Texture[] rt_pool;
 
@@ -259,9 +263,11 @@ namespace DefaultNamespace
             delay = 0;
         }
         
-        void pause(bool state)
+        public void pause(bool state)
         {
             if(!is_prepared) return;
+            
+            if(vp.url is null or "") return;
             
             if(state && !audio_started && !no_audio) return;
             
@@ -284,7 +290,14 @@ namespace DefaultNamespace
             
         }
 
-        void skip(float t)
+        public void stop()
+        {
+            reset_state();
+            
+            vp.Stop();
+        }
+
+        public void skip(float t)
         {
             if(!is_prepared) return;
             
@@ -299,7 +312,28 @@ namespace DefaultNamespace
             
             reset_state();
         }
+        
+        public void skip_to_time(double t)
+        {
+            if(!is_prepared) return;
+            
+            if(!audio_started && !no_audio) return;
+            
+            request_preview();
 
+            if(!no_audio)
+                vp.playbackSpeed = buffer_iterations;
+            
+            vp.time = t;
+            
+            reset_state();
+        }
+
+        public void set_volume(float volume)
+        {
+            audioSources.for_each(volume, (x,v) => x.volume = v);
+        }
+        
         void reset_audio_data_ready_flags()
         {
             if(track_data_available == null) return;
@@ -364,6 +398,11 @@ namespace DefaultNamespace
                 vp.time = vp.length / 2f;
 
                 reset_state();
+            }
+            
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                skip_to_time(15);
             }
 
             if (Input.GetKeyDown(KeyCode.Space))
@@ -475,7 +514,7 @@ namespace DefaultNamespace
             Debug.Log(provider.trackIndex);
         }
 
-        void request_track_change(int idx)
+        public void request_track_change(int idx)
         {
             if(no_audio) return;
             
