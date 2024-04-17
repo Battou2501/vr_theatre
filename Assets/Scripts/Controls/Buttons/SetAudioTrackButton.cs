@@ -2,7 +2,7 @@
 
 namespace DefaultNamespace
 {
-    public class SetAudioTrackButton : MonoBehaviour
+    public class SetAudioTrackButton : ClickableButton
     {
         int track_idx;
         PlayerPanel panel;
@@ -12,7 +12,7 @@ namespace DefaultNamespace
             panel = p;
         }
 
-        public void Click()
+        public override void Click()
         {
             panel.set_audio_track(track_idx);
         }

@@ -2,7 +2,7 @@
 
 namespace DefaultNamespace
 {
-    public class CloseButton : MonoBehaviour
+    public class OpenFileSelectPanelButton : ClickableButton
     {
         
     }

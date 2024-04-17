@@ -106,7 +106,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AOStrength: 0
+    - _AOStrength: 0.501
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -114,7 +114,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightMaxStrength: 1.85
+    - _LightMaxStrength: 1.89
     - _Metallic: 0
     - _MipLevel: 2
     - _Mode: 0
@@ -136,9 +136,9 @@ Material:
     - _Color10: {r: 0.195, g: 0.1625, b: 0.1625, a: 1}
     - _Color11: {r: 1, g: 1, b: 1, a: 1}
     - _Color2: {r: 0.36833334, g: 0.58933336, b: 0.816, a: 1}
-    - _Color3: {r: 0.297964, g: 0.3668796, b: 0.45700002, a: 1}
-    - _Color4: {r: 0.706056, g: 0.7897966, b: 0.876, a: 1}
-    - _Color5: {r: 0.165453, g: 0.2792265, b: 0.393, a: 1}
+    - _Color3: {r: 0.3001026, g: 0.37117952, b: 0.462, a: 1}
+    - _Color4: {r: 0.696, g: 0.8444652, b: 1, a: 1}
+    - _Color5: {r: 0.14670001, g: 0.31785002, b: 0.48900002, a: 1}
     - _Color6: {r: 0.47647, g: 0.69264823, b: 0.899, a: 1}
     - _Color7: {r: 0.26529, g: 0.410145, b: 0.555, a: 1}
     - _Color8: {r: 0.309138, g: 0.539069, b: 0.769, a: 1}

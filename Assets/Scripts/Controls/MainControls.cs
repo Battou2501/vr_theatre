@@ -14,8 +14,17 @@ using InputDevice = UnityEngine.XR.InputDevice;
 
 namespace DefaultNamespace
 {
-    public class Controlls : MonoBehaviour
+    public class MainControls : MonoBehaviour
     {
+        public PlayerPanel playerPanel;
+        public FileSelectPanel fileSelectPanel;
+        public Transform rightHand;
+        public ManageVideoPlayerAudio videoManager;
+
+        Transform active_hand;
+
+        public Transform active_hand_transform => active_hand;
+        
         DriveInfo[] drives;
         DirectoryInfo[] directories;
         FileInfo[] mp4_files;
@@ -124,6 +133,8 @@ namespace DefaultNamespace
         int idx = 0;
         void Update()
         {
+            video_started = true;
+            
             if (!vp.isPlaying && Input.GetKeyDown(KeyCode.A))
             {
                 idx = 0;

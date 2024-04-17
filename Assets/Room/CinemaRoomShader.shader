@@ -17,8 +17,8 @@ Shader "Unlit/CinemaRoomShader"
         _LineTex ("Line Texture", 2D) = "white" {}
         _LightTex1 ("Light Texture 1", 2D) = "white" {}
         _LightTex2 ("Light Texture 2", 2D) = "white" {}
-        _SpecTex1 ("Specular Texture 1", 2D) = "white" {}
-        _SpecTex2 ("Specular Texture 2", 2D) = "white" {}
+        _SpecTex1 ("Specular Texture 1", 2D) = "black" {}
+        _SpecTex2 ("Specular Texture 2", 2D) = "black" {}
         _AOTex1 ("AO Texture 1", 2D) = "white" {}
         _AOTex2 ("AO Texture 2", 2D) = "white" {}
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
@@ -304,7 +304,7 @@ Shader "Unlit/CinemaRoomShader"
                 //const fixed4 normal_light = (tex * (tex_light*5) + tex_spec)*tex_ao ;
                 const fixed4 normal_light = tex*light;//+spec*0.5;
 
-                //return tex*light;//(screen_col_ambient + screen_col_dots) * _ScreenLightMult;// * ao;
+                //return tex;//(screen_col_ambient + screen_col_dots) * _ScreenLightMult;// * ao;
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1 + specular;
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
                 //return tex*light+spec*0.5;//tex * light + spec;

@@ -4,13 +4,20 @@ namespace DefaultNamespace
 {
     public class PlayerPanel : MonoBehaviour
     {
+        MainControls main_controls;
         ManageVideoPlayerAudio video_manager;
 
         public double Video_length => video_manager.Video_length;
-
-        public void init(ManageVideoPlayerAudio m)
+        public double Video_time => video_manager.Video_time;
+        public float Video_time_01 => (float)(Video_time/Video_length);
+        public float Audio_volume => video_manager.Audio_volume;
+        public Transform active_hand_transform => main_controls.active_hand_transform;
+        
+        public void init(ManageVideoPlayerAudio m, MainControls c)
         {
             video_manager = m;
+            main_controls = c;
+
         }
 
         public void play_pause()

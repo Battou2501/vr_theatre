@@ -38,6 +38,9 @@ namespace DefaultNamespace
 
         public bool Vp_is_playing => vp.isPlaying;
         public double Video_length => vp.length;
+        public double Video_time => vp.time;
+
+        public float Audio_volume => audioSources[0].volume;
         
         RenderTexture[] rt_pool;
         //public Texture[] rt_pool;

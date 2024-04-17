@@ -2,7 +2,7 @@
 
 namespace DefaultNamespace
 {
-    public class StopButton : MonoBehaviour
+    public class PlayPauseButton : ClickableButton
     {
         PlayerPanel panel;
         
@@ -11,9 +11,9 @@ namespace DefaultNamespace
             panel = p;
         }
 
-        public void Click()
+        public override void Click()
         {
-            panel.stop();
+            panel.play_pause();
         }
     }
 }
