@@ -12,7 +12,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _TOGGLELIGHT_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -105,7 +106,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AOStrength: 0.5
+    - _AOStrength: 0
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -115,6 +116,7 @@ Material:
     - _GlossyReflections: 1
     - _LightMaxStrength: 1.85
     - _Metallic: 0
+    - _MipLevel: 2
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
@@ -124,12 +126,13 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _ToggleLight: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color0: {r: 0.3647059, g: 0.54509807, b: 0.72156864, a: 1}
-    - _Color1: {r: 0.288147, g: 0.48957348, b: 0.691, a: 1}
+    - _Color1: {r: 0.224588, g: 0.4290844, b: 0.617, a: 1}
     - _Color10: {r: 0.195, g: 0.1625, b: 0.1625, a: 1}
     - _Color11: {r: 1, g: 1, b: 1, a: 1}
     - _Color2: {r: 0.36833334, g: 0.58933336, b: 0.816, a: 1}

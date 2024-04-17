@@ -2,19 +2,22 @@ Shader "Unlit/LightReceivingShader"
 {
     Properties
     {
+        _ColorB ("Base Color", Color) = (1, 1, 1, 1)
         _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex_White ("Texture (White)", 2D) = "white" {}
         _MainTex_Black ("Texture (Black)", 2D) = "white" {}
         _LightTex ("Texture Light", 2D) = "white" {}
-        _LightMaxStrength ("Light Max strength", Range (0.1,5)) = 1
+        _LightMaxStrength ("Light Max strength", Range (0.0001,5)) = 1
         _AOTex ("Texture AO", 2D) = "white" {}
         _AOStrength ("AO strength", Range (0,1)) = 1
         _LightUV ("Light UV Index", Int) = 0
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
-        _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
+        _ScreenLightMult ("Screen light multiplier", Range (0.0001,5)) = 1
         [KeywordEnum(Mate,Glossy,Metalic)] _Type("Material Type",int) = 0
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,10)) = 1
+        [Toggle]_ToggleLight("Toggle Light", Range (0,1)) = 1
+        _MipLevel("Mip level", Range (0,10)) = 1
     }
     SubShader
     {
@@ -155,6 +158,10 @@ Shader "Unlit/LightReceivingShader"
             float _LightStrength;
             float _ScreenLightMult;
             fixed4 _Color;
+            fixed4 _ColorB;
+
+            float _ToggleLight;
+            int _MipLevel;
 
             
             v2f vert (appdata v)
@@ -195,7 +202,7 @@ Shader "Unlit/LightReceivingShader"
                 const half4 light_tex = tex2D(_LightTex, i.uv_light);
                 const half4 ao_tex = tex2D(_AOTex, i.uv_light);
                 const half ao = lerp(1,ao_tex.r * i.color.x + ao_tex.g * (1- i.color.x),_AOStrength);
-                const half light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * ao * _LightMaxStrength;
+                const half light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * _LightMaxStrength;
                 
                 
                 const fixed4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
@@ -214,7 +221,7 @@ Shader "Unlit/LightReceivingShader"
                 #elif _TYPE_METALIC
                 const fixed4 tex = lerp(reflections*0.6+0.4,reflections,_Shininess) * (tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a));
                 #else 
-                const fixed4 tex = tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a);
+                const fixed4 tex = tex_black * lerp(1,_Color* _ColorB, tex_black.a) + tex_white * lerp(1,_Color* _ColorB, tex_white.a);
                 #endif
                 
                 
@@ -251,7 +258,7 @@ Shader "Unlit/LightReceivingShader"
                     
                     const float dist1 = dot(point_vec,point_vec);
                     const float s1 = 1 / dist1;
-                    const fixed4 c1 = tex2D(_ScreenLightTex, _SamplePointsUV[j].xy);
+                    const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,_MipLevel));
 
                     screen_col_ambient += c1 * min(s1 , 0.001);
                     screen_col_dots += c1 * min(s1 , 0.999) * PdotSN * PdotN;
@@ -266,15 +273,16 @@ Shader "Unlit/LightReceivingShader"
                 const fixed4 specular = lerp(specular_screen, specular_light, _LightStrength);
                 #endif
 
-                const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots)*_ScreenLightMult * ao;
+                const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots) * _ScreenLightMult;
                 const fixed4 normal_light = tex * light;
 
                 #ifdef _TYPE_GLOSSY
-                return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular;
+                return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) * ao + specular;
                 #elif _TYPE_METALIC
-                return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) + specular )* _Color;
+                return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) * ao + specular ) * _Color;
                 #else
-                return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
+                //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
+                return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
                 #endif
                 
             }

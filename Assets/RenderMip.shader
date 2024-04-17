@@ -67,7 +67,8 @@ Shader "Unlit/RenderMip"
                 float f4 = saturate((1-i.uv.x-1)*300);
                 
                 // sample the texture
-                fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,_MipLevel));
+                //fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,_MipLevel));
+                fixed4 col = tex2Dlod(_MainTex, float4(i.uv.xy,0,0));
                 col *= 1-saturate(f+f2+f3+f4);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);

@@ -22,9 +22,11 @@ Shader "Unlit/CinemaRoomShader"
         _AOTex1 ("AO Texture 1", 2D) = "white" {}
         _AOTex2 ("AO Texture 2", 2D) = "white" {}
         _ScreenLightTex ("Screen Light Texture", 2D) = "white" {}
-        _ScreenLightMult ("Screen light multiplier", Range (0.1,5)) = 1
-        _LightMaxStrength ("Light Max strength", Range (0.1,5)) = 1
+        _ScreenLightMult ("Screen light multiplier", Range (0.0001,5)) = 1
+        _LightMaxStrength ("Light Max strength", Range (0.0001,5)) = 1
         _AOStrength ("AO strength", Range (0,1)) = 1
+        [Toggle]_ToggleLight("Toggle Light", Range (0,1)) = 1
+        _MipLevel("Mip level", Range (0,10)) = 1
     }
     SubShader
     {
@@ -83,6 +85,8 @@ Shader "Unlit/CinemaRoomShader"
             float4 _MainTex_ST;
             float4 _LineTex_ST;
             float4 _ScreenLightTex_ST;
+
+            int _MipLevel;
 
             
             static float2 _SamplePointsUV[60]=
@@ -175,6 +179,7 @@ Shader "Unlit/CinemaRoomShader"
             fixed4 _Color8;
             fixed4 _Color9;
             fixed4 _Color10;
+            float _ToggleLight;
 
             
             v2f vert (appdata v)
@@ -219,7 +224,7 @@ Shader "Unlit/CinemaRoomShader"
                 
                 const fixed4 tex_light = tex2D(_LightTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_LightTex2,i.uv_light) * (light_tex_idx > 2);
                 const fixed4 tex_ao = tex2D(_AOTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_AOTex2,i.uv_light) * (light_tex_idx > 2);
-                const fixed4 tex_spec = tex2D(_SpecTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_SpecTex2,i.uv_light) * (light_tex_idx > 2);
+                //const fixed4 tex_spec = tex2D(_SpecTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_SpecTex2,i.uv_light) * (light_tex_idx > 2);
 
                 const fixed ao = (
                       tex_ao.r * (light_tex_channel_idx==0)
@@ -233,14 +238,14 @@ Shader "Unlit/CinemaRoomShader"
                     + tex_light.g * (light_tex_channel_idx==1)
                     + tex_light.b * (light_tex_channel_idx==2)
                     //+ tex_light.a * (light_tex_channel_idx==3)
-                    ) * 5 * _LightMaxStrength * ao;
+                    ) * 5 * _LightMaxStrength;
 
-                const fixed spec = (
-                      tex_spec.r * (light_tex_channel_idx==0)
-                    + tex_spec.g * (light_tex_channel_idx==1)
-                    + tex_spec.b * (light_tex_channel_idx==2)
-                    //+ tex_spec.a * (light_tex_channel_idx==3)
-                    ) * _LightMaxStrength * ao;
+                //const fixed spec = (
+                //      tex_spec.r * (light_tex_channel_idx==0)
+                //    + tex_spec.g * (light_tex_channel_idx==1)
+                //    + tex_spec.b * (light_tex_channel_idx==2)
+                //    //+ tex_spec.a * (light_tex_channel_idx==3)
+                //    ) * _LightMaxStrength * ao;
 
                 
                 const int col_idx = floor(i.color_line.x);
@@ -287,7 +292,7 @@ Shader "Unlit/CinemaRoomShader"
                     
                     const float dist1 = dot(point_vec,point_vec);
                     const float s1 = 1 / dist1;
-                    const fixed4 c1 = tex2D(_ScreenLightTex, _SamplePointsUV[j].xy);
+                    const fixed4 c1 = tex2Dlod(_ScreenLightTex, float4(_SamplePointsUV[j].xy,0,_MipLevel));
 
                     screen_col_ambient += c1 * min(s1 , 0.001);
                     screen_col_dots += c1 * min(s1 , 0.999) * PdotSN * PdotN;
@@ -295,13 +300,13 @@ Shader "Unlit/CinemaRoomShader"
                 }
                 
                 //const fixed4 specular = lerp(specular_screen * screen_col_dots, specular_light, _LightStrength);
-                const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult*ao;
+                const fixed4 screen_light = tex*(screen_col_ambient + screen_col_dots)*_ScreenLightMult;
                 //const fixed4 normal_light = (tex * (tex_light*5) + tex_spec)*tex_ao ;
-                const fixed4 normal_light = tex*light+spec*0.5;
+                const fixed4 normal_light = tex*light;//+spec*0.5;
 
-                
+                //return tex*light;//(screen_col_ambient + screen_col_dots) * _ScreenLightMult;// * ao;
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1 + specular;
-                return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
+                return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
                 //return tex*light+spec*0.5;//tex * light + spec;
             }
             ENDCG

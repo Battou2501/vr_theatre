@@ -2471,6 +2471,63 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 237050349}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &243530815
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603994778035068266, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+      propertyPath: m_Name
+      value: Dispatcher
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
 --- !u!1001 &259012788
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11434,8 +11491,7 @@ VideoPlayer:
   - 1
   - 1
   - 1
-  m_Url: file://C:/Users/Battou/Videos/They_Live_1988_BDRip_1080p_[REMASTERED]_[HEVC]_10bit_by
-    XuMuK.mp4
+  m_Url: file://C:/Users/Profit77/Downloads/DUNE_TLR-1_1920x804_AC3_51-thedigitaltheater.mp4
   m_EnabledAudioTracks: 010101010101
   m_DirectAudioMutes: 000000000000
   m_ControlledAudioTrackCount: 6
@@ -11563,6 +11619,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vp: {fileID: 1798628426}
+  tex: {fileID: 0}
 --- !u!1 &1818482648
 GameObject:
   m_ObjectHideFlags: 0
@@ -12939,6 +12996,50 @@ Transform:
   - {fileID: 1771979870}
   m_Father: {fileID: 1399659751}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2053332139
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 4603994778035068266, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+  m_PrefabInstance: {fileID: 243530815}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2053332141}
+  - component: {fileID: 2053332140}
+  m_Layer: 0
+  m_Name: Dispatcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &2053332140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 5846715336678178844, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+  m_PrefabInstance: {fileID: 243530815}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053332139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1369a826ef6911949bab543774955a0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &2053332141
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 2856163780067019607, guid: bf7d59c8a4537dc4fb5596ad7dcc8e3a, type: 3}
+  m_PrefabInstance: {fileID: 243530815}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053332139}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2057127724
 GameObject:
   m_ObjectHideFlags: 0
@@ -13784,3 +13885,4 @@ SceneRoots:
   - {fileID: 1876845935}
   - {fileID: 205671529}
   - {fileID: 1942632246}
+  - {fileID: 243530815}
