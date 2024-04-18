@@ -18,7 +18,7 @@ namespace DefaultNamespace
     {
         public Transform cameraTransform;
         public PlayerPanel playerPanel;
-        public FileSelectPanel fileSelectPanel;
+        //public FileSelectPanel fileSelectPanel;
         public HandControls leftHand;
         public HandControls rightHand;
         public ManageVideoPlayerAudio videoManager;
@@ -51,7 +51,7 @@ namespace DefaultNamespace
             triggerPressedAction.started += TriggerPressedActionOnstarted;
             
             playerPanel.real_null()?.init(videoManager, this);
-            fileSelectPanel.real_null()?.init(videoManager, this);
+            //fileSelectPanel.real_null()?.init(videoManager, this);
             leftHand.real_null()?.init(this);
             rightHand.real_null()?.init(this);
             active_hand = defaultActiveHand;
@@ -73,22 +73,21 @@ namespace DefaultNamespace
 
         public void show_player_panel()
         {
-            playerPanel.real_null()?.gameObject.SetActive(true);
-            fileSelectPanel.real_null()?.gameObject.SetActive(false);
+            playerPanel.real_null()?.show_panel();
+            //fileSelectPanel.real_null()?.gameObject.SetActive(false);
             show_hands();
         }
         
-        public void show_file_panel()
-        {
-            playerPanel.real_null()?.gameObject.SetActive(false);
-            fileSelectPanel.real_null()?.gameObject.SetActive(true);
-            show_hands();
-        }
+        //public void show_file_panel()
+        //{
+        //    playerPanel.real_null()?.gameObject.SetActive(false);
+        //    fileSelectPanel.real_null()?.gameObject.SetActive(true);
+        //    show_hands();
+        //}
         
         public void hide_interface()
         {
             playerPanel.real_null()?.gameObject.SetActive(false);
-            fileSelectPanel.real_null()?.gameObject.SetActive(false);
             hide_hands();
         }
         
@@ -103,7 +102,7 @@ namespace DefaultNamespace
 
         void TriggerPressedActionOnstarted(InputAction.CallbackContext obj)
         {
-            if(playerPanel.gameObject.activeSelf || fileSelectPanel.gameObject.activeSelf) return;
+            if(playerPanel.gameObject.activeSelf) return;
             
             show_player_panel();
         }
@@ -147,6 +146,19 @@ namespace DefaultNamespace
         }
 
 
+        public void get_current_path_data(out DirectoryInfo[] dirs, out FileInfo[] files)
+        {
+            if (current_directory == null)
+            {
+                go_to_drives();
+            }
+
+            dirs = directories;
+
+            files = mp4_files;
+        }
+        
+        
         void go_to_drives()
         {
             current_directory = null;

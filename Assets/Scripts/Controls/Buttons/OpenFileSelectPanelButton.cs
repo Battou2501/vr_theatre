@@ -13,6 +13,7 @@ namespace DefaultNamespace
 
         protected override void Click_Action()
         {
+            panel.show_file_panel();
         }
     }
 }

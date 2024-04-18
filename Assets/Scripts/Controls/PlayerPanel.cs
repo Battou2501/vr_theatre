@@ -14,6 +14,7 @@ namespace DefaultNamespace
         public ClosePlayerPanelButton closePlayerPanelButton;
         public CloseAudioTrackPanelButton closeAudioTrackPanelButton;
         public AudioTrackPanel audioTrackPanel;
+        public FileSelectPanel fileSelectPanel;
         
         MainControls main_controls;
         ManageVideoPlayerAudio video_manager;
@@ -40,6 +41,7 @@ namespace DefaultNamespace
             closePlayerPanelButton.real_null()?.init(this);
             closeAudioTrackPanelButton.real_null()?.init(this);
             audioTrackPanel.real_null()?.init(this, main_controls.videoManager);
+            fileSelectPanel.real_null()?.init(this, main_controls);
         }
 
         void deactivate_controls()
@@ -112,6 +114,18 @@ namespace DefaultNamespace
             audioTrackPanel.close_panel();
         }
 
+        public void show_file_panel()
+        {
+            fileSelectPanel.show_panel();
+            deactivate_controls();
+        }
+
+        public void close_file_panel()
+        {
+            fileSelectPanel.close_panel();
+            activate_controls();
+        }
+
         public void set_audio_track(int t)
         {
             video_manager.request_track_change(t);
@@ -120,6 +134,15 @@ namespace DefaultNamespace
         public void close_panel()
         {
             main_controls.hide_interface();
+            deactivate_controls();
+        }
+
+        public void show_panel()
+        {
+            gameObject.SetActive(true);
+            close_file_panel();
+            close_audio_track_panel();
+            activate_controls();
         }
     }
 }

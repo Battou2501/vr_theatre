@@ -1,23 +1,29 @@
 ﻿using System.IO;
+using TMPro;
 using UnityEngine;
 
 namespace DefaultNamespace
 {
     public class DirectoryButton : ClickableButton
     {
-
+        public TMP_Text text;
+        
         DirectoryInfo dir_info;
-        MainControls main_controls;
+        FileSelectPanel file_select_panel;
 
-        public void set_data(MainControls c, DirectoryInfo d)
+        public string Directory_name => dir_info.Name;
+        
+        public void set_data(FileSelectPanel p, DirectoryInfo d)
         {
-            main_controls = c;
+            file_select_panel = p;
             dir_info = d;
+
+            text.text = dir_info.Name;
         }
 
         protected override void Click_Action()
         {
-            main_controls.set_directory(dir_info);
+            file_select_panel.set_directory(dir_info);
         }
         
     }

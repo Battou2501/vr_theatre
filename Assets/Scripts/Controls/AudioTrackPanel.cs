@@ -8,7 +8,6 @@ namespace DefaultNamespace
         public GameObject trackPrefab;
         public Transform contentBlock;
         
-        ManageVideoPlayerAudio video_manager;
         PlayerPanel player_panel;
 
 
@@ -17,7 +16,6 @@ namespace DefaultNamespace
         public void init(PlayerPanel p, ManageVideoPlayerAudio m)
         {
             player_panel = p;
-            video_manager = m;
             var tracks = m.tracks;
             
             track_buttons?.for_each(x=>Destroy(x.gameObject));
@@ -30,7 +28,7 @@ namespace DefaultNamespace
 
                 var button = Instantiate(trackPrefab, contentBlock).GetComponent<SetAudioTrackButton>();
                 
-                button.init(this,i);
+                button.init(this,i, track.lang);
                 
                 track_buttons.Add(button);
             }

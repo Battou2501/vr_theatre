@@ -1,22 +1,29 @@
 ﻿using System.IO;
+using TMPro;
 using UnityEngine;
 
 namespace DefaultNamespace
 {
     public class FileButton : ClickableButton
     {
+        public TMP_Text text;
+        
         FileInfo file_info;
-        MainControls main_controls;
+        FileSelectPanel file_select_panel;
 
-        public void set_data(MainControls c, FileInfo f)
+        public string File_name => file_info.Name;
+        
+        public void set_data(FileSelectPanel p, FileInfo f)
         {
-            main_controls = c;
+            file_select_panel = p;
             file_info = f;
+
+            text.text = file_info.Name;
         }
 
         protected override void Click_Action()
         {
-            main_controls.set_file(file_info);
+            file_select_panel.select_file(file_info);
         }
     }
 }
