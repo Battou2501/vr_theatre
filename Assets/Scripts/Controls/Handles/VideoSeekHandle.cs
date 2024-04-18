@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DefaultNamespace
 {
-    public class VideSeekHandle : DraggableHandle
+    public class VideoSeekHandle : DraggableHandle
     {
         public Transform minPoint;
         public Transform maxPoint;
@@ -20,12 +20,12 @@ namespace DefaultNamespace
             panel = p;
         }
 
-        public override void StartDrag()
+        protected override void StartDrag_Action()
         {
             timeText.gameObject.SetActive(true);
         }
 
-        public override void StopDrag()
+        protected override void StopDrag_Action()
         {
             timeText.gameObject.SetActive(false);
             

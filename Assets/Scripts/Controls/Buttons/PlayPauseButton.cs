@@ -11,7 +11,7 @@ namespace DefaultNamespace
             panel = p;
         }
 
-        public override void Click()
+        protected override void Click_Action()
         {
             panel.play_pause();
         }

@@ -5,15 +5,40 @@ namespace DefaultNamespace
     public class DraggableHandle : MonoBehaviour
     {
         public bool isDragged;
-
-        public virtual void StartDrag()
+        
+        public bool isInteractable
         {
-            isDragged = true;
+            get;
+            private set;
         }
 
-        public virtual void StopDrag()
+        public void set_interactable(bool s)
+        {
+            isInteractable = s;
+        }
+
+        public void StartDrag()
+        {
+            if(!isInteractable) return;
+            
+            isDragged = true;
+
+            StartDrag_Action();
+        }
+
+        public void StopDrag()
         {
             isDragged = false;
+
+            StopDrag_Action();
+        }
+
+        protected virtual void StartDrag_Action()
+        {
+        }
+
+        protected virtual void StopDrag_Action()
+        {
         }
     }
 }

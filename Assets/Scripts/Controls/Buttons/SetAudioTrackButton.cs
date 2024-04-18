@@ -5,14 +5,15 @@ namespace DefaultNamespace
     public class SetAudioTrackButton : ClickableButton
     {
         int track_idx;
-        PlayerPanel panel;
+        AudioTrackPanel panel;
         
-        public void init(PlayerPanel p)
+        public void init(AudioTrackPanel p, int t)
         {
             panel = p;
+            track_idx = t;
         }
 
-        public override void Click()
+        protected override void Click_Action()
         {
             panel.set_audio_track(track_idx);
         }

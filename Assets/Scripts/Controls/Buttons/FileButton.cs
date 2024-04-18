@@ -14,7 +14,7 @@ namespace DefaultNamespace
             file_info = f;
         }
 
-        public override void Click()
+        protected override void Click_Action()
         {
             main_controls.set_file(file_info);
         }

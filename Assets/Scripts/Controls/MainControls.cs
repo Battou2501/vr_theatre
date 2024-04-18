@@ -16,14 +16,21 @@ namespace DefaultNamespace
 {
     public class MainControls : MonoBehaviour
     {
+        public Transform cameraTransform;
         public PlayerPanel playerPanel;
         public FileSelectPanel fileSelectPanel;
-        public Transform rightHand;
+        public HandControls leftHand;
+        public HandControls rightHand;
         public ManageVideoPlayerAudio videoManager;
+        public HandControls defaultActiveHand;
+        public InputAction triggerPressedAction;
+        
+        
+        HandControls active_hand;
 
-        Transform active_hand;
+        public Transform Active_hand_transform => active_hand.transform;
 
-        public Transform active_hand_transform => active_hand;
+        public bool Is_dragging_control => active_hand.Is_dragging_control;
         
         DriveInfo[] drives;
         DirectoryInfo[] directories;
@@ -31,46 +38,80 @@ namespace DefaultNamespace
         public VideoPlayer vp;
 
         DirectoryInfo current_directory;
-        DriveInfo current_drive;
+        //DriveInfo current_drive;
         //string current_path;
-        Stopwatch sw;
+        //Stopwatch sw;
 
-        public Texture2D tex;
-        MemoryStream stream;
+        //public Texture2D tex;
+        //MemoryStream stream;
         
         void Awake()
         {
-            //var root_path = Path.GetPathRoot(drives[0].Name);
-            //var directories = Directory.GetDirectories(root_path).Select(s => new DirectoryInfo(s)).Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();
-            //.Select(p=> new
-            //{
-            //    path = p.FullName,
-            //    name = p.Name
-            //}).ToArray();
-            //
-            //var files = Directory.GetFiles(@"G:\Torrents_Movies_G", "*.mp4");
-            //
-            //vp.url = files[0];
-
-            //set_drive(drives[0]);
-
-            //set_directory(directories[19]);
-
+            triggerPressedAction.Enable();
+            triggerPressedAction.started += TriggerPressedActionOnstarted;
             
-            //sw = Stopwatch.StartNew();
-            //var c = new FFMpegConverter();
-            //stream = new MemoryStream();
-            //c.GetVideoThumbnail("C:\\Video\\Dune.mp4", stream,10f);
-            //sw.Stop();
-            //
-            //tex = new Texture2D(2, 2);
-            //tex.LoadImage(stream.ToArray());
+            playerPanel.real_null()?.init(videoManager, this);
+            fileSelectPanel.real_null()?.init(videoManager, this);
+            leftHand.real_null()?.init(this);
+            rightHand.real_null()?.init(this);
+            active_hand = defaultActiveHand;
+            //hide_interface();
+        }
+        
+        
+        void show_hands()
+        {
+            leftHand.real_null()?.gameObject.SetActive(true);
+            rightHand.real_null()?.gameObject.SetActive(true);
+        }
+        
+        void hide_hands()
+        {
+            leftHand.real_null()?.gameObject.SetActive(false);
+            rightHand.real_null()?.gameObject.SetActive(false);
+        }
+
+        public void show_player_panel()
+        {
+            playerPanel.real_null()?.gameObject.SetActive(true);
+            fileSelectPanel.real_null()?.gameObject.SetActive(false);
+            show_hands();
+        }
+        
+        public void show_file_panel()
+        {
+            playerPanel.real_null()?.gameObject.SetActive(false);
+            fileSelectPanel.real_null()?.gameObject.SetActive(true);
+            show_hands();
+        }
+        
+        public void hide_interface()
+        {
+            playerPanel.real_null()?.gameObject.SetActive(false);
+            fileSelectPanel.real_null()?.gameObject.SetActive(false);
+            hide_hands();
+        }
+        
+        public void set_active_hand(HandControls hand)
+        {
+            if(hand == null || active_hand == hand) return;
+            
+            active_hand.real_null()?.deactivate_hand();
+            active_hand = hand;
+            active_hand.activate_hand();
+        }
+
+        void TriggerPressedActionOnstarted(InputAction.CallbackContext obj)
+        {
+            if(playerPanel.gameObject.activeSelf || fileSelectPanel.gameObject.activeSelf) return;
+            
+            show_player_panel();
         }
 
 
         void set_drive(DriveInfo drive)
         {
-            current_drive = drive;
+            //current_drive = drive;
             current_directory = new DirectoryInfo(drive.Name);
             
             directories = current_directory.GetDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();

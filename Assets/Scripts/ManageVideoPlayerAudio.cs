@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using NReco.VideoConverter;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
@@ -37,6 +39,7 @@ namespace DefaultNamespace
         VideoPlayer vp;
 
         public bool Vp_is_playing => vp.isPlaying;
+        public bool Vp_is_prepared => vp.isPrepared && vp.url != "";
         public double Video_length => vp.length;
         public double Video_time => vp.time;
 
@@ -66,7 +69,11 @@ namespace DefaultNamespace
         
         int current_track_idx;
 
-        Track[] tracks;
+        public Track[] tracks
+        {
+            get;
+            private set;
+        }
 
         bool set_preview_frame;
         int preview_target_index;
@@ -508,6 +515,8 @@ namespace DefaultNamespace
 
                 track.init(vp.GetAudioSampleProvider((ushort)t), audioSources).sampleFramesAvailable += SampleFramesAvailable;
 
+                track.lang = vp.GetAudioLanguageCode((ushort)t);
+                
                 tracks[t] = track;
             }
         }
@@ -603,7 +612,7 @@ namespace DefaultNamespace
             is_delay_set = true;
         }
         
-        class Track
+        public class Track
         {
             public AudioSampleProvider provider;
             public Channel[] channels;
@@ -611,6 +620,7 @@ namespace DefaultNamespace
             int sample_rate;
             public bool need_sample_time_shift;
             public float[] silence;
+            public string lang;
 
             public void clear()
             {
@@ -715,7 +725,7 @@ namespace DefaultNamespace
             }
         }
 
-        class Channel
+        public class Channel
         {
             public AudioSource audio_source;
             AudioClip audio_clip;

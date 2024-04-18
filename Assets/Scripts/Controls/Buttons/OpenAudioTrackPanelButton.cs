@@ -2,7 +2,7 @@
 
 namespace DefaultNamespace
 {
-    public class StopButton : ClickableButton
+    public class OpenAudioTrackPanelButton : ClickableButton
     {
         PlayerPanel panel;
         
@@ -13,7 +13,7 @@ namespace DefaultNamespace
 
         protected override void Click_Action()
         {
-            panel.stop();
+            panel.show_audio_track_panel();
         }
     }
 }

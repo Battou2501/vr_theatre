@@ -2,18 +2,18 @@
 
 namespace DefaultNamespace
 {
-    public class GoUpPathButton : ClickableButton
+    public class CloseFilePanelButton : ClickableButton
     {
         MainControls main_controls;
 
-        public void set_data(MainControls c)
+        public void init(MainControls c)
         {
             main_controls = c;
         }
 
         protected override void Click_Action()
         {
-            main_controls.go_up_path();
+            main_controls.show_player_panel();
         }
     }
 }

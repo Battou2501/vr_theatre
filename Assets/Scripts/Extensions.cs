@@ -38,6 +38,8 @@ namespace DefaultNamespace
             }
         }
         
+        public static obj real_null<obj>(this obj o) where obj : UnityEngine.Object => o != null ? o : null;
+        
         public static bool ClosestPointsOnTwoLines(out Vector3 closestPointLine1, Vector3 linePoint1A, Vector3 linePoint1B, Vector3 linePoint2, Vector3 lineVec2){
 
             closestPointLine1 = Vector3.zero;

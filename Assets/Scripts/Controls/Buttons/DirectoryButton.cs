@@ -15,7 +15,7 @@ namespace DefaultNamespace
             dir_info = d;
         }
 
-        public override void Click()
+        protected override void Click_Action()
         {
             main_controls.set_directory(dir_info);
         }

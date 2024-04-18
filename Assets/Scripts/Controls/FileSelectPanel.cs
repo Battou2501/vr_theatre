@@ -2,7 +2,7 @@
 
 namespace DefaultNamespace
 {
-    public class FileSelectPanel : MonoBehaviour
+    public class FileSelectPanel : InterfacePanel
     {
         MainControls main_controls;
         ManageVideoPlayerAudio video_manager;
@@ -11,7 +11,7 @@ namespace DefaultNamespace
         {
             video_manager = m;
             main_controls = c;
-
+            camera_transform = main_controls.cameraTransform;
         }
     }
 }

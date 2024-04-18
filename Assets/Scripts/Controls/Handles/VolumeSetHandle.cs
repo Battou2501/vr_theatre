@@ -17,7 +17,7 @@ namespace DefaultNamespace
             panel = p;
         }
 
-        public override void StopDrag()
+        protected override void StopDrag_Action()
         {
             panel.set_volume(volume_position);
         }
