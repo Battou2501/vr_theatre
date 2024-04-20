@@ -63,7 +63,7 @@ namespace DefaultNamespace
             var s = (b*f - c*e) / d;
             //var t = (a*f - c*b) / d;
 
-            closestPointLine1 = linePoint1A + lineVec1 * s;
+            closestPointLine1 = linePoint1A + lineVec1 * Mathf.Min(1,Mathf.Max(0,s));
             //closestPointLine2 = linePoint2 + lineVec2 * t;
 
             return true;

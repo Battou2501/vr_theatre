@@ -13,7 +13,7 @@ namespace DefaultNamespace
         PlayerPanel panel;
 
         float video_position => Vector3.Distance(minPoint.position, transform.position) / Vector3.Distance(minPoint.position, maxPoint.position);
-        string video_time_dragged => TimeSpan.FromSeconds(video_position * panel.Video_length).ToString("HH:mm:ss");
+        string video_time_dragged => TimeSpan.FromSeconds(video_position * panel.Video_length).ToString(@"hh\:mm\:ss");
 
         public void init(PlayerPanel p)
         {
@@ -22,12 +22,12 @@ namespace DefaultNamespace
 
         protected override void StartDrag_Action()
         {
-            timeText.gameObject.SetActive(true);
+            //timeText.gameObject.SetActive(true);
         }
 
         protected override void StopDrag_Action()
         {
-            timeText.gameObject.SetActive(false);
+            //timeText.gameObject.SetActive(false);
             
             panel.set_time(panel.Video_length * video_position);
         }
@@ -35,6 +35,8 @@ namespace DefaultNamespace
 
         void Update()
         {
+            timeText.text = video_time_dragged;
+            
             if (!isDragged)
             {
                 transform.position = Vector3.Lerp(minPoint.position, maxPoint.position, panel.Video_time_01);
@@ -42,7 +44,7 @@ namespace DefaultNamespace
                 return;
             }
 
-            timeText.text = video_time_dragged;
+            //timeText.text = video_time_dragged;
             
             if(!Extensions.ClosestPointsOnTwoLines(out var pos, 
                    minPoint.position, 
@@ -50,6 +52,7 @@ namespace DefaultNamespace
                    panel.active_hand_transform.position, 
                    panel.active_hand_transform.forward*20)) return;
 
+            
             transform.position = pos;
         }
     }

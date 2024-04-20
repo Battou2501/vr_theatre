@@ -9,7 +9,7 @@ namespace DefaultNamespace
     {
         [FormerlySerializedAs("action")] public InputAction triggerPressedAction;
 
-        public Collider pointer;
+        public Transform pointer;
 
         Transform pointer_transform;
         
@@ -18,10 +18,13 @@ namespace DefaultNamespace
         DraggableHandle dragged_handle;
 
         public bool Is_dragging_control => dragged_handle != null;
+
+        RaycastHit[] hits;
         
         public void init(MainControls c)
         {
             main_controls = c;
+            hits = new RaycastHit[10];
         }
         
         void Start()
@@ -53,21 +56,27 @@ namespace DefaultNamespace
             
             main_controls.set_active_hand(this);
 
-            var rh = Physics.Raycast(pointer_transform.position, pointer_transform.forward, out var hit, 20);
+            var rh = Physics.RaycastNonAlloc(pointer_transform.position, pointer_transform.forward, hits, 20);
             
-            if(!rh) return;
+            if(rh == 0) return;
 
-            var handle = hit.collider.GetComponent<DraggableHandle>();
-            var button = hit.collider.GetComponent<ClickableButton>();
             
-            button.real_null()?.Click();
             
-            if(handle == null) return;
+            for (var i = 0; i < rh; i++)
+            {
+                var hit = hits[i];
 
-            dragged_handle = handle;
+                var handle = hit.collider.GetComponent<DraggableHandle>();
+                var button = hit.collider.GetComponent<ClickableButton>();
             
-            dragged_handle.StartDrag();
+                button.real_null()?.Click();
+            
+                if(handle == null || dragged_handle != null) continue;
 
+                dragged_handle = handle;
+            
+                dragged_handle.StartDrag();
+            }
         }
 
         void TriggerPressedActionOncanceled(InputAction.CallbackContext obj)

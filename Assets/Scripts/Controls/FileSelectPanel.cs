@@ -15,6 +15,7 @@ namespace DefaultNamespace
         public Transform contentBlock;
         public TMP_Text pathText;
 
+        public CloseFilePanelButton closeFilePanelButton;
         public GoUpPathButton goUpPathButton;
 
         PlayerPanel player_panel;
@@ -29,6 +30,7 @@ namespace DefaultNamespace
             main_controls = c;
             camera_transform = main_controls.cameraTransform;
             goUpPathButton.real_null()?.init(this);
+            closeFilePanelButton.init(this);
 
             redraw_data();
         }
@@ -107,7 +109,7 @@ namespace DefaultNamespace
         {
             main_controls.set_file(file);
 
-            player_panel.close_file_panel();
+            player_panel.file_panel_closed();
         }
 
         public void show_panel()
@@ -119,6 +121,7 @@ namespace DefaultNamespace
         public void close_panel()
         {
             gameObject.SetActive(false);
+            player_panel.file_panel_closed();
         }
 
         public void go_up_path()

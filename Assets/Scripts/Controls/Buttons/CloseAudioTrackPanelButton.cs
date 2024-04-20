@@ -3,17 +3,17 @@
 namespace DefaultNamespace
 {
     public class CloseAudioTrackPanelButton : ClickableButton
-    {
-        PlayerPanel panel;
+    { 
+        AudioTrackPanel panel;
         
-        public void init(PlayerPanel p)
+        public void init(AudioTrackPanel p)
         {
             panel = p;
         }
 
         protected override void Click_Action()
         {
-            panel.close_audio_track_panel();
+            panel.close_panel();
         }
     }
 }

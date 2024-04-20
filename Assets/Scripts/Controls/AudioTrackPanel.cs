@@ -7,7 +7,7 @@ namespace DefaultNamespace
     {
         public GameObject trackPrefab;
         public Transform contentBlock;
-        
+        public CloseAudioTrackPanelButton closeAudioTrackPanelButton;
         PlayerPanel player_panel;
 
 
@@ -17,6 +17,8 @@ namespace DefaultNamespace
         {
             player_panel = p;
             var tracks = m.tracks;
+            
+            closeAudioTrackPanelButton.real_null()?.init(this);
             
             track_buttons?.for_each(x=>Destroy(x.gameObject));
 
@@ -48,6 +50,7 @@ namespace DefaultNamespace
         public void close_panel()
         {
             gameObject.SetActive(false);
+            player_panel.audio_track_panel_closed();
         }
     }
 }

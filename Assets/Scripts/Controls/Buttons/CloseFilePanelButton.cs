@@ -4,16 +4,16 @@ namespace DefaultNamespace
 {
     public class CloseFilePanelButton : ClickableButton
     {
-        PlayerPanel player_panel;
+        FileSelectPanel file_select_panel;
 
-        public void init(PlayerPanel p)
+        public void init(FileSelectPanel p)
         {
-            player_panel = p;
+            file_select_panel = p;
         }
 
         protected override void Click_Action()
         {
-            player_panel.close_file_panel();
+            file_select_panel.close_panel();
         }
     }
 }

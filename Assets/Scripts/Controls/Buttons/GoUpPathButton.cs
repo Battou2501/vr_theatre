@@ -4,16 +4,16 @@ namespace DefaultNamespace
 {
     public class GoUpPathButton : ClickableButton
     {
-        MainControls main_controls;
+        FileSelectPanel file_select_panel;
 
-        public void set_data(MainControls c)
+        public void init(FileSelectPanel p)
         {
-            main_controls = c;
+            file_select_panel = p;
         }
 
         protected override void Click_Action()
         {
-            main_controls.go_up_path();
+            file_select_panel.go_up_path();
         }
     }
 }

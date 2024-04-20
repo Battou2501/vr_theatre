@@ -20,7 +20,7 @@ namespace DefaultNamespace
         {
             cam_pos = camera_transform.position;
             
-            cam_forward = Vector3.ProjectOnPlane(camera_transform.forward, Vector3.up).normalized * 0.5f;
+            cam_forward = Vector3.ProjectOnPlane(camera_transform.forward, Vector3.up).normalized * 1.5f;
 
             pos = Vector3.Slerp(transform.position, cam_pos + cam_forward, Time.deltaTime * followSpeed);
             

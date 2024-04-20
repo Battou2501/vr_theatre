@@ -30,7 +30,7 @@ namespace DefaultNamespace
 
         public Transform Active_hand_transform => active_hand.transform;
 
-        public bool Is_dragging_control => active_hand.Is_dragging_control;
+        public bool Is_dragging_control => active_hand != null && active_hand.Is_dragging_control;
         
         DriveInfo[] drives;
         DirectoryInfo[] directories;
@@ -39,7 +39,7 @@ namespace DefaultNamespace
 
         DirectoryInfo current_directory;
         //DriveInfo current_drive;
-        //string current_path;
+        public string Current_path => current_directory.FullName;
         //Stopwatch sw;
 
         //public Texture2D tex;

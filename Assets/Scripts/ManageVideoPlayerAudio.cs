@@ -40,6 +40,7 @@ namespace DefaultNamespace
 
         public bool Vp_is_playing => vp.isPlaying;
         public bool Vp_is_prepared => vp.isPrepared && vp.url != "";
+        public bool Vp_file_selected => vp.url != "";
         public double Video_length => vp.length;
         public double Video_time => vp.time;
 
@@ -143,6 +144,9 @@ namespace DefaultNamespace
             
             Shader.SetGlobalFloat(l_strength, light_strength);
             Shader.SetGlobalInt(affected_by_light, lightAffectsScreen? 1 : 0);
+            
+            if(vp.url != "")
+                vp.Prepare();
         }
         
         void Update()
@@ -686,9 +690,8 @@ namespace DefaultNamespace
                 {
                     var buffer_idx = c + j * channelCount;
                     
-                    if(buffer_idx>=b_length) break;
-                    
-                    buff[j] = buffer[buffer_idx];
+                    if(buffer_idx<b_length && j<sfCount)
+                        buff[j] = buffer[buffer_idx];
 
                     j++;
 
