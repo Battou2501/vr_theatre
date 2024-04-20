@@ -143,7 +143,9 @@ namespace DefaultNamespace
         public void show_panel()
         {
             gameObject.SetActive(true);
-            
+
+            transform.position = camera_transform.position + Vector3.forward;
+
             if(fileSelectPanel != null)
                 fileSelectPanel.gameObject.SetActive(false);
             
