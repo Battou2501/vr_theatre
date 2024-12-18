@@ -72,7 +72,8 @@ namespace DefaultNamespace
         
         public void play_pause()
         {
-            video_manager.pause(!video_manager.Vp_is_playing);
+            //video_manager.pause(!video_manager.Vp_is_playing);
+            video_manager.request_pause();
         }
 
         public void stop()

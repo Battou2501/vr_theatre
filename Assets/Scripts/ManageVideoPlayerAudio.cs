@@ -13,6 +13,16 @@ namespace DefaultNamespace
 {
     public class ManageVideoPlayerAudio : MonoBehaviour
     {
+        enum PlayerCommands
+        {
+            none,
+            play_pause,
+            skip_forward,
+            skip_backwards
+        }
+
+        PlayerCommands requested_command;
+        
         public AudioSource[] audioSources;
         
         AudioSampleProvider[] providers;
@@ -35,10 +45,32 @@ namespace DefaultNamespace
         bool audio_started;
 
         bool no_audio;
-
+        bool samples_received;
+        double samples_receive_time;
+        double samples_receive_time_prev;
+        
         VideoPlayer vp;
 
         public bool Vp_is_playing => vp.isPlaying;
+        public bool tracks_in_sync
+        {
+            get
+            {
+                if (tracks is not {Length: > 0})
+                    return true;
+
+                var add_count = tracks[0].add_count;
+
+                for (int i = 1; i < tracks.Length; i++)
+                {
+                    if (tracks[i].add_count != add_count)
+                        return false;
+                }
+
+                return true;
+            }
+        }
+        //public bool Vp_is_playing => Math.Abs(vp.playbackSpeed - 1) < 0.01f;
         public bool Vp_is_prepared => vp.isPrepared && vp.url != "";
         public bool Vp_file_selected => vp.url != "";
         public double Video_length => vp.length;
@@ -98,6 +130,10 @@ namespace DefaultNamespace
         static int sample_time;
 
         bool adding_samples;
+
+        bool is_paused;
+        bool pause_when_preview_ready;
+        
         static readonly int aspect = Shader.PropertyToID("_Aspect");
         static readonly int movie_tex = Shader.PropertyToID("_MovieTex");
         static readonly int l_strength = Shader.PropertyToID("_LightStrength");
@@ -165,6 +201,18 @@ namespace DefaultNamespace
             check_input();
             
             handle_audio_data_available();
+            
+            handle_player_command_request();
+
+            if (samples_received)
+            {
+                samples_received = false;
+                samples_receive_time_prev = samples_receive_time;
+                samples_receive_time = Time.unscaledTimeAsDouble;
+                
+                //if(audio_started)
+                //    Debug.Log(samples_receive_time-samples_receive_time_prev);
+            }
         }
 
 
@@ -221,6 +269,10 @@ namespace DefaultNamespace
                 
                 set_preview_frame = false;
                 seek_complete = false;
+
+                if (pause_when_preview_ready && source.isPlaying)
+                    //vp.Pause();
+                    requested_command = PlayerCommands.play_pause;
             }
 
             render_pool_idx += 1;
@@ -276,18 +328,29 @@ namespace DefaultNamespace
             delay_frames = 0;
             delay = 0;
         }
+
+        public void request_pause()
+        {
+            requested_command = PlayerCommands.play_pause;
+        }
         
-        public void pause(bool state)
+        void pause()
         {
             if(!is_prepared) return;
             
             if(vp.url is null or "") return;
+
+            var state = Vp_is_playing;
             
             if(state && !audio_started && !no_audio) return;
+
+            //if (adding_samples) return;
             
             if (state)
             {
                 vp.Pause();
+                //reset_state();
+                //vp.playbackSpeed = 0;
                 
                 if(no_audio) return;
                 
@@ -297,6 +360,7 @@ namespace DefaultNamespace
             }
             
             vp.Play();
+            //vp.playbackSpeed = 1;
             
             if(no_audio) return;
             
@@ -319,7 +383,7 @@ namespace DefaultNamespace
             
             request_preview();
 
-            if(!no_audio)
+            if (!no_audio)
                 vp.playbackSpeed = buffer_iterations;
             
             vp.time += t;
@@ -360,7 +424,7 @@ namespace DefaultNamespace
 
         void update_light()
         {
-            var target_light = vp.isPlaying ? movie_light_strength : 1;
+            var target_light = Vp_is_playing ? movie_light_strength : 1;
 
             if (!(Mathf.Abs(light_strength - target_light) > 0.01f)) return;
             
@@ -395,15 +459,20 @@ namespace DefaultNamespace
             
             if (Input.GetKeyDown(KeyCode.Alpha6))
                 request_track_change(5);
-            
+
             if (Input.GetKeyDown(KeyCode.RightArrow))
-                skip(5);
-            
+                //skip(5);
+                requested_command = PlayerCommands.skip_forward;
+
             if (Input.GetKeyDown(KeyCode.LeftArrow))
-                skip(-5);
+                //skip(-5);
+                requested_command = PlayerCommands.skip_backwards;
 
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
+                pause_when_preview_ready = !Vp_is_playing;
+                vp.Play();
+                
                 request_preview();
                 
                 if(!no_audio)
@@ -420,9 +489,47 @@ namespace DefaultNamespace
             }
 
             if (Input.GetKeyDown(KeyCode.Space))
-                pause(vp.isPlaying);
+                //pause(vp.isPlaying);
+                //pause(Math.Abs(vp.playbackSpeed - 1) < 0.01f);
+                requested_command = PlayerCommands.play_pause;
+                //pause();
         }
 
+        void handle_player_command_request()
+        {
+            if (requested_command == PlayerCommands.none)
+                return;
+
+            if (!tracks_in_sync)// || adding_samples)
+                return;
+            
+            if(Vp_is_playing && Time.unscaledTimeAsDouble - samples_receive_time > 0.3f)
+                return;
+            
+            if(!no_audio && !audio_started && Vp_is_playing)
+                return;
+
+            switch (requested_command)
+            {
+                case PlayerCommands.play_pause:
+                    if(Vp_is_playing)
+                        Debug.Log("Pause");
+                    
+                    pause();
+                    break;
+                case PlayerCommands.skip_forward:
+                    skip(5);
+                    break;
+                case PlayerCommands.skip_backwards:
+                    skip(-5);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            requested_command = PlayerCommands.none;
+        }
+        
         void handle_audio_data_available()
         {
             if(track_data_available == null || !track_data_available[current_track_idx] || iterations<buffer_iterations || no_audio) return;
@@ -527,7 +634,8 @@ namespace DefaultNamespace
 
         static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleFrameCount)
         {
-            Debug.Log(provider.trackIndex);
+            if(provider.trackIndex == 0)
+                Debug.Log(provider.trackIndex);
         }
 
         public void request_track_change(int idx)
@@ -539,7 +647,7 @@ namespace DefaultNamespace
         
         void handle_change_track_request()
         {
-            if(!audio_started || !vp.isPlaying) return;
+            if(!audio_started || !Vp_is_playing) return;
             
             if(requested_track_idx == -1 || requested_track_idx >= vp.audioTrackCount || requested_track_idx == current_track_idx ) return;
 
@@ -584,8 +692,20 @@ namespace DefaultNamespace
             adding_samples = true;
             
             using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
-            
+
             var sf_count = provider.ConsumeSampleFrames(buffer);
+
+            if (sf_count != sampleFrameCount)
+            {
+                Debug.Log("Zero sf");
+                
+                while (sf_count!=sampleFrameCount)
+                { 
+                    sf_count = provider.ConsumeSampleFrames(buffer);
+                }
+                   
+                Debug.Log("Zero sf released");
+            }
 
             var track = tracks[provider.trackIndex];
             
@@ -594,9 +714,14 @@ namespace DefaultNamespace
             track_data_available[provider.trackIndex] = true;
 
             adding_samples = false;
+
+            if (tracks_in_sync)
+                samples_received = true;
             
             if(provider.trackIndex != current_track_idx) return;
 
+            if (is_delay_set) return;
+            
             if(iterations<buffer_iterations)
                 iterations += 1;
 
@@ -639,7 +764,7 @@ namespace DefaultNamespace
                 
                 provider.sampleFramesOverflow += ProviderOnSampleFramesOverflow;
                 provider.enableSampleFramesAvailableEvents = true;
-                provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 4;
+                provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 3 * 2;
 
                 var channel_count = provider.channelCount;
                 var audio_source_idx = 0;
@@ -679,6 +804,9 @@ namespace DefaultNamespace
 
             public void get_samples(uint sfCount, NativeArray<float> buffer, int channelCount)
             {
+                //if(sfCount == 0)
+                //    return;
+                
                 add_data_track();
 
                 var b_length = buffer.Length;
@@ -696,7 +824,7 @@ namespace DefaultNamespace
                     j++;
 
                     if (j < sfCount) continue;
-                    
+
                     channels[c].add_data(buff);
                     
                     j = 0;
