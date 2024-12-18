@@ -131,7 +131,8 @@ namespace DefaultNamespace
 
         bool adding_samples;
 
-        bool is_paused;
+        bool is_video_playing_state;
+        
         bool pause_when_preview_ready;
         
         static readonly int aspect = Shader.PropertyToID("_Aspect");
@@ -238,8 +239,12 @@ namespace DefaultNamespace
             reset_state();
             
             vp.Stop();
+
+            is_video_playing_state = false;
             
             if(!loop_video) return;
+
+            is_video_playing_state = true;
             
             vp.Play();
         }
@@ -349,6 +354,7 @@ namespace DefaultNamespace
             if (state)
             {
                 vp.Pause();
+                is_video_playing_state = false;
                 //reset_state();
                 //vp.playbackSpeed = 0;
                 
@@ -360,6 +366,7 @@ namespace DefaultNamespace
             }
             
             vp.Play();
+            is_video_playing_state = true;
             //vp.playbackSpeed = 1;
             
             if(no_audio) return;
@@ -373,6 +380,7 @@ namespace DefaultNamespace
             reset_state();
             
             vp.Stop();
+            is_video_playing_state = false;
         }
 
         public void skip(float t)
@@ -424,7 +432,7 @@ namespace DefaultNamespace
 
         void update_light()
         {
-            var target_light = Vp_is_playing ? movie_light_strength : 1;
+            var target_light = is_video_playing_state ? movie_light_strength : 1;
 
             if (!(Mathf.Abs(light_strength - target_light) > 0.01f)) return;
             
@@ -604,7 +612,7 @@ namespace DefaultNamespace
             
             prepare_tracks();
 
-            vp.Play();
+            //vp.Play();
         }
 
         void prepare_tracks()
