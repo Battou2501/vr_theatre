@@ -145,6 +145,9 @@ namespace DefaultNamespace
         
         void Start()
         {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 900;
+            
             trim_seconds = trimSeconds;
             trim_after_reaching_seconds = trimAfterReachingSeconds;
             buffer_iterations_static = buffer_iterations;
