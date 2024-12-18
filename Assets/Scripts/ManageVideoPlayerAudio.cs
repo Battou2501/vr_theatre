@@ -491,7 +491,7 @@ namespace DefaultNamespace
 
                 reset_state();
                 
-                //vp.Play();
+                vp.Play();
             }
             
             if (Input.GetKeyDown(KeyCode.DownArrow))
