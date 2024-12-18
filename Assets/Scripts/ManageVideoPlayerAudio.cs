@@ -332,6 +332,7 @@ namespace DefaultNamespace
             frame_to_play_idx = 0;
             delay_frames = 0;
             delay = 0;
+            //vp.Stop();
         }
 
         public void request_pause()
@@ -479,7 +480,7 @@ namespace DefaultNamespace
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 pause_when_preview_ready = !Vp_is_playing;
-                vp.Play();
+                //vp.Play();
                 
                 request_preview();
                 
@@ -489,6 +490,8 @@ namespace DefaultNamespace
                 vp.time = vp.length / 2f;
 
                 reset_state();
+                
+                //vp.Play();
             }
             
             if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -540,7 +543,7 @@ namespace DefaultNamespace
         
         void handle_audio_data_available()
         {
-            if(track_data_available == null || !track_data_available[current_track_idx] || iterations<buffer_iterations || no_audio) return;
+            if(track_data_available == null || track_data_available.Length<=current_track_idx || !track_data_available[current_track_idx] || iterations<buffer_iterations || no_audio) return;
 
             reset_audio_data_ready_flags();
 

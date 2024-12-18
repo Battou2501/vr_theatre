@@ -1,47 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!244 &-5988984654969360677
-AudioMixerEffectController:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_EffectID: 073445c5f1c60a147bd54feb450c92d3
-  m_EffectName: SFX Reverb
-  m_MixLevel: 0adaa88d72ade8342b7554c0ff4f3c62
-  m_Parameters:
-  - m_ParameterName: Dry Level
-    m_GUID: 82c4c20b0cfb10544b936f2473096695
-  - m_ParameterName: Room
-    m_GUID: be95a625d2b038a4db2cf4f965b35e07
-  - m_ParameterName: Room HF
-    m_GUID: 09b86eb5d667f5d449c63347f6c8ee55
-  - m_ParameterName: Decay Time
-    m_GUID: a75c328b8a1b77c4ba246c2f9c74d3a4
-  - m_ParameterName: Decay HF Ratio
-    m_GUID: 420aeae6390a0094cb86a42aacd12b6e
-  - m_ParameterName: Reflections
-    m_GUID: 9e5f1d94822dd5c4eb39d9f5741560e8
-  - m_ParameterName: Reflect Delay
-    m_GUID: e44b9739fe6cddf42a43b9da05e307fe
-  - m_ParameterName: Reverb
-    m_GUID: cf591b6dad840584ab8fc792b2a6cd1a
-  - m_ParameterName: Reverb Delay
-    m_GUID: 9922d65082544404d8fdb5228ee76ecc
-  - m_ParameterName: Diffusion
-    m_GUID: 6e8a1931b522e3e44894aeb8d874fb79
-  - m_ParameterName: Density
-    m_GUID: 38747b506c51e634eba2bc89b4ac0ff3
-  - m_ParameterName: HF Reference
-    m_GUID: 17cad3ca1bd77594094df0002ffd8ff6
-  - m_ParameterName: Room LF
-    m_GUID: b736a291d5c983f4185806472d70c31e
-  - m_ParameterName: LF Reference
-    m_GUID: 4c72d6f31940cbc4587963f7897bee38
-  m_SendTarget: {fileID: 0}
-  m_EnableWetMix: 0
-  m_Bypass: 1
 --- !u!241 &24100000
 AudioMixerController:
   m_ObjectHideFlags: 0
@@ -79,7 +37,6 @@ AudioMixerGroupController:
   m_Send: 00000000000000000000000000000000
   m_Effects:
   - {fileID: 24400004}
-  - {fileID: -5988984654969360677}
   m_UserColorIndex: 0
   m_Mute: 0
   m_Solo: 0
@@ -119,4 +76,5 @@ AudioMixerSnapshotController:
     82c4c20b0cfb10544b936f2473096695: 0
     a75c328b8a1b77c4ba246c2f9c74d3a4: 1.4
     cf591b6dad840584ab8fc792b2a6cd1a: 810
+    856aa3ee9b9b22b4199de0224778d8c3: 10.022501
   m_TransitionOverrides: {}
