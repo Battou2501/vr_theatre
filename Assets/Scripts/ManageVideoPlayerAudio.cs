@@ -255,6 +255,52 @@ namespace DefaultNamespace
             Graphics.Blit(vp.texture, rt_pool[i]);
         }
 
+        static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleFrameCount)
+        {
+            Debug.Log("Track " + provider.trackIndex + " sample frames overflow");
+        }
+        
+        void SampleFramesAvailable(AudioSampleProvider provider, uint sampleFrameCount)
+        {
+            using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
+
+            var sf_count = provider.ConsumeSampleFrames(buffer);
+
+            //Handling situation when samples ready callback called after video player already have been stopped or paused
+            //Unity bug prevents samples consumption if video player is not playing
+            if (sf_count != sampleFrameCount)
+            {
+                Debug.Log("Not all sample frames consumed!");
+                
+                while (sf_count!=sampleFrameCount)
+                { 
+                    sf_count = provider.ConsumeSampleFrames(buffer);
+                }
+                   
+                Debug.Log("Finally all sample frames consumed!");
+            }
+
+            var track = tracks[provider.trackIndex];
+            
+            track.add_samples(sf_count, buffer, provider.channelCount);
+
+            track_data_available[provider.trackIndex] = true;
+
+            if (tracks_in_sync)
+                samples_received = true;
+            
+            if(provider.trackIndex != current_track_idx) return;
+
+            if (is_delay_set) return;
+            
+            if(iterations<buffer_iterations)
+                iterations += 1;
+
+            if (iterations == buffer_iterations)
+                set_delay();
+            
+        }
+        
         void request_preview()
         {
             set_preview_frame = true;
@@ -585,11 +631,6 @@ namespace DefaultNamespace
             }
         }
 
-        static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleFrameCount)
-        {
-            Debug.Log("Track " + provider.trackIndex + " sample frames overflow");
-        }
-
         public void request_track_change(int idx)
         {
             if(no_audio) return;
@@ -614,47 +655,6 @@ namespace DefaultNamespace
             tracks[current_track_idx].set_clip(audio_source_time);
         }
 
-        void SampleFramesAvailable(AudioSampleProvider provider, uint sampleFrameCount)
-        {
-            using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
-
-            var sf_count = provider.ConsumeSampleFrames(buffer);
-
-            //Handling situation when samples ready callback called after video player already have been stopped or paused
-            //Unity bug prevents samples consumption if video player is not playing
-            if (sf_count != sampleFrameCount)
-            {
-                Debug.Log("Not all sample frames consumed!");
-                
-                while (sf_count!=sampleFrameCount)
-                { 
-                    sf_count = provider.ConsumeSampleFrames(buffer);
-                }
-                   
-                Debug.Log("Finally all sample frames consumed!");
-            }
-
-            var track = tracks[provider.trackIndex];
-            
-            track.add_samples(sf_count, buffer, provider.channelCount);
-
-            track_data_available[provider.trackIndex] = true;
-
-            if (tracks_in_sync)
-                samples_received = true;
-            
-            if(provider.trackIndex != current_track_idx) return;
-
-            if (is_delay_set) return;
-            
-            if(iterations<buffer_iterations)
-                iterations += 1;
-
-            if (iterations == buffer_iterations)
-                set_delay();
-            
-        }
-
         void set_delay()
         {
             if (is_delay_set) return;
@@ -668,13 +668,13 @@ namespace DefaultNamespace
         
         public class Track
         {
-            AudioSampleProvider provider;
             public Channel[] channels;
             public uint add_count;
-            int trim_seconds_samples;
             public int trim_threshold_samples;
             public string lang;
             
+            AudioSampleProvider provider; 
+            int trim_seconds_samples;
 
             public void clear()
             {
@@ -767,9 +767,9 @@ namespace DefaultNamespace
         public class Channel
         {
             public AudioSource audio_source;
+            
             AudioClip audio_clip;
             int sample_rate;
-
             List<float> data;
             List<float> play_data;
             bool need_trim;
