@@ -12572,6 +12572,7 @@ MonoBehaviour:
   trimAfterReachingSeconds: 10
   movie_light_strength: 0.03
   loop_video: 0
+  skipSeconds: 10
 --- !u!114 &1798628429
 MonoBehaviour:
   m_ObjectHideFlags: 0

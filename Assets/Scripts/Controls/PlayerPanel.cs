@@ -83,12 +83,17 @@ namespace DefaultNamespace
 
         public void set_time(double time)
         {
-            video_manager.skip_to_time(time);
+            video_manager.request_skip_to_time(time);
         }
         
-        public void skip(float time)
+        public void skip_forward()
         {
-            video_manager.skip(time);
+            video_manager.request_skip_forward();
+        }
+        
+        public void skip_backwards()
+        {
+            video_manager.request_skip_backwards();
         }
 
         public void set_volume(float v)
