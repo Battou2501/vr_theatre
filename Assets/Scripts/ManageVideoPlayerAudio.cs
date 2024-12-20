@@ -110,7 +110,6 @@ namespace DefaultNamespace
 
         static int trim_seconds_static;
         static int trim_after_reaching_seconds_static;
-        static double delay;
         static int sample_time;
         
         static readonly int aspect = Shader.PropertyToID("_Aspect");
@@ -322,7 +321,6 @@ namespace DefaultNamespace
             render_pool_idx = 0;
             frame_to_play_idx = 0;
             delay_frames = 0;
-            delay = 0;
         }
 
         public void request_pause()
@@ -658,10 +656,8 @@ namespace DefaultNamespace
         void set_delay()
         {
             if (is_delay_set) return;
-                
-            delay = render_pool_idx / frame_rate;
-                
-            delay_frames = Mathf.FloorToInt(frame_rate * (float) delay);
+            
+            delay_frames = render_pool_idx;
                 
             is_delay_set = true;
         }
