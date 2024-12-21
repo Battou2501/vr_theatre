@@ -78,7 +78,7 @@ namespace DefaultNamespace
 
         public void stop()
         {
-            video_manager.stop();
+            video_manager.request_stop();
         }
 
         public void set_time(double time)

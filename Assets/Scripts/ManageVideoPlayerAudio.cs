@@ -39,7 +39,7 @@ namespace DefaultNamespace
         public Transform[] screenLightSamplePoints;
         public bool lightAffectsScreen;
         public int buffer_iterations = 1;
-        public int frame_buffer_size = 240;
+        public int frame_buffer_seconds = 2;
         public int trimSeconds;
         public int trimAfterReachingSeconds;
         [Range(0,1)]
@@ -65,27 +65,22 @@ namespace DefaultNamespace
         AudioSampleProvider[] providers;
         bool light_affects_screen_current;
         int iterations;
-        bool[] track_data_available;
         bool audio_started;
         bool no_audio;
         bool samples_received;
         double samples_receive_time;
         VideoPlayer vp;
         RenderTexture[] rt_pool;
-        float frame_rate;
         int frame_to_play_idx;
         int render_pool_idx;
         bool is_delay_set;
         int delay_frames;
         int current_track_idx;
         bool set_preview_frame;
-        int preview_target_index;
-        int frames_til_target;
         bool seek_complete;
         float light_strength;
         bool is_prepared;
         int requested_track_idx = -1;
-        bool adding_samples;
         double skip_time_target;
 
         bool Vp_is_playing => vp.isPlaying;
@@ -178,17 +173,42 @@ namespace DefaultNamespace
             handle_audio_data_available();
             
             handle_player_command_request();
-
-            //Getting last audio samples received time to use this data in input checks and prevent input handling
-            //right before next audio samples batch is ready (Unity bug that can get audio samples
-            //while video is already paused, but cant consume those samples until video is playing 
-            if (samples_received)
-            {
-                samples_received = false;
-                samples_receive_time = Time.unscaledTimeAsDouble;
-            }
         }
 
+        void Prepared(VideoPlayer source)
+        {
+            var w = (int) source.width;
+            var h = (int) source.height;
+            
+            Shader.SetGlobalFloat(aspect, (float)w/h);
+
+            var frame_buffer_size = Mathf.FloorToInt(frame_buffer_seconds * source.frameRate);
+            
+            rt_pool?.for_each(Destroy);
+
+            rt_pool = new RenderTexture[frame_buffer_size];
+
+            for (var i = 0; i < frame_buffer_size; i++)
+            {
+                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,0);
+            }
+
+            is_prepared = true;
+
+            render_frame_to_screen(0);
+
+            no_audio = source.audioTrackCount == 0;
+            
+            reset_state();
+            
+            if (!no_audio)
+                source.playbackSpeed = buffer_iterations;
+            else
+                set_delay();
+            
+            prepare_tracks();
+        }
+        
         static void VpOnFrameDropped(VideoPlayer source)
         {
             Debug.LogWarning("SKIPPED!!!!");
@@ -283,8 +303,6 @@ namespace DefaultNamespace
             
             track.add_samples(sf_count, buffer, provider.channelCount);
 
-            track_data_available[provider.trackIndex] = true;
-
             if (tracks_in_sync)
                 samples_received = true;
             
@@ -312,8 +330,9 @@ namespace DefaultNamespace
             tracks?.for_each(x=>x.clear_data());
             
             audioSources?.for_each(x => { x.clip = null; x.Stop(); } );
-            
-            reset_audio_data_ready_flags();
+
+            samples_received = false;
+            samples_receive_time = 0;
 
             is_delay_set = false;
             audio_started = false;
@@ -358,8 +377,15 @@ namespace DefaultNamespace
             tracks[current_track_idx].channels.for_each(x=>x?.audio_source.Play());
         }
 
-        public void stop()
+        public void request_stop()
         {
+            requested_command = PlayerCommands.stop;
+        }
+        
+        void stop()
+        {
+            if(!is_prepared) return;
+            
             reset_state();
             
             vp.Stop();
@@ -415,16 +441,6 @@ namespace DefaultNamespace
         public void set_volume(float volume)
         {
             audioSources.for_each(volume, (x,v) => x.volume = v);
-        }
-        
-        void reset_audio_data_ready_flags()
-        {
-            if(track_data_available == null) return;
-            
-            for (var i = 0; i < track_data_available.Length; i++)
-            {
-                track_data_available[i] = false;
-            }
         }
 
         void update_light()
@@ -519,6 +535,9 @@ namespace DefaultNamespace
                 case PlayerCommands.skip_to_time:
                     skip();
                     break;
+                case PlayerCommands.stop:
+                    stop();
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -527,11 +546,18 @@ namespace DefaultNamespace
         
         void handle_audio_data_available()
         {
-            if(track_data_available == null || track_data_available.Length<=current_track_idx || !track_data_available[current_track_idx] || iterations<buffer_iterations || no_audio) return;
+            if (no_audio) return;
 
-            if(!no_audio && !tracks_in_sync) return;
+            if (!samples_received) return;
             
-            reset_audio_data_ready_flags();
+            samples_received = false;
+            
+            //Getting last audio samples received time to use this data in input checks and prevent input handling
+            //right before next audio samples batch is ready (Unity bug that can get audio samples
+            //while video is already paused, but cant consume those samples until video is playing 
+            samples_receive_time = Time.unscaledTimeAsDouble;
+            
+            if (iterations<buffer_iterations) return;
 
             handle_audio_started();
             
@@ -573,41 +599,6 @@ namespace DefaultNamespace
             }
         }
 
-        void Prepared(VideoPlayer vp)
-        {
-            if(rt_pool == null || rt_pool.Length<frame_buffer_size)
-                rt_pool = new RenderTexture[frame_buffer_size];
-
-            var w = (int) vp.width;
-            var h = (int) vp.height;
-            
-            Shader.SetGlobalFloat(aspect, (float)w/h);
-
-            for (var i = 0; i < frame_buffer_size; i++)
-            {
-                Destroy(rt_pool[i]);
-
-                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,0);
-            }
-
-            frame_rate = vp.frameRate;
-            
-            is_prepared = true;
-
-            render_frame_to_screen(0);
-
-            no_audio = vp.audioTrackCount == 0;
-            
-            reset_state();
-            
-            if (!no_audio)
-                vp.playbackSpeed = buffer_iterations;
-            else
-                set_delay();
-            
-            prepare_tracks();
-        }
-
         void prepare_tracks()
         {
             if(no_audio) return;
@@ -615,7 +606,6 @@ namespace DefaultNamespace
             var audioTrackCount = vp.audioTrackCount;
             tracks?.for_each( x=>x?.clear());
             tracks = new Track[audioTrackCount];
-            track_data_available = new bool[audioTrackCount];
             
             for (var t = 0; t < vp.audioTrackCount; t++)
             {
