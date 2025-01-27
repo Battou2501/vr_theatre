@@ -2,20 +2,9 @@
 
 namespace DefaultNamespace
 {
-    public class DraggableHandle : MonoBehaviour
+    public class DraggableHandle : BaseInteractableCOntrol
     {
         public bool isDragged;
-        
-        public bool isInteractable
-        {
-            get;
-            private set;
-        }
-
-        public void set_interactable(bool s)
-        {
-            isInteractable = s;
-        }
 
         public void StartDrag()
         {

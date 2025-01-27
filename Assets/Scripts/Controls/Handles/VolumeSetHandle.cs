@@ -8,25 +8,27 @@ namespace DefaultNamespace
         public Transform minPoint;
         public Transform maxPoint;
         
-        PlayerPanel panel;
+        BaseControlsPanel parent_panel;
 
         float volume_position => Vector3.Distance(minPoint.position, transform.position) / Vector3.Distance(minPoint.position, maxPoint.position);
-        
-        public void init(PlayerPanel p)
+
+        public override void init(MainControls m)
         {
-            panel = p;
+            base.init(m);
+
+            parent_panel = GetComponentInParent<BaseControlsPanel>(true);
         }
 
         protected override void StopDrag_Action()
         {
-            panel.set_volume(volume_position);
+            video_manager.set_volume(volume_position);
         }
 
         void Update()
         {
             if (!isDragged)
             {
-                transform.position = Vector3.Lerp(minPoint.position, maxPoint.position, panel.Audio_volume);
+                transform.position = Vector3.Lerp(minPoint.position, maxPoint.position, video_manager.Audio_volume);
                 
                 return;
             }
@@ -34,8 +36,8 @@ namespace DefaultNamespace
             if(!Extensions.ClosestPointsOnTwoLines(out var pos, 
                    minPoint.position, 
                    maxPoint.position, 
-                   panel.active_hand_transform.position, 
-                   panel.active_hand_transform.forward*20)) return;
+                   main_controls.Active_hand_transform.position, 
+                   main_controls.Active_hand_transform.forward*20)) return;
 
             transform.position = pos;
         }

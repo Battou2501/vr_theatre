@@ -18,6 +18,7 @@ Shader "Unlit/LightReceivingShader"
         _ShininessBrightness("Shininess Brightness", Range (0,10)) = 1
         [Toggle]_ToggleLight("Toggle Light", Range (0,1)) = 1
         _MipLevel("Mip level", Range (0,10)) = 1
+        [KeywordEnum(Scene,Above)] _Light_From("Dir light source",int) = 0
     }
     SubShader
     {
@@ -35,6 +36,7 @@ Shader "Unlit/LightReceivingShader"
             #pragma target 3.0
 
             #pragma shader_feature _TYPE_MATE _TYPE_GLOSSY _TYPE_METALIC
+            #pragma shader_feature _LIGHT_FROM_SCENE _LIGHT_FROM_ABOVE
             
             #include "UnityCG.cginc"
 
@@ -185,7 +187,13 @@ Shader "Unlit/LightReceivingShader"
                 #endif
                 
                 o.viewDir = viewDir;
+
+                #if defined(_LIGHT_FROM_SCENE)
                 o.lightDir = normalize(_WorldSpaceLightPos0);
+                #else
+                o.lightDir = float3(0,1,0);
+                #endif
+                
 
                 o.color = v.color;
                 o.uv_light = v.uv * (_LightUV == 0) + v.uv2 * (_LightUV == 1) + v.uv3 * (_LightUV == 2) + v.uv4 * (_LightUV == 3);
@@ -197,7 +205,7 @@ Shader "Unlit/LightReceivingShader"
             {
                 UNITY_SETUP_INSTANCE_ID(i);
 
-                const float3 norm = i.normal;
+                const float3 norm = normalize(i.normal);
 
                 const half4 light_tex = tex2D(_LightTex, i.uv_light);
                 const half4 ao_tex = tex2D(_AOTex, i.uv_light);
@@ -210,7 +218,7 @@ Shader "Unlit/LightReceivingShader"
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
-                const float3 viewDir = i.viewDir;
+                const float3 viewDir = normalize(i.viewDir);
                 const float r_factor = 1-((1-_Shininess)*(1-_Shininess));
                 const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor));
                 #endif
@@ -226,7 +234,7 @@ Shader "Unlit/LightReceivingShader"
                 
                 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const float3 light_dir = i.lightDir;
+                const float3 light_dir = normalize(i.lightDir);
                 const fixed light_dot = saturate(dot(norm,light_dir)*3);
                 const float light_reflect_dot = saturate(dot(light_dir, reflect_viewDir));
 

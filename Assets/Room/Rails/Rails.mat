@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _LIGHT_FROM_ABOVE
   - _TYPE_METALIC
   m_InvalidKeywords:
   - _GLOSSY_ON
@@ -95,6 +96,7 @@ Material:
     - _GlossyReflections: 1
     - _LightMaxStrength: 2.5
     - _LightUV: 0
+    - _Light_From: 1
     - _Metallic: 0
     - _MipLevel: 5.7
     - _Mode: 0
@@ -107,6 +109,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _ToggleLight: 1
+    - _ToggleLightDir: 0
     - _Type: 2
     - _UVSec: 0
     - _ZWrite: 1

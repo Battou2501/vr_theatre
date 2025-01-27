@@ -1,19 +1,29 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace DefaultNamespace
 {
     public class GoUpPathButton : ClickableButton
     {
-        FileSelectPanel file_select_panel;
-
-        public void init(FileSelectPanel p)
-        {
-            file_select_panel = p;
-        }
-
         protected override void Click_Action()
         {
-            file_select_panel.go_up_path();
+            main_controls.go_up_path();
+        }
+        
+        [CustomEditor(typeof(GoUpPathButton))]
+        public class GoUpPathButtonEditor : Editor
+        {
+            public override void OnInspectorGUI()
+            {
+                base.OnInspectorGUI();
+
+                if(!Application.isPlaying || target == null) return;
+            
+                if (GUILayout.Button("Go up path"))
+                {
+                    (target as GoUpPathButton).Click();
+                }
+            }
         }
     }
 }

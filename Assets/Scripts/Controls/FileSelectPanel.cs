@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -7,127 +8,178 @@ using UnityEngine.PlayerLoop;
 
 namespace DefaultNamespace
 {
-    public class FileSelectPanel : InterfacePanel
+    public class FileSelectPanel : BaseControlsPanel
     {
         public GameObject directoryButtonPrefab;
         public GameObject fileButtonPrefab;
 
         public Transform contentBlock;
-        public TMP_Text pathText;
-
-        public CloseFilePanelButton closeFilePanelButton;
-        public GoUpPathButton goUpPathButton;
-
-        PlayerPanel player_panel;
-        MainControls main_controls;
-
-        List<DirectoryButton> directory_buttons;
-        List<FileButton> file_buttons;
+        public float contentBlockHeight;
+        public float contentBlockWidth;
+        public int horizontalElements;
+        public int verticalElements;
         
-        public void init(PlayerPanel p, MainControls c)
-        {
-            player_panel = p;
-            main_controls = c;
-            camera_transform = main_controls.cameraTransform;
-            goUpPathButton.real_null()?.init(this);
-            closeFilePanelButton.init(this);
+        public TMP_Text pathText;
+        
+        public ChangeFilePageButton nextPageButton;
+        public ChangeFilePageButton previousPageButton;
+        public GoUpPathButton goUpPathButton;
+        
+        int max_elements => horizontalElements * verticalElements;
 
-            redraw_data();
+        float element_horizontal_step;
+        float element_vertical_step;
+        
+        List<DirectoryButton> directory_buttons = new List<DirectoryButton>();
+        List<FileButton> file_buttons = new List<FileButton>();
+        DirectoryInfo[] directories;
+        FileInfo[] files;
+
+        int current_page;
+        int total_pages;
+
+        bool has_next => current_page < total_pages;
+        bool has_previous => current_page > 0;
+        
+        public override void init(MainControls m)
+        {
+            base.init(m);
+
+            main_controls.PathChanged += OnPathChanged;
+
+            if(nextPageButton != null)
+                nextPageButton.Clicked += OnChangedToNextPage;
+            if (previousPageButton != null)
+                previousPageButton.Clicked += OnChangedToPreviousPage;
+            
+            element_horizontal_step = contentBlockWidth / (horizontalElements - 1);
+            element_vertical_step = contentBlockHeight / (verticalElements - 1);
+
+            generate_buttons();
+           
+            update_data();
         }
 
-        void redraw_data()
+        void OnDestroy()
+        {
+            if(!is_initiated) return;
+            
+            main_controls.PathChanged -= OnPathChanged;
+            
+            if(nextPageButton != null)
+                nextPageButton.Clicked -= OnChangedToNextPage;
+            if (previousPageButton != null)
+                previousPageButton.Clicked -= OnChangedToPreviousPage;
+        }
+
+        void generate_buttons()
+        {
+            for (var y = 0; y < verticalElements; y++)
+            {
+                var pos_y = contentBlockHeight*0.5f - element_vertical_step*y;
+                for (var x = 0; x < horizontalElements; x++)
+                {
+                    var pos_x = contentBlockWidth*0.5f - element_horizontal_step*x;
+                    
+                    var pos = new Vector3(pos_x, pos_y, 0);
+                    
+                    Debug.Log(pos);
+                    
+                    var button = Instantiate(directoryButtonPrefab, contentBlock);
+                    button.transform.localPosition = pos;
+                    var dir_button = button.GetComponent<DirectoryButton>();
+                    dir_button.init(main_controls);
+                    directory_buttons.Add(dir_button);
+                    
+                    button = Instantiate(fileButtonPrefab, contentBlock);
+                    button.transform.localPosition = pos;
+                    var file_button = button.GetComponent<FileButton>();
+                    file_button.init(main_controls);
+                    file_buttons.Add(file_button);
+                }
+            }
+        }
+
+        void update_buttons()
+        {
+            fill_files_buttons(fill_directory_buttons());
+            
+            nextPageButton?.gameObject.SetActive(has_next);
+            previousPageButton?.gameObject.SetActive(has_previous);
+        }
+
+        void update_data()
         {
             pathText.text = main_controls.Current_path;
             
-            directory_buttons ??= new List<DirectoryButton>();
-            file_buttons ??= new List<FileButton>();
+            main_controls.get_current_path_data(out directories, out files);
 
-            main_controls.get_current_path_data(out var dirs, out var files);
-            
-            file_buttons.for_each(x=>x.gameObject.SetActive(false));
-            directory_buttons.for_each(x=>x.gameObject.SetActive(false));
+            directories = directories?.OrderBy(x=>x.Name).ToArray();
 
-            fill_directory_buttons(dirs);
-            fill_files_buttons(files);
+            files = files?.OrderBy(x=>x.Name).ToArray();
             
-            file_buttons = file_buttons.OrderBy(x => x.File_name).ToList();
-            directory_buttons = directory_buttons.OrderBy(x => x.Directory_name).ToList();
+            current_page = 0;
+            
+            total_pages = ((directories?.Length ?? 0) + files?.Length ?? 0) / max_elements;
+            
+            Debug.Log(main_controls.Current_directory_has_parent);
+            
+            goUpPathButton?.gameObject.SetActive(main_controls.Current_directory_has_parent);
+            
+            update_buttons();
+        }
+        
+        int fill_directory_buttons()
+        {
+            var shown_directories = 0;
             
             for (var i = 0; i < directory_buttons.Count; i++)
             {
-                directory_buttons[i].transform.SetSiblingIndex(i);
+                var dir_index = max_elements * current_page + i;
+                
+                directory_buttons[i].gameObject.SetActive(false);
+                
+                if(directories == null || dir_index >= directories.Length) continue;
+                
+                directory_buttons[i].set_data(directories[dir_index]);
+                directory_buttons[i].gameObject.SetActive(true);
+                shown_directories++;
             }
-
-            var dir_count = dirs?.Length ?? 0; 
-            
+            return shown_directories;
+        }
+        
+        void fill_files_buttons(int used_buttons)
+        {
             for (var i = 0; i < file_buttons.Count; i++)
             {
-                file_buttons[i].transform.SetSiblingIndex(dir_count+i);
-            }
-        }
-        
-        void fill_directory_buttons(IReadOnlyList<DirectoryInfo> dirs)
-        {
-            if(dirs == null) return;
-
-            for (var i = 0; i < dirs.Count; i++)
-            {
-                if (i >= file_buttons.Count)
-                {
-                    directory_buttons.Add(Instantiate(directoryButtonPrefab, contentBlock).GetComponent<DirectoryButton>());
-                }
+                var file_index = max_elements * current_page + i - directories?.Length ?? 0;
                 
-                directory_buttons[i].set_data(this, dirs[i]);
-                directory_buttons[i].gameObject.SetActive(true);
-            }
-        }
-        
-        void fill_files_buttons(IReadOnlyList<FileInfo> files)
-        {
-            if(files == null) return;
-
-            for (var i = 0; i < files.Count; i++)
-            {
-                if (i >= file_buttons.Count)
-                {
-                    file_buttons.Add(Instantiate(fileButtonPrefab, contentBlock).GetComponent<FileButton>());
-                }
+                file_buttons[i].gameObject.SetActive(false);
                 
-                file_buttons[i].set_data(this, files[i]);
+                if(i < used_buttons || files == null || file_index >= files.Length) continue;
+                
+                file_buttons[i].set_data(files[file_index]);
                 file_buttons[i].gameObject.SetActive(true);
             }
         }
 
-        public void set_directory(DirectoryInfo dirInfo)
+        void OnPathChanged()
         {
-            main_controls.set_directory(dirInfo);
-            
-            redraw_data();
-        }
-        
-        public void select_file(FileInfo file)
-        {
-            main_controls.set_file(file);
-
-            player_panel.file_panel_closed();
+           update_data();
         }
 
-        public void show_panel()
+        void OnChangedToNextPage()
         {
-            gameObject.SetActive(true);
-            redraw_data();
-        }
-        
-        public void close_panel()
-        {
-            gameObject.SetActive(false);
-            player_panel.file_panel_closed();
+            if(!has_next) return;
+            current_page++;
+            update_buttons();
         }
 
-        public void go_up_path()
+        void OnChangedToPreviousPage()
         {
-            main_controls.go_up_path();
-            redraw_data();
+            if(!has_previous) return;
+            current_page--;
+            update_buttons();
         }
     }
 }

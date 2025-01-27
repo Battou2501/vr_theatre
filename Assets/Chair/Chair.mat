@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _LIGHT_FROM_SCENE
   - _TYPE_MATE
   m_InvalidKeywords:
   - _TOGGLELIGHT_ON
@@ -94,6 +95,7 @@ Material:
     - _GlossyReflections: 1
     - _LightMaxStrength: 1.78
     - _LightUV: 1
+    - _Light_From: 0
     - _Metallic: 0
     - _MipLevel: 2
     - _Mode: 0
@@ -106,6 +108,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _ToggleLight: 1
+    - _ToggleLightDir: 0
     - _Type: 0
     - _UVSec: 0
     - _ZWrite: 1

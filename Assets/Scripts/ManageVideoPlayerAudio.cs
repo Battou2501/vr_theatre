@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using NReco.VideoConverter;
 using Unity.Collections;
@@ -15,7 +16,7 @@ namespace DefaultNamespace
     [RequireComponent(typeof(VideoPlayer))]
     public class ManageVideoPlayerAudio : MonoBehaviour
     {
-        public enum PlayerCommands
+        enum PlayerCommands
         {
             none,
             play_pause,
@@ -56,7 +57,9 @@ namespace DefaultNamespace
         public bool Vp_file_selected => vp.url != "";
         public double Video_length => vp.length;
         public double Video_time => vp.time;
+        public float Video_time_01 => Vp_is_prepared ? (float)(Video_time/Video_length) : 0;
         public float Audio_volume => audioSources[0].volume;
+        public string FilePath => vp.url;
         
         
         
@@ -342,6 +345,13 @@ namespace DefaultNamespace
             delay_frames = 0;
         }
 
+        public void set_file(string file)
+        {
+            vp.url = file;
+            vp.Prepare();
+            requested_command = PlayerCommands.play_pause;
+        }
+        
         public void request_pause()
         {
             requested_command = PlayerCommands.play_pause;

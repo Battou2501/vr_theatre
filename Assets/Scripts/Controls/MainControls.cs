@@ -17,29 +17,34 @@ namespace DefaultNamespace
     public class MainControls : MonoBehaviour
     {
         public Transform cameraTransform;
-        public PlayerPanel playerPanel;
-        //public FileSelectPanel fileSelectPanel;
+        
+        [Header("UI Controls elements")]
+        public UIManager uiManager;
+        
+        [Header("Hand controls")]
         public HandControls leftHand;
         public HandControls rightHand;
-        public ManageVideoPlayerAudio videoManager;
-        public HandControls defaultActiveHand;
-        public InputAction triggerPressedAction;
         
+        [Header("Video player manager")]
+        public ManageVideoPlayerAudio videoManager;
         
         HandControls active_hand;
 
-        public Transform Active_hand_transform => active_hand.transform;
+        public Transform Active_hand_transform => active_hand.real_null()?.transform;
 
         public bool Is_dragging_control => active_hand != null && active_hand.Is_dragging_control;
         
         DriveInfo[] drives;
         DirectoryInfo[] directories;
         FileInfo[] mp4_files;
-        public VideoPlayer vp;
+        //VideoPlayer vp => videoManager.;
 
         DirectoryInfo current_directory;
         //DriveInfo current_drive;
-        public string Current_path => current_directory.FullName;
+        public string Current_path => current_directory != null ? current_directory.FullName : "";
+        public bool Current_directory_has_parent => current_directory != null;
+
+        public event Action PathChanged;
         //Stopwatch sw;
 
         //public Texture2D tex;
@@ -47,17 +52,24 @@ namespace DefaultNamespace
         
         void Awake()
         {
-            triggerPressedAction.Enable();
-            triggerPressedAction.started += TriggerPressedActionOnstarted;
+            uiManager.init(this);
             
-            playerPanel.real_null()?.init(videoManager, this);
-            //fileSelectPanel.real_null()?.init(videoManager, this);
             leftHand.real_null()?.init(this);
+            leftHand.triggerPressedAction.started += TriggerPressedActionOnstarted;
+            
             rightHand.real_null()?.init(this);
-            active_hand = defaultActiveHand;
-            //hide_interface();
+            rightHand.triggerPressedAction.started += TriggerPressedActionOnstarted;
+            
+            active_hand = null;
         }
-        
+
+        public void check_hands_display()
+        {
+            if(uiManager.is_all_panels_closed)
+                hide_hands();
+            else
+                show_hands();
+        }
         
         void show_hands()
         {
@@ -69,26 +81,6 @@ namespace DefaultNamespace
         {
             leftHand.real_null()?.gameObject.SetActive(false);
             rightHand.real_null()?.gameObject.SetActive(false);
-        }
-
-        public void show_player_panel()
-        {
-            playerPanel.real_null()?.show_panel();
-            //fileSelectPanel.real_null()?.gameObject.SetActive(false);
-            show_hands();
-        }
-        
-        //public void show_file_panel()
-        //{
-        //    playerPanel.real_null()?.gameObject.SetActive(false);
-        //    fileSelectPanel.real_null()?.gameObject.SetActive(true);
-        //    show_hands();
-        //}
-        
-        public void hide_interface()
-        {
-            playerPanel.real_null()?.gameObject.SetActive(false);
-            hide_hands();
         }
         
         public void set_active_hand(HandControls hand)
@@ -102,19 +94,18 @@ namespace DefaultNamespace
 
         void TriggerPressedActionOnstarted(InputAction.CallbackContext obj)
         {
-            if(playerPanel.gameObject.activeSelf) return;
-            
-            show_player_panel();
+            uiManager.show_ui();
         }
 
 
         void set_drive(DriveInfo drive)
         {
-            //current_drive = drive;
             current_directory = new DirectoryInfo(drive.Name);
             
             directories = current_directory.GetDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();
             mp4_files = current_directory.GetFiles("*.mp4");
+            
+            PathChanged?.Invoke();
         }
         
         public void set_directory(DirectoryInfo directory)
@@ -123,6 +114,8 @@ namespace DefaultNamespace
             
             directories = current_directory.GetDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();
             mp4_files = current_directory.GetFiles("*.mp4");
+            
+            PathChanged?.Invoke();
         }
 
         public void go_up_path()
@@ -138,11 +131,14 @@ namespace DefaultNamespace
                 drives ??= DriveInfo.GetDrives();
                 
                 directories = drives.Select(d => new DirectoryInfo(d.Name)).ToArray();
+                PathChanged?.Invoke();
                 return;
             }
             
             directories = current_directory.GetDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();
             mp4_files = current_directory.GetFiles("*.mp4");
+            
+            PathChanged?.Invoke();
         }
 
 
@@ -167,49 +163,42 @@ namespace DefaultNamespace
             directories = drives.Select(d => new DirectoryInfo(d.Name)).ToArray();
         }
         
-        
-        public void set_file(FileInfo file)
-        {
-            vp.url = file.FullName;
-            vp.Prepare();
-        }
-        
         public void set_file(int file_idx)
         {
             if(mp4_files == null || mp4_files.Length<=file_idx) return;
             
-            vp.url = mp4_files[file_idx].FullName;
-            vp.Prepare();
+            videoManager.set_file(mp4_files[file_idx].FullName);
         }
 
         bool video_started;
         int idx = 0;
-        void Update()
-        {
-            video_started = true;
-            
-            if (!vp.isPlaying && Input.GetKeyDown(KeyCode.A))
-            {
-                idx = 0;
-                video_started = false;
-            } 
-            
-            if (!vp.isPlaying && Input.GetKeyDown(KeyCode.D))
-            {
-                idx = 1;
-                video_started = false;
-            } 
-            
-            if(video_started) return;
-
-            video_started = true;
-
-            go_to_drives();
-            
-            set_directory(directories[0]);
-            set_directory(directories[19]);
-            
-            set_file(idx);
-        }
+        
+        //void Update()
+        //{
+        //    video_started = true;
+        //    
+        //    if (!vp.isPlaying && Input.GetKeyDown(KeyCode.A))
+        //    {
+        //        idx = 0;
+        //        video_started = false;
+        //    } 
+        //    
+        //    if (!vp.isPlaying && Input.GetKeyDown(KeyCode.D))
+        //    {
+        //        idx = 1;
+        //        video_started = false;
+        //    } 
+        //    
+        //    if(video_started) return;
+        //
+        //    video_started = true;
+        //
+        //    go_to_drives();
+        //    
+        //    set_directory(directories[0]);
+        //    set_directory(directories[19]);
+        //    
+        //    set_file(idx);
+        //}
     }
 }

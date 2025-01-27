@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 
 namespace DefaultNamespace
@@ -9,17 +10,11 @@ namespace DefaultNamespace
         public TMP_Text text;
         
         FileInfo file_info;
-        FileSelectPanel file_select_panel;
 
         public string File_name => file_info.Name;
         
-        bool is_active;
-
-        bool triggered;
-        
-        public void set_data(FileSelectPanel p, FileInfo f)
+        public void set_data(FileInfo f)
         {
-            file_select_panel = p;
             file_info = f;
 
             text.text = file_info.Name;
@@ -27,25 +22,24 @@ namespace DefaultNamespace
 
         protected override void Click_Action()
         {
-            if(!is_active) return;
-            
-            file_select_panel.select_file(file_info);
+            video_manager.set_file(file_info.FullName);
+            main_controls.uiManager.hide_ui();
         }
-
-        void FixedUpdate()
+        
+        [CustomEditor(typeof(FileButton))]
+        public class FileButtonEditor : Editor
         {
-            is_active = false;
+            public override void OnInspectorGUI()
+            {
+                base.OnInspectorGUI();
+
+                if(!Application.isPlaying || target == null) return;
             
-            if(!triggered) return;
-
-            triggered = false;
-
-            is_active = true;
-        }
-
-        void OnTriggerStay(Collider other)
-        {
-            triggered = true;
+                if (GUILayout.Button("Play File"))
+                {
+                    (target as FileButton).Click();
+                }
+            }
         }
     }
 }

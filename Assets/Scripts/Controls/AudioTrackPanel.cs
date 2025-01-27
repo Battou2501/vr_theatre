@@ -3,26 +3,42 @@ using UnityEngine;
 
 namespace DefaultNamespace
 {
-    public class AudioTrackPanel : InterfacePanel
+    public class AudioTrackPanel : BaseControlsPanel
     {
         public GameObject trackPrefab;
         public Transform contentBlock;
-        public CloseAudioTrackPanelButton closeAudioTrackPanelButton;
-        PlayerPanel player_panel;
-
-
+        
         List<SetAudioTrackButton> track_buttons;
-
-        public void init(PlayerPanel p, ManageVideoPlayerAudio m)
+        string file_path;
+        
+        public override void init(MainControls m)
         {
-            player_panel = p;
-            var tracks = m.tracks;
+            base.init(m);
             
-            closeAudioTrackPanelButton.real_null()?.init(this);
+            refresh_buttons();
+        }
+
+        public override void show()
+        {
+            base.show();
+            
+            if(file_path == video_manager.FilePath)
+                return;
+            
+            refresh_buttons();
+        }
+
+        void refresh_buttons()
+        {
+            file_path = video_manager.FilePath;
+            
+            var tracks = video_manager.tracks;
             
             track_buttons?.for_each(x=>Destroy(x.gameObject));
 
             track_buttons = new List<SetAudioTrackButton>();
+            
+            if(tracks == null || tracks.Length == 0) return;
             
             for (var i = 0; i < tracks.Length; i++)
             {
@@ -30,27 +46,12 @@ namespace DefaultNamespace
 
                 var button = Instantiate(trackPrefab, contentBlock).GetComponent<SetAudioTrackButton>();
                 
-                button.init(this,i, track.lang);
+                button.init(main_controls);
+                
+                button.set_track_dta(i, track.lang);
                 
                 track_buttons.Add(button);
             }
-        }
-        
-        public void set_audio_track(int t)
-        {
-            player_panel.set_audio_track(t);
-            close_panel();
-        }
-
-        public void show_panel()
-        {
-            gameObject.SetActive(true);
-        }
-        
-        public void close_panel()
-        {
-            gameObject.SetActive(false);
-            player_panel.audio_track_panel_closed();
         }
     }
 }

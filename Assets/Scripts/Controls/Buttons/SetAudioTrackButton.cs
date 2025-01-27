@@ -9,18 +9,16 @@ namespace DefaultNamespace
         public TMP_Text text;
         
         int track_idx;
-        AudioTrackPanel panel;
-        
-        public void init(AudioTrackPanel p, int t, string lang)
+
+        public void set_track_dta(int idx, string lang)
         {
-            panel = p;
-            track_idx = t;
-            text.text = $"Track {t} [{lang}]";
+            track_idx = idx;
+            text.text = $"Track {idx} [{lang}]";
         }
 
         protected override void Click_Action()
         {
-            panel.set_audio_track(track_idx);
+            video_manager.request_track_change(track_idx);
         }
     }
 }
