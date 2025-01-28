@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace DefaultNamespace
 {
@@ -21,5 +22,8 @@ namespace DefaultNamespace
 
             main_controls.check_hands_display();
         }
+        
+        [CustomEditor(typeof(OpenFileSelectPanelButton))]
+        public class OpenFileSelectPanelButtonEditor : ClickableButtonEditor {}
     }
 }

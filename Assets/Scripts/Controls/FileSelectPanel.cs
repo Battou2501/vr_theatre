@@ -13,6 +13,8 @@ namespace DefaultNamespace
         public GameObject directoryButtonPrefab;
         public GameObject fileButtonPrefab;
 
+        
+
         public Transform contentBlock;
         public float contentBlockHeight;
         public float contentBlockWidth;
@@ -20,6 +22,7 @@ namespace DefaultNamespace
         public int verticalElements;
         
         public TMP_Text pathText;
+        public TMP_Text pageText;
         
         public ChangeFilePageButton nextPageButton;
         public ChangeFilePageButton previousPageButton;
@@ -106,6 +109,9 @@ namespace DefaultNamespace
             
             nextPageButton?.gameObject.SetActive(has_next);
             previousPageButton?.gameObject.SetActive(has_previous);
+            
+            pageText.gameObject.SetActive(total_pages > 0);
+            pageText.text = ""+(current_page+1) + " / " + (total_pages+1);
         }
 
         void update_data()

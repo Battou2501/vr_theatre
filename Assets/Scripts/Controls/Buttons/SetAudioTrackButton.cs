@@ -1,5 +1,6 @@
 ﻿using System;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 
 namespace DefaultNamespace
@@ -20,5 +21,8 @@ namespace DefaultNamespace
         {
             video_manager.request_track_change(track_idx);
         }
+        
+        [CustomEditor(typeof(SetAudioTrackButton))]
+        public class SetAudioTrackButtonEditor : ClickableButtonEditor {}
     }
 }

@@ -23,6 +23,8 @@ public class UIManager : BaseControl
         }
         
         panels = GetComponentsInChildren<BaseControlsPanel>(true);
+        
+        hide_ui();
     }
 
     public void show_ui()

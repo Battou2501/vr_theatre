@@ -11,19 +11,6 @@ namespace DefaultNamespace
         }
         
         [CustomEditor(typeof(GoUpPathButton))]
-        public class GoUpPathButtonEditor : Editor
-        {
-            public override void OnInspectorGUI()
-            {
-                base.OnInspectorGUI();
-
-                if(!Application.isPlaying || target == null) return;
-            
-                if (GUILayout.Button("Go up path"))
-                {
-                    (target as GoUpPathButton).Click();
-                }
-            }
-        }
+        public class GoUpPathButtonEditor : ClickableButtonEditor {}
     }
 }

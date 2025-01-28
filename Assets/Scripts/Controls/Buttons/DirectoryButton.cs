@@ -26,21 +26,7 @@ namespace DefaultNamespace
             main_controls.set_directory(dir_info);
         }
         
-    }
-
-    [CustomEditor(typeof(DirectoryButton))]
-    public class DirectoryButtonEditor : Editor
-    {
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
-
-            if(!Application.isPlaying || target == null) return;
-            
-            if (GUILayout.Button("Set Directory"))
-            {
-                (target as DirectoryButton).Click();
-            }
-        }
+        [CustomEditor(typeof(DirectoryButton))]
+        public class DirectoryButtonEditor : ClickableButtonEditor {}
     }
 }

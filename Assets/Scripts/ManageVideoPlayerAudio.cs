@@ -47,6 +47,8 @@ namespace DefaultNamespace
         public float movie_light_strength = 0.2f;
         public bool loop_video;
         public double skipSeconds;
+        public double seek_time;
+        public bool is_seeking;
         
         public Track[] tracks
         {
@@ -60,6 +62,7 @@ namespace DefaultNamespace
         public float Video_time_01 => Vp_is_prepared ? (float)(Video_time/Video_length) : 0;
         public float Audio_volume => audioSources[0].volume;
         public string FilePath => vp.url;
+        public bool IsPlaying => vp.isPlaying;
         
         
         
@@ -87,24 +90,26 @@ namespace DefaultNamespace
         double skip_time_target;
 
         bool Vp_is_playing => vp.isPlaying;
-        bool tracks_in_sync
-        {
-            get
-            {
-                if (tracks is not {Length: > 0})
-                    return true;
-
-                var add_count = tracks[0].add_count;
-
-                for (int i = 1; i < tracks.Length; i++)
-                {
-                    if (tracks[i].add_count != add_count)
-                        return false;
-                }
-
-                return true;
-            }
-        }
+        //bool tracks_in_sync
+        //{
+        //    get
+        //    {
+        //        return true;
+        //        
+        //        if (tracks is not {Length: > 0})
+        //            return true;
+        //
+        //        var add_count = tracks[0].add_count;
+        //
+        //        for (int i = 1; i < tracks.Length; i++)
+        //        {
+        //            if (tracks[i].add_count != add_count)
+        //                return false;
+        //        }
+        //
+        //        return true;
+        //    }
+        //}
 
         static int trim_seconds_static;
         static int trim_after_reaching_seconds_static;
@@ -302,12 +307,16 @@ namespace DefaultNamespace
                 Debug.Log("Finally all sample frames consumed!");
             }
 
+            
+            
             var track = tracks[provider.trackIndex];
             
             track.add_samples(sf_count, buffer, provider.channelCount);
 
-            if (tracks_in_sync)
-                samples_received = true;
+            //if (tracks_in_sync)
+            samples_received = true;
+            
+            Debug.Log("Track " + provider.trackIndex + " samples received: " + sf_count+ " count: " + track.add_count);
             
             if(provider.trackIndex != current_track_idx) return;
 
@@ -347,17 +356,18 @@ namespace DefaultNamespace
 
         public void set_file(string file)
         {
+            vp.Stop();
             vp.url = file;
             vp.Prepare();
             requested_command = PlayerCommands.play_pause;
         }
         
-        public void request_pause()
+        public void request_play_pause()
         {
             requested_command = PlayerCommands.play_pause;
         }
         
-        void pause()
+        void play_pause()
         {
             if(!is_prepared) return;
             
@@ -526,8 +536,8 @@ namespace DefaultNamespace
             if (requested_command == PlayerCommands.none)
                 return;
 
-            if (!tracks_in_sync)
-                return;
+            //if (!tracks_in_sync)
+            //    return;
             
             if(player_state == PlayerStates.playing && Time.unscaledTimeAsDouble - samples_receive_time > 0.3f)
                 return;
@@ -538,7 +548,7 @@ namespace DefaultNamespace
             switch (requested_command)
             {
                 case PlayerCommands.play_pause:
-                    pause();
+                    play_pause();
                     break;
                 case PlayerCommands.skip_forward:
                 case PlayerCommands.skip_backwards:
@@ -638,7 +648,8 @@ namespace DefaultNamespace
         
         void handle_change_track_request()
         {
-            if(!audio_started || !tracks_in_sync || !Vp_is_playing) return;
+            //if(!audio_started || !tracks_in_sync || !Vp_is_playing) return;
+            if(!audio_started || !Vp_is_playing) return;
             
             if(requested_track_idx == -1 || requested_track_idx >= vp.audioTrackCount || requested_track_idx == current_track_idx ) return;
 

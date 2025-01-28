@@ -6,52 +6,53 @@ namespace DefaultNamespace
 {
     public class VideoSeekHandle : DraggableHandle
     {
-        public Transform minPoint;
-        public Transform maxPoint;
-        public TMP_Text timeText;
+        public Transform playedBar;
 
-        double min_max_distance_ratio;
+        Vector3 played_bar_initial_scale;
         
         double video_length => video_manager.Video_length;
-        double video_position => Vector3.Distance(minPoint.position, transform.position) * min_max_distance_ratio;
-        string video_time_dragged => TimeSpan.FromSeconds(video_position * video_length).ToString(@"hh\:mm\:ss");
+        //string video_time_dragged => TimeSpan.FromSeconds(slider_position * video_length).ToString(@"hh\:mm\:ss");
+        double video_time_dragged => slider_position * video_length;
 
         public override void init(MainControls m)
         {
             base.init(m);
             
-            min_max_distance_ratio = 1f / Vector3.Distance(minPoint.position, maxPoint.position);
+            if(playedBar == null) return;
+            
+            played_bar_initial_scale = playedBar.localScale;
         }
 
         protected override void StopDrag_Action()
         {
-            video_manager.request_skip_to_time(video_length * video_position);
+            video_manager.request_skip_to_time(video_length * slider_position);
         }
 
-
-        void Update()
+        protected override void OnDragged()
         {
-            if(!is_initiated) return;
-            
             if(!video_manager.Vp_is_prepared) return;
             
-            timeText.text = video_time_dragged;
-            
-            if (!isDragged)
-            {
-                transform.position = Vector3.Lerp(minPoint.position, maxPoint.position, video_manager.Video_time_01);
-                
-                return;
-            }
+            video_manager.is_seeking = true;
+            video_manager.seek_time = video_time_dragged;
 
-            if(!Extensions.ClosestPointsOnTwoLines(out var pos, 
-                   minPoint.position, 
-                   maxPoint.position, 
-                   main_controls.Active_hand_transform.position, 
-                   main_controls.Active_hand_transform.forward*20)) return;
+            update_played_bar();
+        }
 
+        protected override void OnNotDragged()
+        {
+            if(!video_manager.Vp_is_prepared) return;
             
-            transform.position = pos;
+            transform.position = Vector3.Lerp(minPoint.position, maxPoint.position, video_manager.Video_time_01);
+
+            update_played_bar();
+        }
+
+        void update_played_bar()
+        {
+            if(playedBar == null) return;
+
+            playedBar.position = Vector3.Lerp(minPoint.position, transform.position, 0.5f);
+            playedBar.localScale = Vector3.Scale(played_bar_initial_scale,new Vector3(video_manager.Video_time_01,1,1));
         }
     }
 }

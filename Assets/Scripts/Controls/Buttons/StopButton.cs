@@ -1,19 +1,16 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace DefaultNamespace
 {
     public class StopButton : ClickableButton
     {
-        PlayerPanel panel;
-        
-        public void init(PlayerPanel p)
-        {
-            panel = p;
-        }
-
         protected override void Click_Action()
         {
-            panel.stop();
+            video_manager.request_stop();
         }
+        
+        [CustomEditor(typeof(StopButton))]
+        public class StopButtonEditor : ClickableButtonEditor {}
     }
 }

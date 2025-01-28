@@ -27,19 +27,6 @@ namespace DefaultNamespace
         }
         
         [CustomEditor(typeof(FileButton))]
-        public class FileButtonEditor : Editor
-        {
-            public override void OnInspectorGUI()
-            {
-                base.OnInspectorGUI();
-
-                if(!Application.isPlaying || target == null) return;
-            
-                if (GUILayout.Button("Play File"))
-                {
-                    (target as FileButton).Click();
-                }
-            }
-        }
+        public class FileButtonEditor : ClickableButtonEditor {}
     }
 }

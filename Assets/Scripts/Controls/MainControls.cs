@@ -16,23 +16,18 @@ namespace DefaultNamespace
 {
     public class MainControls : MonoBehaviour
     {
-        public Transform cameraTransform;
-        
         [Header("UI Controls elements")]
         public UIManager uiManager;
         
         [Header("Hand controls")]
-        public HandControls leftHand;
-        public HandControls rightHand;
+        public GameObject leftHandTriggerCollider;
+        public GameObject rightHandTriggerCollider;
+        
+        public InputAction leftTriggerPressedAction;
+        public InputAction rightTriggerPressedAction;
         
         [Header("Video player manager")]
         public ManageVideoPlayerAudio videoManager;
-        
-        HandControls active_hand;
-
-        public Transform Active_hand_transform => active_hand.real_null()?.transform;
-
-        public bool Is_dragging_control => active_hand != null && active_hand.Is_dragging_control;
         
         DriveInfo[] drives;
         DirectoryInfo[] directories;
@@ -54,13 +49,10 @@ namespace DefaultNamespace
         {
             uiManager.init(this);
             
-            leftHand.real_null()?.init(this);
-            leftHand.triggerPressedAction.started += TriggerPressedActionOnstarted;
-            
-            rightHand.real_null()?.init(this);
-            rightHand.triggerPressedAction.started += TriggerPressedActionOnstarted;
-            
-            active_hand = null;
+            if(leftTriggerPressedAction != null)
+                leftTriggerPressedAction.started += TriggerPressedActionOnstarted;
+            if(rightTriggerPressedAction != null)
+                rightTriggerPressedAction.started += TriggerPressedActionOnstarted;
         }
 
         public void check_hands_display()
@@ -73,23 +65,14 @@ namespace DefaultNamespace
         
         void show_hands()
         {
-            leftHand.real_null()?.gameObject.SetActive(true);
-            rightHand.real_null()?.gameObject.SetActive(true);
+            leftHandTriggerCollider.real_null()?.SetActive(true);
+            rightHandTriggerCollider.real_null()?.SetActive(true);
         }
         
         void hide_hands()
         {
-            leftHand.real_null()?.gameObject.SetActive(false);
-            rightHand.real_null()?.gameObject.SetActive(false);
-        }
-        
-        public void set_active_hand(HandControls hand)
-        {
-            if(hand == null || active_hand == hand) return;
-            
-            active_hand.real_null()?.deactivate_hand();
-            active_hand = hand;
-            active_hand.activate_hand();
+            leftHandTriggerCollider.real_null()?.SetActive(false);
+            rightHandTriggerCollider.real_null()?.SetActive(false);
         }
 
         void TriggerPressedActionOnstarted(InputAction.CallbackContext obj)
