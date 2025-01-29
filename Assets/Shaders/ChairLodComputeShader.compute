@@ -1,0 +1,57 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+AppendStructuredBuffer<float4x4> lod_0_buffer;
+AppendStructuredBuffer<float4x4> lod_1_buffer;
+AppendStructuredBuffer<float4x4> lod_2_buffer;
+AppendStructuredBuffer<float4x4> lod_3_buffer;
+StructuredBuffer<float4x4> model_positions_buffer;
+
+uint model_count;
+float4 cam_pos;
+float4 cam_dir;
+float lod_1_dist;
+float lod_2_dist;
+float lod_3_dist;
+float max_dist;
+float fov_dot;
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= model_count) return;
+    
+    float4x4 model_position = model_positions_buffer[id.x];
+    
+    float3 vec_from_cam = float3(model_position._m03-cam_pos.x,model_position._m13-cam_pos.y,model_position._m23-cam_pos.z);
+    
+    float dot1 = dot(normalize(vec_from_cam),cam_dir.xyz);
+
+    float dist = dot(vec_from_cam.xyz, vec_from_cam.xyz);
+    
+    if(dist > max_dist || dot1 < fov_dot) return;
+    
+    
+    if(dist > lod_3_dist)
+    {
+        lod_3_buffer.Append(model_position);
+        return;
+    }
+    
+    if(dist > lod_2_dist)
+    {
+        lod_2_buffer.Append(model_position);
+        return;
+    }
+    
+    if(dist > lod_1_dist)
+    {
+        lod_1_buffer.Append(model_position);
+        return;
+    }
+    
+    lod_0_buffer.Append(model_position);
+    //lod_0_buffer.Append(float4x4(0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0));
+}
