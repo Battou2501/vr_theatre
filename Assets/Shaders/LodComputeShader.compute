@@ -1,0 +1,49 @@
+#pragma kernel CSMain
+
+StructuredBuffer<float4x4> model_positions_buffer;
+AppendStructuredBuffer<float4x4> lod_buffers[4];
+
+uint model_count;
+uint lod_count;
+float4 cam_pos;
+float4 cam_dir;
+float lod_distances[4];
+float fov_dot;
+float ignore_fov_distance;
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= model_count) return;
+    
+    float4x4 model_position = model_positions_buffer[id.x];
+    
+    float3 vec_from_cam_dist = float3(model_position._m03-cam_pos.x,model_position._m13-cam_pos.y,model_position._m23-cam_pos.z);
+    float3 vec_from_cam_fov = float3(model_position._m03-cam_pos.x+cam_dir.x*2,model_position._m13-cam_pos.y+cam_dir.y*2,model_position._m23-cam_pos.z+cam_dir.z*2);
+    
+    float dot1 = dot(normalize(vec_from_cam_fov),cam_dir.xyz);
+
+    float dist = dot(vec_from_cam_dist.xyz, vec_from_cam_dist.xyz);
+    
+    if (dist > lod_distances[3] || dot1 < fov_dot && dist > ignore_fov_distance) return;
+    
+    if(lod_count >= 3 && dist > lod_distances[2])
+    {
+        lod_buffers[3].Append(model_position);
+        return;
+    }
+    
+    if(lod_count >= 2 && dist > lod_distances[1])
+    {
+        lod_buffers[2].Append(model_position);
+        return;
+    }
+    
+    if(lod_count >= 1 && dist > lod_distances[0])
+    {
+        lod_buffers[1].Append(model_position);
+        return;
+    }
+    
+    lod_buffers[0].Append(model_position);
+}

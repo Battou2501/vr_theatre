@@ -39,6 +39,8 @@ Shader "Unlit/LightReceivingShader"
             #pragma shader_feature _LIGHT_FROM_SCENE _LIGHT_FROM_ABOVE
             
             #include "UnityCG.cginc"
+            #define UNITY_INDIRECT_DRAW_ARGS IndirectDrawIndexedArgs
+            #include "UnityIndirect.cginc"
 
             struct appdata
             {
@@ -81,6 +83,8 @@ Shader "Unlit/LightReceivingShader"
             float _LightMaxStrength;
             int _LightUV;
 
+            StructuredBuffer<float4x4> _TRS_Array;
+            int _Instanced;
             
             static float2 _SamplePointsUV[60]=
             {
@@ -166,17 +170,21 @@ Shader "Unlit/LightReceivingShader"
             int _MipLevel;
 
             
-            v2f vert (appdata v)
+            v2f vert (appdata v, uint svInstanceID : SV_InstanceID)
             {
                 v2f o;
 
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
                 
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                float4 wpos = mul(_TRS_Array[svInstanceID], v.vertex)  * _Instanced + (1-_Instanced) * mul (unity_ObjectToWorld, v.vertex);
+                
+                //o.vertex = UnityObjectToClipPos(v.vertex);
+                o.vertex = mul(UNITY_MATRIX_VP, wpos) * _Instanced + (1-_Instanced) * UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex_White);
-                o.worldPos = mul (unity_ObjectToWorld, v.vertex);
-                o.normal = normalize(mul (unity_ObjectToWorld, v.normal));
+                //o.worldPos = mul (unity_ObjectToWorld, v.vertex);
+                o.worldPos = wpos;
+                o.normal = normalize(mul (_TRS_Array[svInstanceID] * _Instanced + (1-_Instanced) * unity_ObjectToWorld, v.normal));
                 const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
