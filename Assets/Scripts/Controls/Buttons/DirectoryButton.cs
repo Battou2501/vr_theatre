@@ -23,7 +23,7 @@ namespace DefaultNamespace
         protected override void Click_Action()
         {
             Debug.Log("Clicked");
-            main_controls.set_directory(dir_info);
+            file_navigation_manager.set_directory(dir_info);
         }
         
         [CustomEditor(typeof(DirectoryButton))]

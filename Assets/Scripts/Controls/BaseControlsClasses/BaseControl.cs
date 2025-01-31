@@ -7,6 +7,7 @@ public abstract class BaseControl : MonoBehaviour
 {
     protected MainControls main_controls;
     protected ManageVideoPlayerAudio video_manager;
+    protected FileNavigationManager file_navigation_manager;
 
     protected ControlsAnimationFeedback animation_feedback;
     
@@ -19,6 +20,7 @@ public abstract class BaseControl : MonoBehaviour
     {
         main_controls = m;
         video_manager = main_controls.videoManager;
+        file_navigation_manager = main_controls.fileNavigationManager;
         animation_feedback = GetComponent<ControlsAnimationFeedback>();
         hovered_by = new HashSet<GameObject>();
         is_initiated = true;

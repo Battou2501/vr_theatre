@@ -7,7 +7,7 @@ namespace DefaultNamespace
     {
         protected override void Click_Action()
         {
-            main_controls.go_up_path();
+            file_navigation_manager.go_up_path();
         }
         
         [CustomEditor(typeof(GoUpPathButton))]

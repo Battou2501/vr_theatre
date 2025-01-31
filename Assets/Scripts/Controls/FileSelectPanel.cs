@@ -48,7 +48,7 @@ namespace DefaultNamespace
         {
             base.init(m);
 
-            main_controls.PathChanged += OnPathChanged;
+            file_navigation_manager.PathChanged += OnPathChanged;
 
             if(nextPageButton != null)
                 nextPageButton.Clicked += OnChangedToNextPage;
@@ -67,7 +67,7 @@ namespace DefaultNamespace
         {
             if(!is_initiated) return;
             
-            main_controls.PathChanged -= OnPathChanged;
+            file_navigation_manager.PathChanged -= OnPathChanged;
             
             if(nextPageButton != null)
                 nextPageButton.Clicked -= OnChangedToNextPage;
@@ -116,9 +116,9 @@ namespace DefaultNamespace
 
         void update_data()
         {
-            pathText.text = main_controls.Current_path;
+            pathText.text = file_navigation_manager.Current_path;
             
-            main_controls.get_current_path_data(out directories, out files);
+            file_navigation_manager.get_current_path_data(out directories, out files);
 
             directories = directories?.OrderBy(x=>x.Name).ToArray();
 
@@ -128,9 +128,9 @@ namespace DefaultNamespace
             
             total_pages = ((directories?.Length ?? 0) + files?.Length ?? 0) / max_elements;
             
-            Debug.Log(main_controls.Current_directory_has_parent);
+            Debug.Log(file_navigation_manager.Current_directory_has_parent);
             
-            goUpPathButton?.gameObject.SetActive(main_controls.Current_directory_has_parent);
+            goUpPathButton?.gameObject.SetActive(file_navigation_manager.Current_directory_has_parent);
             
             update_buttons();
         }
