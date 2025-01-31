@@ -42,22 +42,22 @@ namespace DefaultNamespace
 
         void StartDrag(InputAction.CallbackContext callbackContext)
         {
-            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && hovered_by != main_controls.leftHandTriggerCollider) return;
-            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && hovered_by != main_controls.rightHandTriggerCollider) return;
+            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.leftHandTriggerCollider)) return;
+            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.rightHandTriggerCollider)) return;
             
             if(is_dragged) return;
             
             is_dragged = true;
 
-            dragged_by = hovered_by.transform;
+            dragged_by = main_controls.leftTriggerPressedAction.id == callbackContext.action.id ? main_controls.leftHandTriggerCollider.transform : main_controls.rightHandTriggerCollider.transform;
 
             StartDrag_Action();
         }
 
         void StopDrag(InputAction.CallbackContext callbackContext)
         {
-            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && hovered_by != main_controls.leftHandTriggerCollider) return;
-            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && hovered_by != main_controls.rightHandTriggerCollider) return;
+            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && dragged_by.gameObject != main_controls.leftHandTriggerCollider) return;
+            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && dragged_by.gameObject != main_controls.rightHandTriggerCollider) return;
             
             is_dragged = false;
 

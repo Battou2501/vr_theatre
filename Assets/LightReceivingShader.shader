@@ -196,11 +196,11 @@ Shader "Unlit/LightReceivingShader"
                 
                 o.viewDir = viewDir;
 
-                #if defined(_LIGHT_FROM_SCENE)
-                o.lightDir = normalize(_WorldSpaceLightPos0);
-                #else
-                o.lightDir = float3(0,1,0);
-                #endif
+                //#if defined(_LIGHT_FROM_SCENE)
+                //o.lightDir = normalize(_WorldSpaceLightPos0);
+                //#else
+                //o.lightDir = float3(0,1,0);
+                //#endif
                 
 
                 o.color = v.color;
@@ -242,22 +242,26 @@ Shader "Unlit/LightReceivingShader"
                 
                 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const float3 light_dir = normalize(i.lightDir);
-                const fixed light_dot = saturate(dot(norm,light_dir)*3);
-                const float light_reflect_dot = saturate(dot(light_dir, reflect_viewDir));
+                //const float3 light_dir = normalize(i.lightDir);
+                //const fixed light_dot = saturate(dot(norm,light_dir)*3);
+                //const float light_reflect_dot = saturate(dot(light_dir, reflect_viewDir));
 
-                const float specular_light=pow(light_reflect_dot,lerp(1,80,_Shininess*_Shininess*_Shininess)) * _Shininess * _ShininessBrightness * 2 * light_dot;
+                //const float specular_light=pow(light_reflect_dot,lerp(1,80,_Shininess*_Shininess*_Shininess)) * _Shininess * _ShininessBrightness * 2 * light_dot *0;
                 #endif
                 
 
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 fixed4 specular_screen=0;
-                half spec_pow = lerp(1,50,_Shininess);
+                half spec_pow = lerp(1,100,_Shininess);
                 #endif
                 
                 half4 screen_col_ambient = 0;
                 half4 screen_col_dots = 0;
+
+                #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
+                float spec_multiplier = _Shininess * _ShininessBrightness * 0.15;
+                #endif
                 
                 for(int j=0;j<60;j++)
                 {
@@ -280,13 +284,14 @@ Shader "Unlit/LightReceivingShader"
                     screen_col_dots += c1 * min(s1 , 0.999) * PdotSN * PdotN;
 
                     #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                    specular_screen += pow(PdotRV,spec_pow) * _Shininess * _ShininessBrightness * 0.15 * c1 * saturate(PdotSN*3) * saturate(PdotN*3);
+                    specular_screen += pow(PdotRV,spec_pow) * spec_multiplier * c1 * saturate(PdotSN*3) * saturate(PdotN*3);
                     #endif
                     
                 }
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
-                const fixed4 specular = lerp(specular_screen, specular_light, _LightStrength);
+                //const fixed4 specular = lerp(specular_screen, specular_light, _LightStrength);
+                const fixed4 specular = lerp(specular_screen, 0, _LightStrength);
                 #endif
 
                 const fixed4 screen_light = tex * (screen_col_ambient + screen_col_dots) * _ScreenLightMult;
