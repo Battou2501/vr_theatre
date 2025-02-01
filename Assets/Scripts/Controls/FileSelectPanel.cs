@@ -90,15 +90,15 @@ namespace DefaultNamespace
                     
                     var button = Instantiate(directoryButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
-                    var dir_button = button.GetComponent<DirectoryButton>();
-                    dir_button.init(main_controls);
-                    directory_buttons.Add(dir_button);
+                    var dir_button = button.GetComponents<BaseControl>();
+                    dir_button.for_each(main_controls, (o,m) => o.init(m));
+                    directory_buttons.Add((DirectoryButton)dir_button.FirstOrDefault(o=>o.GetType() == typeof(DirectoryButton)));
                     
                     button = Instantiate(fileButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
-                    var file_button = button.GetComponent<FileButton>();
-                    file_button.init(main_controls);
-                    file_buttons.Add(file_button);
+                    var file_button = button.GetComponents<BaseControl>();
+                    file_button.for_each(main_controls, (o,m) => o.init(m));
+                    file_buttons.Add((FileButton)file_button.FirstOrDefault(o=>o.GetType() == typeof(FileButton)));
                 }
             }
         }

@@ -1,9 +1,10 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace DefaultNamespace
 {
-    public class OpenFileSelectPanelButton : ClickableButton
+    public class OpenPanelButton : ClickableButton
     {
         public BaseControlsPanel panel_to_open;
         BaseControlsPanel parent_panel;
@@ -17,13 +18,14 @@ namespace DefaultNamespace
 
         protected override void Click_Action()
         {
-            parent_panel.real_null()?.hide();
             panel_to_open.real_null()?.show();
-
-            main_controls.check_hands_display();
+            parent_panel.real_null()?.hide();
+            
+            //main_controls.check_hands_display();
         }
-        
-        [CustomEditor(typeof(OpenFileSelectPanelButton))]
-        public class OpenFileSelectPanelButtonEditor : ClickableButtonEditor {}
+#if UNITY_EDITOR
+        [CustomEditor(typeof(OpenPanelButton))]
+        public class OpenPanelButtonEditor : ClickableButtonEditor {}
+#endif
     }
 }

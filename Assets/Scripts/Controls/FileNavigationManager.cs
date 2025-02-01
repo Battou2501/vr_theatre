@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class FileNavigationManager : MonoBehaviour
@@ -25,13 +26,15 @@ public class FileNavigationManager : MonoBehaviour
         PathChanged?.Invoke();
     }
     
-    public void set_directory(DirectoryInfo directory)
+    public async UniTask set_directory(DirectoryInfo directory)
     {
-        current_directory = directory;
-        
-        directories = current_directory.GetDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();
-        mp4_files = current_directory.GetFiles("*.mp4");
-        
+        await UniTask.RunOnThreadPool(() =>
+        {
+            current_directory = directory;
+
+            directories = current_directory.GetDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Attributes.HasFlag(FileAttributes.System)).ToArray();
+            mp4_files = current_directory.GetFiles("*.mp4");
+        });
         PathChanged?.Invoke();
     }
 

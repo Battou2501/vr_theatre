@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using TMPro;
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
+#endif
 
 namespace DefaultNamespace
 {
@@ -23,10 +24,12 @@ namespace DefaultNamespace
         protected override void Click_Action()
         {
             video_manager.set_file(file_info.FullName);
-            main_controls.uiManager.hide_ui();
+            //main_controls.uiManager.hide_ui();
         }
         
+#if UNITY_EDITOR
         [CustomEditor(typeof(FileButton))]
         public class FileButtonEditor : ClickableButtonEditor {}
+#endif
     }
 }

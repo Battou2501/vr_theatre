@@ -8,6 +8,7 @@ public abstract class BaseControl : MonoBehaviour
     protected MainControls main_controls;
     protected ManageVideoPlayerAudio video_manager;
     protected FileNavigationManager file_navigation_manager;
+    protected UIManager ui_manager;
 
     protected ControlsAnimationFeedback animation_feedback;
     
@@ -21,9 +22,20 @@ public abstract class BaseControl : MonoBehaviour
         main_controls = m;
         video_manager = main_controls.videoManager;
         file_navigation_manager = main_controls.fileNavigationManager;
+        ui_manager = main_controls.uiManager;
         animation_feedback = GetComponent<ControlsAnimationFeedback>();
         hovered_by = new HashSet<GameObject>();
+
+        var parent_panel = gameObject.GetComponentInParent<BaseControlsPanel>(true);
+        if (parent_panel != null)
+            parent_panel.Closed += OnParentPanelClosed;
+        
         is_initiated = true;
+    }
+
+    void OnParentPanelClosed()
+    {
+        hovered_by.Clear();
     }
 
     void OnTriggerEnter(Collider other)

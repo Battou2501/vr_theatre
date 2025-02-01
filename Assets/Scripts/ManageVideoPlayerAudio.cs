@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using NReco.VideoConverter;
 using Unity.Collections;
 using Unity.VisualScripting;
@@ -90,26 +91,26 @@ namespace DefaultNamespace
         double skip_time_target;
 
         bool Vp_is_playing => vp.isPlaying;
-        //bool tracks_in_sync
-        //{
-        //    get
-        //    {
-        //        return true;
-        //        
-        //        if (tracks is not {Length: > 0})
-        //            return true;
-        //
-        //        var add_count = tracks[0].add_count;
-        //
-        //        for (int i = 1; i < tracks.Length; i++)
-        //        {
-        //            if (tracks[i].add_count != add_count)
-        //                return false;
-        //        }
-        //
-        //        return true;
-        //    }
-        //}
+        bool tracks_in_sync
+        {
+            get
+            {
+                //return true;
+                
+                if (tracks is not {Length: > 0})
+                    return true;
+        
+                var add_count = tracks[0].add_count;
+        
+                for (int i = 1; i < tracks.Length; i++)
+                {
+                    if (tracks[i].add_count != add_count)
+                        return false;
+                }
+        
+                return true;
+            }
+        }
 
         static int trim_seconds_static;
         static int trim_after_reaching_seconds_static;
@@ -276,6 +277,12 @@ namespace DefaultNamespace
             mat.SetTexture(movie_tex, rt_pool[idx]);
             Graphics.Blit(rt_pool[idx], lightRT, blitMat);
         }
+
+        void clear_screen()
+        {
+            mat.SetTexture(movie_tex, null);
+            Graphics.Blit(null, lightRT, blitMat);
+        }
         
         void Get2DTexture(VideoPlayer vp, int i)
         {
@@ -306,17 +313,15 @@ namespace DefaultNamespace
                    
                 Debug.Log("Finally all sample frames consumed!");
             }
-
-            
             
             var track = tracks[provider.trackIndex];
             
             track.add_samples(sf_count, buffer, provider.channelCount);
 
-            //if (tracks_in_sync)
-            samples_received = true;
+            if (tracks_in_sync)
+                samples_received = true;
             
-            Debug.Log("Track " + provider.trackIndex + " samples received: " + sf_count+ " count: " + track.add_count);
+            //Debug.Log("Track " + provider.trackIndex + " samples received: " + sf_count+ " count: " + track.add_count);
             
             if(provider.trackIndex != current_track_idx) return;
 
@@ -389,6 +394,9 @@ namespace DefaultNamespace
                 return;
             }
             
+            //if(!is_prepared && vp.url != "") 
+            //    vp.Prepare();
+            
             vp.Play();
             player_state = PlayerStates.playing;
             
@@ -408,8 +416,13 @@ namespace DefaultNamespace
             
             reset_state();
             
-            vp.Stop();
+            //vp.Stop();
+            vp.Pause();
+            vp.time = 0;
+            clear_screen();
+            //vp.Prepare();
             player_state = PlayerStates.stopped;
+            //vp.Prepare();
         }
 
         public void request_skip_to_time(double t)
@@ -432,7 +445,7 @@ namespace DefaultNamespace
         {
             if(!is_prepared) return;
             
-            if(!audio_started && !no_audio) return;
+            if(IsPlaying && !audio_started && !no_audio) return;
             
             request_preview();
 
@@ -472,6 +485,9 @@ namespace DefaultNamespace
             light_strength = Mathf.Lerp(light_strength, target_light,Time.deltaTime);
             
             Shader.SetGlobalFloat(l_strength, light_strength);
+
+            //if (light_strength<0.1f)
+            //Debug.Log(light_strength);
         }
 
         void update_light_affects_screen()
@@ -536,8 +552,8 @@ namespace DefaultNamespace
             if (requested_command == PlayerCommands.none)
                 return;
 
-            //if (!tracks_in_sync)
-            //    return;
+            if (!tracks_in_sync)
+                return;
             
             if(player_state == PlayerStates.playing && Time.unscaledTimeAsDouble - samples_receive_time > 0.3f)
                 return;
@@ -648,8 +664,8 @@ namespace DefaultNamespace
         
         void handle_change_track_request()
         {
-            //if(!audio_started || !tracks_in_sync || !Vp_is_playing) return;
-            if(!audio_started || !Vp_is_playing) return;
+            if(!audio_started || !tracks_in_sync || !Vp_is_playing) return;
+            //if(!audio_started || !Vp_is_playing) return;
             
             if(requested_track_idx == -1 || requested_track_idx >= vp.audioTrackCount || requested_track_idx == current_track_idx ) return;
 
@@ -698,7 +714,8 @@ namespace DefaultNamespace
                 provider.sampleFramesOverflow += samples_overflow_callback;
                 provider.sampleFramesAvailable += samples_available_callback;
                 provider.enableSampleFramesAvailableEvents = true;
-                provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 3 * 2;
+                //provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 3 * 2;
+                provider.freeSampleFrameCountLowThreshold = provider.sampleRate/2;
 
                 var channel_count = provider.channelCount;
                 var audio_source_idx = 0;

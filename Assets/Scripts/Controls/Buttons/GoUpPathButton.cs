@@ -1,5 +1,6 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace DefaultNamespace
 {
@@ -9,8 +10,9 @@ namespace DefaultNamespace
         {
             file_navigation_manager.go_up_path();
         }
-        
+#if UNITY_EDITOR
         [CustomEditor(typeof(GoUpPathButton))]
         public class GoUpPathButtonEditor : ClickableButtonEditor {}
+#endif
     }
 }

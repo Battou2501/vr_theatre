@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8757991429333730509}
   - component: {fileID: 6540856909190183846}
   - component: {fileID: 4234350611049123789}
+  - component: {fileID: 6019396492293810197}
   - component: {fileID: -4728063437313380049}
   m_Layer: 0
   m_Name: FileButton
@@ -124,6 +125,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 5875208033246251082}
+--- !u!114 &6019396492293810197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822127967639205470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5fc51f3b0f4bc781fbc5490090b4ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panel_to_open: {fileID: 0}
 --- !u!114 &-4728063437313380049
 MonoBehaviour:
   m_ObjectHideFlags: 0

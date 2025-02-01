@@ -1,8 +1,9 @@
 ﻿using System.IO;
+using Cysharp.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting;
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
+#endif
 
 namespace DefaultNamespace
 {
@@ -22,11 +23,12 @@ namespace DefaultNamespace
 
         protected override void Click_Action()
         {
-            Debug.Log("Clicked");
-            file_navigation_manager.set_directory(dir_info);
+            //Debug.Log("Clicked");
+            file_navigation_manager.set_directory(dir_info).Forget();
         }
-        
+#if UNITY_EDITOR
         [CustomEditor(typeof(DirectoryButton))]
         public class DirectoryButtonEditor : ClickableButtonEditor {}
+#endif
     }
 }

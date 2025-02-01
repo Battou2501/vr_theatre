@@ -1,5 +1,6 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,20 +12,22 @@ namespace DefaultNamespace
         {
             base.init(m);
 
-            main_controls.leftTriggerPressedAction.started += OnClick;
-            main_controls.rightTriggerPressedAction.started += OnClick;
+            main_controls.leftTriggerPressedAction.performed += OnClick;
+            main_controls.rightTriggerPressedAction.performed += OnClick;
         }
 
         void OnDestroy()
         {
             if(!is_initiated) return;
             
-            main_controls.leftTriggerPressedAction.started -= OnClick;
-            main_controls.rightTriggerPressedAction.started -= OnClick;
+            main_controls.leftTriggerPressedAction.performed -= OnClick;
+            main_controls.rightTriggerPressedAction.performed -= OnClick;
         }
 
         void OnClick(InputAction.CallbackContext callbackContext)
         {
+            if(!callbackContext.control.IsPressed()) return;
+            
             if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.leftHandTriggerCollider)) return;
             if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.rightHandTriggerCollider)) return;
             
@@ -34,7 +37,7 @@ namespace DefaultNamespace
         }
 
         protected virtual void Click_Action() {}
-        
+#if UNITY_EDITOR
         [CustomEditor(typeof(ClickableButton))]
         public class ClickableButtonEditor : Editor
         {
@@ -50,5 +53,6 @@ namespace DefaultNamespace
                 }
             }
         }
+#endif
     }
 }

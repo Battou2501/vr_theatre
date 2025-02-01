@@ -1,5 +1,6 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace DefaultNamespace
@@ -18,14 +19,15 @@ namespace DefaultNamespace
         {
             if(!is_initiated) return;
             
-            if(playButtonObject != null && playButtonObject.activeSelf != video_manager.IsPlaying)
-                playButtonObject.SetActive(video_manager.IsPlaying);
+            if(playButtonObject != null && playButtonObject.activeSelf == video_manager.IsPlaying)
+                playButtonObject.SetActive(!video_manager.IsPlaying);
             
-            if(pauseButtonObject != null && pauseButtonObject.activeSelf == video_manager.IsPlaying)
-                pauseButtonObject.SetActive(!video_manager.IsPlaying);
+            if(pauseButtonObject != null && pauseButtonObject.activeSelf != video_manager.IsPlaying)
+                pauseButtonObject.SetActive(video_manager.IsPlaying);
         }
-
+#if UNITY_EDITOR
         [CustomEditor(typeof(PlayPauseButton))]
         public class PlayPauseButtonEditor : ClickableButtonEditor {}
+#endif
     }
 }

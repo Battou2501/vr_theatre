@@ -1,5 +1,6 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace DefaultNamespace
 {
@@ -9,8 +10,9 @@ namespace DefaultNamespace
         {
             video_manager.request_stop();
         }
-        
+#if UNITY_EDITOR
         [CustomEditor(typeof(StopButton))]
         public class StopButtonEditor : ClickableButtonEditor {}
+#endif
     }
 }

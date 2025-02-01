@@ -1,11 +1,7 @@
-using System;
-using System.Linq;
 using DefaultNamespace;
-using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(LodSystem))]
 public class LodInstance : MonoBehaviour

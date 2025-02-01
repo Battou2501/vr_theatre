@@ -23,15 +23,19 @@ namespace DefaultNamespace
         
         [Header("File navigation manager")]
         public FileNavigationManager fileNavigationManager;
+
+        bool subscriber_to_trigger_actions;
         
         void Awake()
         {
             uiManager.init(this);
-            
-            if(leftTriggerPressedAction != null)
-                leftTriggerPressedAction.started += TriggerPressedActionOnstarted;
-            if(rightTriggerPressedAction != null)
-                rightTriggerPressedAction.started += TriggerPressedActionOnstarted;
+
+            enable_trigger_check();
+        }
+
+        void OnDestroy()
+        {
+            disable_trigger_check();
         }
 
         public void check_hands_display()
@@ -54,8 +58,37 @@ namespace DefaultNamespace
             rightHandTriggerCollider.real_null()?.SetActive(false);
         }
 
-        void TriggerPressedActionOnstarted(InputAction.CallbackContext obj)
+        public void enable_trigger_check()
         {
+            if(subscriber_to_trigger_actions) return;
+            
+            if (leftTriggerPressedAction != null)
+            {
+                leftTriggerPressedAction.performed += TriggerPressedActionOnStarted;
+                leftTriggerPressedAction.Enable();
+            }
+
+            if (rightTriggerPressedAction != null)
+            {
+                rightTriggerPressedAction.performed += TriggerPressedActionOnStarted;
+                rightTriggerPressedAction.Enable();
+            }
+
+            subscriber_to_trigger_actions = true;
+        }
+
+        public void disable_trigger_check()
+        {
+            leftTriggerPressedAction.performed -= TriggerPressedActionOnStarted;
+            rightTriggerPressedAction.performed -= TriggerPressedActionOnStarted;
+            
+            subscriber_to_trigger_actions = false;
+        }
+        
+        void TriggerPressedActionOnStarted(InputAction.CallbackContext callbackContext)
+        {
+            if (!callbackContext.control.IsPressed()) return;
+            
             uiManager.show_ui();
         }
     }

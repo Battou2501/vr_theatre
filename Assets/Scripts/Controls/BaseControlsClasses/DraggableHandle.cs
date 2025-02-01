@@ -22,26 +22,28 @@ namespace DefaultNamespace
             
             min_max_distance_ratio = 1f / Vector3.Distance(minPoint.position, maxPoint.position);
             
-            main_controls.leftTriggerPressedAction.started += StartDrag;
-            main_controls.rightTriggerPressedAction.started += StartDrag;
+            main_controls.leftTriggerPressedAction.performed += StartDrag;
+            main_controls.rightTriggerPressedAction.performed += StartDrag;
             
-            main_controls.leftTriggerPressedAction.performed += StopDrag;
-            main_controls.rightTriggerPressedAction.performed += StopDrag;
+            main_controls.leftTriggerPressedAction.canceled += StopDrag;
+            main_controls.rightTriggerPressedAction.canceled += StopDrag;
         }
 
         void OnDestroy()
         {
             if(!is_initiated) return;
             
-            main_controls.leftTriggerPressedAction.started -= StartDrag;
-            main_controls.rightTriggerPressedAction.started -= StartDrag;
+            main_controls.leftTriggerPressedAction.performed -= StartDrag;
+            main_controls.rightTriggerPressedAction.performed -= StartDrag;
             
-            main_controls.leftTriggerPressedAction.performed -= StopDrag;
-            main_controls.rightTriggerPressedAction.performed -= StopDrag;
+            main_controls.leftTriggerPressedAction.canceled -= StopDrag;
+            main_controls.rightTriggerPressedAction.canceled -= StopDrag;
         }
 
         void StartDrag(InputAction.CallbackContext callbackContext)
         {
+            if(!callbackContext.control.IsPressed()) return;
+            
             if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.leftHandTriggerCollider)) return;
             if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.rightHandTriggerCollider)) return;
             
@@ -56,6 +58,9 @@ namespace DefaultNamespace
 
         void StopDrag(InputAction.CallbackContext callbackContext)
         {
+            if(callbackContext.control.IsPressed()) return;
+            
+            if(!is_dragged) return;
             if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && dragged_by.gameObject != main_controls.leftHandTriggerCollider) return;
             if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && dragged_by.gameObject != main_controls.rightHandTriggerCollider) return;
             

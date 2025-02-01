@@ -394,7 +394,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 16862731}
-  - component: {fileID: 16862730}
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
@@ -402,99 +401,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &16862730
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 16862729}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2fadf230d1919748a9aa21d40f74619, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TrackingType: 0
-  m_UpdateType: 0
-  m_IgnoreTrackingState: 0
-  m_PositionInput:
-    m_UseReference: 0
-    m_Action:
-      m_Name: Position
-      m_Type: 0
-      m_ExpectedControlType: Vector3
-      m_Id: a6a3172f-4d80-44af-ab1e-8b43a7fc2fcb
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings:
-      - m_Name: 
-        m_Id: b1448dfd-71e0-4614-b2ff-104ba0b8e772
-        m_Path: <XRHMD>/centerEyePosition
-        m_Interactions: 
-        m_Processors: 
-        m_Groups: 
-        m_Action: Position
-        m_Flags: 0
-      m_Flags: 0
-    m_Reference: {fileID: 0}
-  m_RotationInput:
-    m_UseReference: 0
-    m_Action:
-      m_Name: Rotation
-      m_Type: 0
-      m_ExpectedControlType: Quaternion
-      m_Id: 53c7f8d7-1050-4bc9-afa3-256822d2fd52
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings:
-      - m_Name: 
-        m_Id: c1b24443-1323-4991-be32-d77891302c8d
-        m_Path: <XRHMD>/centerEyeRotation
-        m_Interactions: 
-        m_Processors: 
-        m_Groups: 
-        m_Action: Rotation
-        m_Flags: 0
-      m_Flags: 0
-    m_Reference: {fileID: 0}
-  m_TrackingStateInput:
-    m_UseReference: 0
-    m_Action:
-      m_Name: Tracking State
-      m_Type: 0
-      m_ExpectedControlType: Integer
-      m_Id: 3d123049-c7b8-4fb1-8d49-705fb3d439a5
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings:
-      - m_Name: 
-        m_Id: 25d9980c-ec5a-4a0a-b166-f48859558e1d
-        m_Path: <XRHMD>/trackingState
-        m_Interactions: 
-        m_Processors: 
-        m_Groups: 
-        m_Action: Tracking State
-        m_Flags: 0
-      m_Flags: 0
-    m_Reference: {fileID: 0}
-  m_PositionAction:
-    m_Name: 
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
-  m_RotationAction:
-    m_Name: 
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
 --- !u!4 &16862731
 Transform:
   m_ObjectHideFlags: 0
@@ -7471,8 +7377,6 @@ GameObject:
   - component: {fileID: 312260560}
   - component: {fileID: 312260563}
   - component: {fileID: 312260562}
-  - component: {fileID: 312260561}
-  - component: {fileID: 312260564}
   m_Layer: 0
   m_Name: ZAxis
   m_TagString: Controller Ray
@@ -7489,35 +7393,12 @@ Transform:
   m_GameObject: {fileID: 312260559}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 9.9}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 0.005, y: 10, z: 0.005}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 615687961}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!136 &312260561
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 312260559}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 12
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 5, z: -0.00000008940697}
 --- !u!23 &312260562
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7571,33 +7452,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 312260559}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!54 &312260564
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 312260559}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1001 &315834094
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10159,7 +10013,7 @@ GameObject:
   - component: {fileID: 477379360}
   - component: {fileID: 477379359}
   - component: {fileID: 477379358}
-  - component: {fileID: 477379357}
+  - component: {fileID: 477379362}
   - component: {fileID: 477379361}
   m_Layer: 0
   m_Name: Close Panel Button
@@ -10183,19 +10037,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 413169699}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &477379357
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 477379355}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec5fc51f3b0f4bc781fbc5490090b4ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  panel_to_open: {fileID: 0}
 --- !u!65 &477379358
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10286,6 +10127,19 @@ MonoBehaviour:
   duration: 0.3
   overshoot: 4
   bounceOnClick: 1
+--- !u!114 &477379362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 477379355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5fc51f3b0f4bc781fbc5490090b4ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panel_to_open: {fileID: 0}
 --- !u!1 &479671895 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5297493206559610596, guid: 1e83015cc8a8c794193123814b6eb70d, type: 3}
@@ -11176,8 +11030,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiManager: {fileID: 1937286224}
-  leftHandTriggerCollider: {fileID: 838627625}
-  rightHandTriggerCollider: {fileID: 312260559}
+  leftHandTriggerCollider: {fileID: 2006089660}
+  rightHandTriggerCollider: {fileID: 793302145}
   leftTriggerPressedAction:
     m_Name: Trigger Pressed
     m_Type: 0
@@ -15239,6 +15093,8 @@ GameObject:
   m_Component:
   - component: {fileID: 793302146}
   - component: {fileID: 793302147}
+  - component: {fileID: 793302149}
+  - component: {fileID: 793302148}
   m_Layer: 0
   m_Name: RightHand
   m_TagString: Untagged
@@ -15371,6 +15227,56 @@ MonoBehaviour:
       m_Action: Rotation
       m_Flags: 0
     m_Flags: 0
+--- !u!54 &793302148
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 793302145}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!136 &793302149
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 793302145}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.01
+  m_Height: 100
+  m_Direction: 2
+  m_Center: {x: 0, y: 0, z: 50}
 --- !u!1 &795677485 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 789271948573025274, guid: a55de3afda320cf46a4afee201dee815, type: 3}
@@ -16744,8 +16650,6 @@ GameObject:
   - component: {fileID: 838627626}
   - component: {fileID: 838627629}
   - component: {fileID: 838627628}
-  - component: {fileID: 838627627}
-  - component: {fileID: 838627630}
   m_Layer: 0
   m_Name: ZAxis
   m_TagString: Controller Ray
@@ -16762,35 +16666,12 @@ Transform:
   m_GameObject: {fileID: 838627625}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 9.9}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 0.005, y: 10, z: 0.005}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1185520151}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!136 &838627627
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 838627625}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 12
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 5, z: -0.00000008940697}
 --- !u!23 &838627628
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16844,33 +16725,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 838627625}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!54 &838627630
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 838627625}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1 &840912712 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8127911917444309688, guid: 1e83015cc8a8c794193123814b6eb70d, type: 3}
@@ -32160,7 +32014,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec5fc51f3b0f4bc781fbc5490090b4ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panel_to_open: {fileID: 0}
+  panel_to_open: {fileID: 968236493}
 --- !u!65 &1590437797
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -38765,8 +38619,8 @@ MonoBehaviour:
   m_Camera: {fileID: 2084324062}
   m_OriginBaseGameObject: {fileID: 1976068638}
   m_CameraFloorOffsetObject: {fileID: 16862729}
-  m_RequestedTrackingOriginMode: 2
-  m_CameraYOffset: 1.1176
+  m_RequestedTrackingOriginMode: 1
+  m_CameraYOffset: 0
 --- !u!114 &1976068640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39173,6 +39027,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2006089661}
   - component: {fileID: 2006089662}
+  - component: {fileID: 2006089664}
+  - component: {fileID: 2006089663}
   m_Layer: 0
   m_Name: LeftHand
   m_TagString: Untagged
@@ -39305,6 +39161,56 @@ MonoBehaviour:
       m_Action: Rotation
       m_Flags: 0
     m_Flags: 0
+--- !u!54 &2006089663
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2006089660}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &2006089664
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2006089660}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.01
+  m_Height: 100
+  m_Direction: 2
+  m_Center: {x: 0, y: 0, z: 50}
 --- !u!1 &2007894104 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2544896091592419906, guid: a55de3afda320cf46a4afee201dee815, type: 3}
@@ -40564,6 +40470,7 @@ GameObject:
   - component: {fileID: 2084324060}
   - component: {fileID: 2084324062}
   - component: {fileID: 2084324061}
+  - component: {fileID: 2084324063}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -40579,14 +40486,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2084324059}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.03751586, y: 0, z: 0, w: 0.9992961}
-  m_LocalPosition: {x: 0, y: 1.396, z: -0.871}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 574508166}
   m_Father: {fileID: 16862731}
-  m_LocalEulerAnglesHint: {x: -4.3, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!81 &2084324061
 AudioListener:
   m_ObjectHideFlags: 0
@@ -40646,6 +40553,99 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &2084324063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084324059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2fadf230d1919748a9aa21d40f74619, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TrackingType: 0
+  m_UpdateType: 0
+  m_IgnoreTrackingState: 0
+  m_PositionInput:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Position
+      m_Type: 0
+      m_ExpectedControlType: Vector3
+      m_Id: a6a3172f-4d80-44af-ab1e-8b43a7fc2fcb
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings:
+      - m_Name: 
+        m_Id: b1448dfd-71e0-4614-b2ff-104ba0b8e772
+        m_Path: <XRHMD>/centerEyePosition
+        m_Interactions: 
+        m_Processors: 
+        m_Groups: 
+        m_Action: Position
+        m_Flags: 0
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  m_RotationInput:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Rotation
+      m_Type: 0
+      m_ExpectedControlType: Quaternion
+      m_Id: 53c7f8d7-1050-4bc9-afa3-256822d2fd52
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings:
+      - m_Name: 
+        m_Id: c1b24443-1323-4991-be32-d77891302c8d
+        m_Path: <XRHMD>/centerEyeRotation
+        m_Interactions: 
+        m_Processors: 
+        m_Groups: 
+        m_Action: Rotation
+        m_Flags: 0
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  m_TrackingStateInput:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Tracking State
+      m_Type: 0
+      m_ExpectedControlType: Integer
+      m_Id: 3d123049-c7b8-4fb1-8d49-705fb3d439a5
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings:
+      - m_Name: 
+        m_Id: 25d9980c-ec5a-4a0a-b166-f48859558e1d
+        m_Path: <XRHMD>/trackingState
+        m_Interactions: 
+        m_Processors: 
+        m_Groups: 
+        m_Action: Tracking State
+        m_Flags: 0
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  m_PositionAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  m_RotationAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!1 &2089730790
 GameObject:
   m_ObjectHideFlags: 0

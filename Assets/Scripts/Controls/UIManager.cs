@@ -7,6 +7,8 @@ public class UIManager : BaseControl
     public BaseControlsPanel playerPanel;
     public BaseControlsPanel fileSelectPanel;
 
+    public bool Is_ui_open { get; private set; }
+
     BaseControlsPanel[] panels;
 
     public override void init(MainControls m)
@@ -24,7 +26,26 @@ public class UIManager : BaseControl
         
         panels = GetComponentsInChildren<BaseControlsPanel>(true);
         
-        hide_ui();
+        panels.for_each(x=>
+        {
+            x.Closed += OnPanelClosed;
+            x.gameObject.SetActive(false);
+        });
+        
+        //hide_ui();
+        
+        main_controls.check_hands_display();
+    }
+
+    void OnPanelClosed()
+    {
+        if(!is_all_panels_closed) return;
+        
+        main_controls.check_hands_display();
+
+        main_controls.enable_trigger_check();
+
+        //main_controls.set_ignore_next_trigger_action();
     }
 
     public void show_ui()
@@ -37,19 +58,21 @@ public class UIManager : BaseControl
             fileSelectPanel.show();
         
         main_controls.check_hands_display();
+
+        main_controls.disable_trigger_check();
     }
 
-    public void hide_ui()
-    {
-        if(is_all_panels_closed) return;
-
-        foreach (var panel in panels)
-        {
-            panel.hide();
-        }
-        
-        main_controls.check_hands_display();
-    }
+    //public void hide_ui()
+    //{
+    //    if(is_all_panels_closed) return;
+    //
+    //    foreach (var panel in panels)
+    //    {
+    //        panel.hide();
+    //    }
+    //    
+    //    main_controls.check_hands_display();
+    //}
 
     public bool is_all_panels_closed
     {
