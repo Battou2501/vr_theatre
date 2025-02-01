@@ -6,6 +6,7 @@ Shader "Unlit/Screen Shader"
         _LightTex ("Texture Light", 2D) = "white" {}
         _SpecTex ("Texture Spec", 2D) = "black" {}
         _MovieTex ("Movie texture", 2D) = "black" {}
+        _MovieMipTex ("Screen ambient texture", 2D) = "black" {}
         _GrainStrength ("Grain strength", Range(0,1)) = 0.5
         _Grain1 ("Grain 1", 2D) = "white" {}
         _Grain2 ("Grain 2", 2D) = "white" {}
@@ -58,6 +59,7 @@ Shader "Unlit/Screen Shader"
             sampler2D _MovieTex;
             float4 _MainTex_ST;
             float4 _MovieTex_ST;
+            sampler2D _MovieMipTex;
 
             sampler2D _Grain1;
             sampler2D _Grain2;
@@ -71,6 +73,7 @@ Shader "Unlit/Screen Shader"
             float _GrainStrength;
             
             float _Aspect;
+            float _OneOverAspect;
 
             float _LightStrength;
 
@@ -86,10 +89,13 @@ Shader "Unlit/Screen Shader"
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv_movie = TRANSFORM_TEX(v.uv, _MovieTex);
 
+                //float aspect = 0.562;
+                
+                //float2 aspect_greater = float2(o.uv_movie.x, (o.uv_movie.y - 0.5) * _Aspect + 0.5);
                 float2 aspect_greater = float2(o.uv_movie.x, (o.uv_movie.y - 0.5) * _Aspect + 0.5);
-                float2 aspect_lower = float2((o.uv_movie.x - 0.5) * _Aspect + 0.5, o.uv_movie.y);
+                float2 aspect_lower =   float2((o.uv_movie.x - 0.5) * 1.9 * _OneOverAspect + 0.5, (o.uv_movie.y - 0.5) * 1.9 + 0.5);
 
-                int is_greater = _Aspect > 1;
+                int is_greater = _Aspect >= 1.9;
                 
                 o.uv_movie = aspect_greater * is_greater + aspect_lower * (1-is_greater);
 
@@ -112,8 +118,10 @@ Shader "Unlit/Screen Shader"
                 const fixed4 col = (tex_screen * tex2D(_LightTex, i.uv_light) * _LightMaxStrength + tex2D(_SpecTex, i.uv_light)*0.5);// * _LightStrength;
                 
                 fixed4 tex_movie = tex2Dlod(_MovieTex, float4(i.uv_movie.xy,0,0));
+                fixed4 tex_ambient = tex2Dlod(_MovieMipTex, float4(0.5,0.5,0,5)) * tex_screen;
 
                 const fixed l = saturate(sqrt(0.299 * tex_movie.r*tex_movie.r + 0.587 * tex_movie.g*tex_movie.g + 0.114 * tex_movie.b*tex_movie.b));
+                const fixed l_ambient = saturate(sqrt(0.299 * tex_ambient.r*tex_ambient.r + 0.587 * tex_ambient.g*tex_ambient.g + 0.114 * tex_ambient.b*tex_ambient.b));
                 
                 const fixed4 col_grain1 = tex2D(_Grain1, i.uv_movie);
                 const fixed4 col_grain2 = tex2D(_Grain2, i.uv_movie);
@@ -147,7 +155,10 @@ Shader "Unlit/Screen Shader"
                 const float f3 = saturate((i.uv_movie.x-1)*300);
                 const float f4 = saturate((1-i.uv_movie.x-1)*300);
 
-                const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-saturate(f+f2+f3+f4));
+                const float border_factor = saturate(f+f2+f3+f4);
+                //const fixed4 col_movie = lerp(tex_ambient * 0.03, tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) , saturate( (l-0.0) *(1-border_factor)*20)) ;
+                const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) + tex_ambient * 4 * l_ambient * l_ambient * (1-saturate( (l-0.0) * (1-border_factor)*5)) ;
+                //const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) ;
 
                 //const fixed light_coef = saturate((_LightStrength-0.5)*2) * _AffectedByLight;
                 //const fixed light_coef = saturate((_LightStrength*_LightStrength-0.1)*1.111) * _AffectedByLight;

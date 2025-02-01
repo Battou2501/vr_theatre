@@ -35402,6 +35402,10 @@ VideoPlayer:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   m_DirectAudioVolumes:
   - 1
   - 1
@@ -35409,11 +35413,15 @@ VideoPlayer:
   - 1
   - 1
   - 1
-  m_Url: file://C:/Users/Battou/Videos/They_Live_1988_BDRip_1080p_[REMASTERED]_[HEVC]_10bit_by
+  - 1
+  - 1
+  - 1
+  - 1
+  m_Url: C:\Users\Battou\Videos\They_Live_1988_BDRip_1080p_[REMASTERED]_[HEVC]_10bit_by
     XuMuK.mp4
-  m_EnabledAudioTracks: 010101010101
-  m_DirectAudioMutes: 000000000000
-  m_ControlledAudioTrackCount: 6
+  m_EnabledAudioTracks: 01010101010101010101
+  m_DirectAudioMutes: 00000000000000000000
+  m_ControlledAudioTrackCount: 10
   m_PlayOnAwake: 0
   m_SkipOnDrop: 0
   m_Looping: 0
@@ -35519,8 +35527,8 @@ MonoBehaviour:
   - {fileID: 2089730791}
   - {fileID: 1666289010}
   lightAffectsScreen: 1
-  buffer_iterations: 3
-  frame_buffer_seconds: 2
+  buffer_iterations: 2
+  frame_buffer_seconds: 3
   trimSeconds: 5
   trimAfterReachingSeconds: 10
   movie_light_strength: 0.03

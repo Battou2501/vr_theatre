@@ -107,7 +107,7 @@ Material:
     - _ScreenLightMult: 2
     - _ScreenScale: 0.2
     - _Shininess: 0.749
-    - _ShininessBrightness: 2.87
+    - _ShininessBrightness: 2.82
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

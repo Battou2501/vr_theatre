@@ -117,6 +117,7 @@ namespace DefaultNamespace
         static int sample_time;
         
         static readonly int aspect = Shader.PropertyToID("_Aspect");
+        static readonly int one_over_aspect = Shader.PropertyToID("_OneOverAspect");
         static readonly int movie_tex = Shader.PropertyToID("_MovieTex");
         static readonly int l_strength = Shader.PropertyToID("_LightStrength");
         static readonly int affected_by_light = Shader.PropertyToID("_AffectedByLight");
@@ -190,6 +191,7 @@ namespace DefaultNamespace
             var h = (int) source.height;
             
             Shader.SetGlobalFloat(aspect, (float)w/h);
+            Shader.SetGlobalFloat(one_over_aspect, 1f/((float)w/h));
 
             var frame_buffer_size = Mathf.FloorToInt(frame_buffer_seconds * source.frameRate);
             
@@ -197,9 +199,16 @@ namespace DefaultNamespace
 
             rt_pool = new RenderTexture[frame_buffer_size];
 
+            var ratio_bigger = (float) w / h >= 1.0f;
+            
             for (var i = 0; i < frame_buffer_size; i++)
             {
-                rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,0);
+                //rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,0);
+                
+                if(ratio_bigger)
+                    rt_pool[i] = new RenderTexture(1024, (int)(1024f*((float)h/w)), 0, RenderTextureFormat.Default,0);
+                else
+                    rt_pool[i] = new RenderTexture((int)(1024f*((float)w/h)), 1024, 0, RenderTextureFormat.Default,0);
             }
 
             is_prepared = true;

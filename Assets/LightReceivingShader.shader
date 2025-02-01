@@ -228,7 +228,7 @@ Shader "Unlit/LightReceivingShader"
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
                 const float3 viewDir = normalize(i.viewDir);
                 const float r_factor = 1-((1-_Shininess)*(1-_Shininess));
-                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor));
+                const half4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor)) * lerp(0.3,_LightStrength,0.5);
                 #endif
 
                 #ifdef _TYPE_GLOSSY
