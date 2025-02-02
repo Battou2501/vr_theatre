@@ -28,7 +28,7 @@ public class LodSystem : MonoBehaviour
         kernel_index = computeShader.FindKernel("CSMain");
         computeShader.GetKernelThreadGroupSizes(kernel_index, out batch_size,out _, out _);
 
-        renderAngle = cam.GetHorizontalFieldOfView() * 1.0f;
+        renderAngle = cam.GetHorizontalFieldOfView() * 1.1f;
 
         lods = GetComponents<LodInstance>();
         
