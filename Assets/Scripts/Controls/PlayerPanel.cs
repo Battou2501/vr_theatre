@@ -44,6 +44,10 @@ namespace DefaultNamespace
         void OnDestroy()
         {
             update_time_cancellation_token_source?.Cancel();
+            
+            if(!is_initiated || video_manager == null) return;
+            
+            video_manager.AudioTrackChanged -= set_track_text;
         }
 
         async UniTask update_time(CancellationToken token)

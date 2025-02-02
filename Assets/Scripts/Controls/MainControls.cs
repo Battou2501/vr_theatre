@@ -28,6 +28,8 @@ namespace DefaultNamespace
         
         void Awake()
         {
+            videoManager.init();
+            
             uiManager.init(this);
 
             enable_trigger_check();

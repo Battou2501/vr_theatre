@@ -12,8 +12,6 @@ namespace DefaultNamespace
         public TMP_Text text;
         
         DirectoryInfo dir_info;
-
-        public string Directory_name => dir_info.Name;
         
         public void set_data(DirectoryInfo d)
         {
@@ -23,7 +21,6 @@ namespace DefaultNamespace
 
         protected override void Click_Action()
         {
-            //Debug.Log("Clicked");
             file_navigation_manager.set_directory(dir_info).Forget();
         }
 #if UNITY_EDITOR

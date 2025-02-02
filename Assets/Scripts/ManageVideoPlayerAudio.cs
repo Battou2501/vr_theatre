@@ -43,6 +43,7 @@ namespace DefaultNamespace
         public Material blitMat;
         public RenderTexture lightRT;
         public Transform[] screenLightSamplePoints;
+        public Transform screenPointsRoot;
         public bool lightAffectsScreen;
         public int buffer_iterations = 1;
         public int frame_buffer_seconds = 2;
@@ -102,7 +103,6 @@ namespace DefaultNamespace
         int requested_track_idx = -1;
         double skip_time_target;
         double audio_trimmed_time;
-        double audio_play_time => audio_trimmed_time += audioSources[0].time;
 
         bool Vp_is_playing => vp.isPlaying;
         bool tracks_in_sync
@@ -140,7 +140,7 @@ namespace DefaultNamespace
         static readonly int vec_arr_y = Shader.PropertyToID("_VecArrY");
         static readonly int vec_arr_z = Shader.PropertyToID("_VecArrZ");
         
-        void Start()
+        public void init()
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 900;
@@ -172,6 +172,8 @@ namespace DefaultNamespace
                 points_z[i] = screenLightSamplePoints[i].position.z;
             }
             
+            Destroy(screenPointsRoot.gameObject);
+            
             Shader.SetGlobalFloatArray(vec_arr_x, points_x);
             Shader.SetGlobalFloatArray(vec_arr_y, points_y);
             Shader.SetGlobalFloatArray(vec_arr_z, points_z);
@@ -187,6 +189,19 @@ namespace DefaultNamespace
             }
 
             player_state = PlayerStates.stopped;
+        }
+
+        void OnDestroy()
+        {
+            vp.prepareCompleted -= Prepared;
+            vp.frameReady       -= VpOnFrameReady;
+            vp.seekCompleted    -= VpOnSeekCompleted;
+            vp.loopPointReached -= VpOnLoopPointReached;
+            vp.frameDropped     -= VpOnFrameDropped;
+            vp.errorReceived    -= VpOnErrorReceived;
+            
+            tracks?.for_each(x=>x.Dispose());
+            tracks = null;
         }
 
         void VpOnErrorReceived(VideoPlayer source, string message)
@@ -233,8 +248,6 @@ namespace DefaultNamespace
             
             for (var i = 0; i < frame_buffer_size; i++)
             {
-                //rt_pool[i] = new RenderTexture(w, h, 0, RenderTextureFormat.Default,0);
-                
                 if(ratio_bigger)
                     rt_pool[i] = new RenderTexture(1024, (int)(1024f*((float)h/w)), 0, RenderTextureFormat.Default,0);
                 else
@@ -252,7 +265,6 @@ namespace DefaultNamespace
             if (!no_audio)
                 source.playbackSpeed = buffer_iterations;
             else
-                //set_delay();
                 is_delay_set_needed = true;
             
             prepare_tracks();
@@ -376,7 +388,6 @@ namespace DefaultNamespace
                 iterations += 1;
 
             if (iterations == buffer_iterations)
-                //set_delay();
                 is_delay_set_needed = true;
 
         }
@@ -722,7 +733,7 @@ namespace DefaultNamespace
             if(no_audio) return;
             
             var audioTrackCount = vp.audioTrackCount;
-            tracks?.for_each( x=>x?.clear());
+            tracks?.for_each( x=> x?.Dispose());
             tracks = new Track[audioTrackCount];
             
             for (var t = 0; t < vp.audioTrackCount; t++)
@@ -778,32 +789,32 @@ namespace DefaultNamespace
             Debug.Log(vp.time);
         }
         
-        public class Track
+        public class Track : IDisposable
         {
             public Channel[] channels;
             public uint add_count;
             public int trim_threshold_samples;
             public string lang;
             
-            AudioSampleProvider provider; 
+            AudioSampleProvider provider;
+            AudioSampleProvider.SampleFramesHandler samples_available_callback;
+            AudioSampleProvider.SampleFramesHandler samples_overflow_callback;
+            
             int trim_seconds_samples;
 
-            public void clear()
-            {
-                channels.for_each(x=>x?.clear());
-            }
-            
-            public void init(AudioSampleProvider p, AudioSource[] audioSources, AudioSampleProvider.SampleFramesHandler samples_available_callback, AudioSampleProvider.SampleFramesHandler samples_overflow_callback)
+            public void init(AudioSampleProvider p, AudioSource[] audioSources, AudioSampleProvider.SampleFramesHandler sa_callback, AudioSampleProvider.SampleFramesHandler so_callback)
             {
                 provider = p;
                 channels = new Channel[provider.channelCount];
                 trim_seconds_samples = trim_seconds_static * (int)provider.sampleRate;
                 trim_threshold_samples = trim_after_reaching_seconds_static * (int)provider.sampleRate;
                 
+                samples_available_callback = sa_callback;
+                samples_overflow_callback = so_callback;
+                
                 provider.sampleFramesOverflow += samples_overflow_callback;
                 provider.sampleFramesAvailable += samples_available_callback;
                 provider.enableSampleFramesAvailableEvents = true;
-                //provider.freeSampleFrameCountLowThreshold = provider.maxSampleFrameCount / 3 * 2;
                 provider.freeSampleFrameCountLowThreshold = provider.sampleRate/2;
 
                 var channel_count = provider.channelCount;
@@ -875,30 +886,37 @@ namespace DefaultNamespace
             {
                 channels.for_each(trim_seconds_samples, (x, t)=>x?.trim(t));
             }
+
+            public void Dispose()
+            {
+                channels?.for_each(x=>x?.Dispose());
+
+                channels = null;
+                
+                if(provider == null) return;
+                
+                provider.sampleFramesOverflow -= samples_overflow_callback;
+                provider.sampleFramesAvailable -= samples_available_callback;
+
+                samples_overflow_callback = null;
+                samples_available_callback = null;
+                provider = null;
+            }
         }
 
-        public class Channel
+        public class Channel: IDisposable
         {
             public AudioSource audio_source;
             
             AudioClip audio_clip;
-            //int sample_rate;
             List<float> data;
-            //List<float> play_data;
-            //bool need_trim;
-            //int sample_length;
-
-            public void clear()
-            {
-                audio_source.clip = null;
-                Destroy(audio_clip);
-                data.Clear();
-                //play_data.Clear();
-            }
             
             public void set_clip(float t)
             {
                 set_clip_data();
+                
+                if(audio_source == null) return;
+                
                 audio_source.clip = audio_clip;
                 audio_source.Play();
                 audio_source.time = t;
@@ -915,7 +933,6 @@ namespace DefaultNamespace
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
                 data = new List<float>(sample_length);
-                //play_data = new List<float>(sample_length);
             }
 
             public void add_data(IEnumerable<float> d)
@@ -935,8 +952,6 @@ namespace DefaultNamespace
             
             public void set_clip_data()
             {
-                //play_data.Clear();
-                //play_data.AddRange(data);
                 audio_clip.SetData(data.ToArray(), 0);
             }
 
@@ -944,7 +959,20 @@ namespace DefaultNamespace
             {
                 data.Clear();
             }
-            
+
+            public void Dispose()
+            {
+                if(audio_source != null)
+                    audio_source.clip = null;
+
+                if (audio_clip != null)
+                {
+                    Destroy(audio_clip);
+                    audio_clip = null;
+                }
+
+                data?.Clear();
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DefaultNamespace
@@ -25,12 +26,12 @@ namespace DefaultNamespace
             video_manager.VideoPrepared += refresh_buttons;
         }
 
-        //public override void show()
-        //{
-        //    base.show();
-        //    
-        //    refresh_buttons();
-        //}
+        void OnDestroy()
+        {
+            if(!is_initiated || video_manager == null) return;
+            
+            video_manager.VideoPrepared -= refresh_buttons;
+        }
 
         void refresh_buttons()
         {

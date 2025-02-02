@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DefaultNamespace;
 using UnityEngine;
@@ -35,9 +36,14 @@ public class UIManager : BaseControl
 
         video_manager.ErrorOccured += OnVideoErrorOccured;
         
-        //hide_ui();
-        
         main_controls.check_hands_display();
+    }
+
+    void OnDestroy()
+    {
+        if(!is_initiated || video_manager == null) return;
+        
+        video_manager.ErrorOccured -= OnVideoErrorOccured;
     }
 
     void OnVideoErrorOccured(string message)
@@ -58,8 +64,6 @@ public class UIManager : BaseControl
         main_controls.check_hands_display();
 
         main_controls.enable_trigger_check();
-
-        //main_controls.set_ignore_next_trigger_action();
     }
 
     public void show_ui()
@@ -75,18 +79,6 @@ public class UIManager : BaseControl
 
         main_controls.disable_trigger_check();
     }
-
-    //public void hide_ui()
-    //{
-    //    if(is_all_panels_closed) return;
-    //
-    //    foreach (var panel in panels)
-    //    {
-    //        panel.hide();
-    //    }
-    //    
-    //    main_controls.check_hands_display();
-    //}
 
     public bool is_all_panels_closed
     {

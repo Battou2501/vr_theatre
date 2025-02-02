@@ -11,8 +11,6 @@ namespace DefaultNamespace
         public TMP_Text text;
         
         FileInfo file_info;
-
-        public string File_name => file_info.Name;
         
         public void set_data(FileInfo f)
         {
@@ -24,7 +22,6 @@ namespace DefaultNamespace
         protected override void Click_Action()
         {
             video_manager.set_file(file_info.FullName);
-            //main_controls.uiManager.hide_ui();
         }
         
 #if UNITY_EDITOR
