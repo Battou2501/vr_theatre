@@ -36,6 +36,7 @@ namespace DefaultNamespace
 
         public Action AudioTrackChanged;
         public Action VideoPrepared;
+        public Action<string> ErrorOccured;
         
         public AudioSource[] audioSources;
         public Material mat;
@@ -157,6 +158,7 @@ namespace DefaultNamespace
             vp.loopPointReached+= VpOnLoopPointReached;
             vp.playbackSpeed = buffer_iterations;
             vp.frameDropped+= VpOnFrameDropped;
+            vp.errorReceived += VpOnErrorReceived;
 
 
             var points_x = new float[60];
@@ -178,13 +180,24 @@ namespace DefaultNamespace
             
             Shader.SetGlobalFloat(l_strength, light_strength);
             Shader.SetGlobalInt(affected_by_light, lightAffectsScreen? 1 : 0);
-            
-            if(vp.url != "")
-                vp.Prepare();
+
+            if (vp.url != "")
+            {
+                set_file(vp.url);
+            }
 
             player_state = PlayerStates.stopped;
         }
-        
+
+        void VpOnErrorReceived(VideoPlayer source, string message)
+        {
+            vp.url = "";
+            reset_state();
+            vp.Stop();
+            player_state = PlayerStates.stopped;
+            ErrorOccured?.Invoke(message);
+        }
+
         void Update()
         {
             set_delay();
@@ -398,6 +411,12 @@ namespace DefaultNamespace
 
         public void set_file(string file)
         {
+            if (!File.Exists(file))
+            {
+                ErrorOccured?.Invoke("File was not found. Please check file path.");
+                return;
+            }
+            
             vp.Stop();
             vp.url = file;
             vp.Prepare();

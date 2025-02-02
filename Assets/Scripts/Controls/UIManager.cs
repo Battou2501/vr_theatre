@@ -6,6 +6,7 @@ public class UIManager : BaseControl
 {
     public BaseControlsPanel playerPanel;
     public BaseControlsPanel fileSelectPanel;
+    public ErrorPanel   errorPanel;
 
     public bool Is_ui_open { get; private set; }
 
@@ -31,10 +32,23 @@ public class UIManager : BaseControl
             x.Closed += OnPanelClosed;
             x.gameObject.SetActive(false);
         });
+
+        video_manager.ErrorOccured += OnVideoErrorOccured;
         
         //hide_ui();
         
         main_controls.check_hands_display();
+    }
+
+    void OnVideoErrorOccured(string message)
+    {
+        panels.for_each(x=>x.hide());
+        
+        errorPanel.showError(message);
+        
+        main_controls.check_hands_display();
+        
+        main_controls.disable_trigger_check();
     }
 
     void OnPanelClosed()
