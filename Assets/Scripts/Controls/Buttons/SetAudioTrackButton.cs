@@ -15,7 +15,7 @@ namespace DefaultNamespace
         public void set_track_dta(int idx, string lang)
         {
             track_idx = idx;
-            text.text = $"Track {idx} [{lang}]";
+            text.text = $"{idx}.{lang}";
         }
 
         protected override void Click_Action()

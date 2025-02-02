@@ -18,6 +18,7 @@ Shader "Unlit/Screen Shader"
         _Grain8 ("Grain 8", 2D) = "white" {}
         //_LightStrength("Light strength", Range (0,1)) = 1
         _LightMaxStrength ("Light Max strength", Range (0.1,2)) = 1
+        _ScreenAmbientStrength("Screen ambient strength", Range(0,0.5)) = 0.08
     }
     SubShader
     {
@@ -80,6 +81,8 @@ Shader "Unlit/Screen Shader"
             int _AffectedByLight;
 
             float _LightMaxStrength;
+
+            float _ScreenAmbientStrength;
             
             v2f vert (appdata v)
             {
@@ -89,9 +92,6 @@ Shader "Unlit/Screen Shader"
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv_movie = TRANSFORM_TEX(v.uv, _MovieTex);
 
-                //float aspect = 0.562;
-                
-                //float2 aspect_greater = float2(o.uv_movie.x, (o.uv_movie.y - 0.5) * _Aspect + 0.5);
                 float2 aspect_greater = float2(o.uv_movie.x, (o.uv_movie.y - 0.5) * _Aspect + 0.5);
                 float2 aspect_lower =   float2((o.uv_movie.x - 0.5) * 1.9 * _OneOverAspect + 0.5, (o.uv_movie.y - 0.5) * 1.9 + 0.5);
 
@@ -107,18 +107,11 @@ Shader "Unlit/Screen Shader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture
-
-                //const half4 ambient = unity_AmbientSky * _LightStrength;
-                //const half4 light = _LightStrength;
-                //fixed light_dot = saturate(dot(i.normal,normalize(_WorldSpaceLightPos0)));
-                //light_dot *= light_dot*0.3+0.7;
-                
                 const fixed4 tex_screen = tex2D(_MainTex, i.uv);
-                const fixed4 col = (tex_screen * tex2D(_LightTex, i.uv_light) * _LightMaxStrength + tex2D(_SpecTex, i.uv_light)*0.5);// * _LightStrength;
+                const fixed4 col = (tex_screen * tex2D(_LightTex, i.uv_light) * _LightMaxStrength + tex2D(_SpecTex, i.uv_light)*0.5);
                 
                 fixed4 tex_movie = tex2Dlod(_MovieTex, float4(i.uv_movie.xy,0,0));
-                fixed4 tex_ambient = tex2Dlod(_MovieMipTex, float4(0.5,0.5,0,5)) * tex_screen;
+                fixed4 tex_ambient = tex2Dlod(_MovieMipTex, float4(i.uv_light,0,5)) * tex_screen;
 
                 const fixed l = saturate(sqrt(0.299 * tex_movie.r*tex_movie.r + 0.587 * tex_movie.g*tex_movie.g + 0.114 * tex_movie.b*tex_movie.b));
                 const fixed l_ambient = saturate(sqrt(0.299 * tex_ambient.r*tex_ambient.r + 0.587 * tex_ambient.g*tex_ambient.g + 0.114 * tex_ambient.b*tex_ambient.b));
@@ -133,7 +126,6 @@ Shader "Unlit/Screen Shader"
                 const fixed4 col_grain8 = tex2D(_Grain8, i.uv_movie);
                 
                 const float t = floor(frac(_Time.w) * 8);
-                
                 
                 const fixed4 grain = lerp((
                     col_grain1 * (t==0)
@@ -151,22 +143,13 @@ Shader "Unlit/Screen Shader"
 
                 const float f = saturate((i.uv_movie.y-1)*300);
                 const float f2 = saturate((1-i.uv_movie.y-1)*300);
-
                 const float f3 = saturate((i.uv_movie.x-1)*300);
                 const float f4 = saturate((1-i.uv_movie.x-1)*300);
-
                 const float border_factor = saturate(f+f2+f3+f4);
-                //const fixed4 col_movie = lerp(tex_ambient * 0.03, tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) , saturate( (l-0.0) *(1-border_factor)*20)) ;
-                const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) + tex_ambient * 4 * l_ambient * l_ambient * (1-saturate( (l-0.0) * (1-border_factor)*5)) ;
-                //const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) ;
-
-                //const fixed light_coef = saturate((_LightStrength-0.5)*2) * _AffectedByLight;
-                //const fixed light_coef = saturate((_LightStrength*_LightStrength-0.1)*1.111) * _AffectedByLight;
+                
+                const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) + tex_ambient * 10 * _ScreenAmbientStrength * l_ambient * (1-saturate( l * (1-border_factor)*5)) ;
                 const fixed light_coef = pow(_LightStrength,1.5) * _AffectedByLight;
-
-                //return col * light_coef + col_movie * 0.5 * (1.0 - (light_coef * light_coef)) + col_movie * 0.5;
-                //return lerp(col_movie,col,light_coef)*0.95 + col_movie * 0.05;
-                return lerp(col_movie * lerp(1,tex_screen,0.6),col,light_coef) * 0.95 + col_movie * 0.05;
+                return  lerp(col_movie * lerp(1,tex_screen,0.6),col,light_coef) * 0.95 + col_movie * 0.05;
             }
             ENDCG
         }

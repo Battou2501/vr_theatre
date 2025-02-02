@@ -33,6 +33,9 @@ namespace DefaultNamespace
             playing,
             paused
         }
+
+        public Action AudioTrackChanged;
+        public Action VideoPrepared;
         
         public AudioSource[] audioSources;
         public Material mat;
@@ -44,6 +47,9 @@ namespace DefaultNamespace
         public int frame_buffer_seconds = 2;
         public int trimSeconds;
         public int trimAfterReachingSeconds;
+        public int trackAudioClipBufferLengthSec;
+        public float videoAudioDesyncThreshold;
+        public bool sync_audio_if_needed;
         [Range(0,1)]
         public float movie_light_strength = 0.2f;
         public bool loop_video;
@@ -64,6 +70,8 @@ namespace DefaultNamespace
         public float Audio_volume => audioSources[0].volume;
         public string FilePath => vp.url;
         public bool IsPlaying => vp.isPlaying;
+        public int CurrentTrackNumber => tracks != null ? current_track_idx : -1;
+        public string CurrentTrackLang => tracks != null && current_track_idx >= 0 && current_track_idx < tracks.Length ? tracks[current_track_idx].lang : "";
         
         
         
@@ -81,7 +89,10 @@ namespace DefaultNamespace
         int frame_to_play_idx;
         int render_pool_idx;
         bool is_delay_set;
+        bool is_delay_set_needed;
         int delay_frames;
+        float delay_seconds;
+        double play_start_time;
         int current_track_idx;
         bool set_preview_frame;
         bool seek_complete;
@@ -89,6 +100,8 @@ namespace DefaultNamespace
         bool is_prepared;
         int requested_track_idx = -1;
         double skip_time_target;
+        double audio_trimmed_time;
+        double audio_play_time => audio_trimmed_time += audioSources[0].time;
 
         bool Vp_is_playing => vp.isPlaying;
         bool tracks_in_sync
@@ -115,6 +128,7 @@ namespace DefaultNamespace
         static int trim_seconds_static;
         static int trim_after_reaching_seconds_static;
         static int sample_time;
+        static int track_audio_clip_buffer_length_sec_static;
         
         static readonly int aspect = Shader.PropertyToID("_Aspect");
         static readonly int one_over_aspect = Shader.PropertyToID("_OneOverAspect");
@@ -132,6 +146,7 @@ namespace DefaultNamespace
             
             trim_seconds_static = trimSeconds;
             trim_after_reaching_seconds_static = trimAfterReachingSeconds;
+            track_audio_clip_buffer_length_sec_static = trackAudioClipBufferLengthSec;
 
             vp = GetComponent<VideoPlayer>();
             vp.audioOutputMode = VideoAudioOutputMode.APIOnly;
@@ -172,6 +187,8 @@ namespace DefaultNamespace
         
         void Update()
         {
+            set_delay();
+            
             handle_change_track_request();
 
             update_light();
@@ -218,13 +235,19 @@ namespace DefaultNamespace
             no_audio = source.audioTrackCount == 0;
             
             reset_state();
-            
+
             if (!no_audio)
                 source.playbackSpeed = buffer_iterations;
             else
-                set_delay();
+                //set_delay();
+                is_delay_set_needed = true;
             
             prepare_tracks();
+            
+            VideoPrepared?.Invoke();
+            
+            current_track_idx = vp.audioTrackCount>0 ? 0 : -1;
+            AudioTrackChanged?.Invoke();
         }
         
         static void VpOnFrameDropped(VideoPlayer source)
@@ -340,8 +363,9 @@ namespace DefaultNamespace
                 iterations += 1;
 
             if (iterations == buffer_iterations)
-                set_delay();
-            
+                //set_delay();
+                is_delay_set_needed = true;
+
         }
         
         void request_preview()
@@ -361,11 +385,15 @@ namespace DefaultNamespace
             samples_receive_time = 0;
 
             is_delay_set = false;
+            is_delay_set_needed = false;
             audio_started = false;
             iterations = 0;
             render_pool_idx = 0;
             frame_to_play_idx = 0;
             delay_frames = 0;
+            delay_seconds = 0;
+            audio_trimmed_time = 0;
+            play_start_time = 0;
         }
 
         public void set_file(string file)
@@ -428,6 +456,7 @@ namespace DefaultNamespace
             //vp.Stop();
             vp.Pause();
             vp.time = 0;
+            play_start_time = 0;
             clear_screen();
             //vp.Prepare();
             player_state = PlayerStates.stopped;
@@ -476,8 +505,10 @@ namespace DefaultNamespace
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
+            
             reset_state();
+            
+            play_start_time = vp.time;
         }
 
         public void set_volume(float volume)
@@ -545,6 +576,8 @@ namespace DefaultNamespace
                 vp.time = vp.length / 2f;
 
                 reset_state();
+                
+                play_start_time = vp.time;
             }
             
             if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -618,9 +651,14 @@ namespace DefaultNamespace
                     sample_time = audioSources[0].timeSamples;
 
                 if (sample_time > tracks[current_track_idx].trim_threshold_samples)
+                {
                     tracks.for_each(x => x?.trim());
-                
+                    audio_trimmed_time += trimSeconds;
+                }
+
                 tracks[current_track_idx].update_data_track();
+
+                sync_audio_to_video();
             }
 
             void handle_audio_started()
@@ -642,6 +680,22 @@ namespace DefaultNamespace
                 
                 frame_to_play_idx = rt_pool.Length + frame_to_play_idx;
             }
+        }
+
+        void sync_audio_to_video()
+        {
+            if (!sync_audio_if_needed || !audioSources[0].isPlaying) return;
+            
+            var at = audioSources[0].time + audio_trimmed_time + play_start_time;
+            var vpt = vp.time - delay_seconds;
+
+            if (Mathf.Abs((float) (at - vpt)) > videoAudioDesyncThreshold)
+            {
+                var correct_time = vpt - audio_trimmed_time - play_start_time;
+                audioSources.for_each(correct_time, (x,t) => x.time = (float)t);
+            }
+
+            //Debug.Log("At: " + at + " Vt: " + vpt);
         }
 
         void prepare_tracks()
@@ -687,15 +741,22 @@ namespace DefaultNamespace
             audioSources.for_each(x=>x.Stop());
             
             tracks[current_track_idx].set_clip(audio_source_time);
+
+            AudioTrackChanged?.Invoke();
         }
 
         void set_delay()
         {
+            if (!is_delay_set_needed) return;
             if (is_delay_set) return;
             
             delay_frames = render_pool_idx;
-                
+            delay_seconds = (float)(vp.time - play_start_time);    
+            
             is_delay_set = true;
+            is_delay_set_needed = false;
+            
+            Debug.Log(vp.time);
         }
         
         public class Track
@@ -802,18 +863,18 @@ namespace DefaultNamespace
             public AudioSource audio_source;
             
             AudioClip audio_clip;
-            int sample_rate;
+            //int sample_rate;
             List<float> data;
-            List<float> play_data;
-            bool need_trim;
-            int sample_length;
+            //List<float> play_data;
+            //bool need_trim;
+            //int sample_length;
 
             public void clear()
             {
                 audio_source.clip = null;
                 Destroy(audio_clip);
                 data.Clear();
-                play_data.Clear();
+                //play_data.Clear();
             }
             
             public void set_clip(float t)
@@ -828,14 +889,14 @@ namespace DefaultNamespace
             {
                 audio_source = s;
 
-                sample_rate = (int) p.sampleRate;
+                var sample_rate = (int) p.sampleRate;
 
-                sample_length = 30 * sample_rate;
+                var sample_length = track_audio_clip_buffer_length_sec_static * sample_rate;
                 
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
-                data = new List<float>();
-                play_data = new List<float>(sample_length);
+                data = new List<float>(sample_length);
+                //play_data = new List<float>(sample_length);
             }
 
             public void add_data(IEnumerable<float> d)
@@ -855,9 +916,9 @@ namespace DefaultNamespace
             
             public void set_clip_data()
             {
-                play_data.Clear();
-                play_data.AddRange(data);
-                audio_clip.SetData(play_data.ToArray(), 0);
+                //play_data.Clear();
+                //play_data.AddRange(data);
+                audio_clip.SetData(data.ToArray(), 0);
             }
 
             public void clear_data()

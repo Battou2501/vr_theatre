@@ -38,6 +38,7 @@ Shader "Unlit/RenderMip"
             float4 _MainTex_ST;
             int _MipLevel;
             float _Aspect;
+            float _OneOverAspect;
 
             
             v2f vert (appdata v)
@@ -46,10 +47,14 @@ Shader "Unlit/RenderMip"
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-                const float2 aspect_greater = float2(o.uv.x, (o.uv.y - 0.5) * _Aspect + 0.5);
-                const float2 aspect_lower = float2((o.uv.x - 0.5) * _Aspect + 0.5, o.uv.y);
+                //const float2 aspect_greater = float2(o.uv.x, (o.uv.y - 0.5) * _Aspect + 0.5);
+                //const float2 aspect_lower = float2((o.uv.x - 0.5) * _Aspect + 0.5, o.uv.y);
+                //const int is_greater = _Aspect > 1;
 
-                const int is_greater = _Aspect > 1;
+                float2 aspect_greater = float2(o.uv.x, (o.uv.y - 0.5) * _Aspect + 0.5);
+                float2 aspect_lower =   float2((o.uv.x - 0.5) * 1.9 * _OneOverAspect + 0.5, (o.uv.y - 0.5) * 1.9 + 0.5);
+
+                int is_greater = _Aspect >= 1.9;
                 
                 o.uv = aspect_greater * is_greater + aspect_lower * (1-is_greater);
 

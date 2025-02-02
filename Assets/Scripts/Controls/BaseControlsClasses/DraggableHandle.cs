@@ -8,12 +8,12 @@ namespace DefaultNamespace
     {
         public Transform minPoint;
         public Transform maxPoint;
-        
+        public Transform valueBar;
+        protected Vector3 value_bar_initial_scale;
         bool is_dragged;
-
         Transform dragged_by;
-        
         double min_max_distance_ratio;
+        
         protected double slider_position => Vector3.Distance(minPoint.position, transform.position) * min_max_distance_ratio;
 
         public override void init(MainControls m)
@@ -27,8 +27,20 @@ namespace DefaultNamespace
             
             main_controls.leftTriggerPressedAction.canceled += StopDrag;
             main_controls.rightTriggerPressedAction.canceled += StopDrag;
+            
+            if(valueBar == null) return;
+            
+            value_bar_initial_scale = valueBar.localScale;
         }
 
+        protected void update_value_bar()
+        {
+            if(valueBar == null) return;
+
+            valueBar.position = Vector3.Lerp(minPoint.position, transform.position, 0.5f);
+            valueBar.localScale = Vector3.Scale(value_bar_initial_scale,new Vector3((float)slider_position,1,1));
+        }
+        
         void OnDestroy()
         {
             if(!is_initiated) return;
