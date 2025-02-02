@@ -1,6 +1,7 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class LodObjectPosition : MonoBehaviour
 {
-    public string tag;
+    public string object_tag;
 }

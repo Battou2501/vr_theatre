@@ -19,6 +19,8 @@ public class LodSystem : MonoBehaviour
     
     LodInstance[] lods;
     
+    GameObject objects_root;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -30,11 +32,15 @@ public class LodSystem : MonoBehaviour
 
         renderAngle = cam.GetHorizontalFieldOfView() * 1.1f;
 
+        objects_root = FindFirstObjectByType<LodObjectsRoot>(FindObjectsInactive.Include).gameObject;
+        
         lods = GetComponents<LodInstance>();
         
         if(lods.Length == 0) return;
         
         lods.for_each(this, (x, s)=>x.init(s));
+        
+        Destroy(objects_root);
     }
 
     // Update is called once per frame

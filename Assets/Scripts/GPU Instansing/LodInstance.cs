@@ -55,7 +55,6 @@ public class LodInstance : MonoBehaviour
     int kernel_index;
     uint batch_size;
     float render_angle;
-    Transform[] render_point_transforms;
     
     public void init(LodSystem s)
     {
@@ -106,7 +105,7 @@ public class LodInstance : MonoBehaviour
 
         for (var i = 0; i < length; i++)
         {
-            if(objects[i].tag != objectRenderPositionTag) continue;
+            if(objects[i].object_tag != objectRenderPositionTag) continue;
             
             var obj = objects[i].transform;
             TRS_matrices[i] = Matrix4x4.TRS(obj.position, obj.rotation, obj.localScale);

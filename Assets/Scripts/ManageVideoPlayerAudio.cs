@@ -55,8 +55,11 @@ namespace DefaultNamespace
         [Range(0,1)]
         public float movie_light_strength = 0.2f;
         public bool loop_video;
-        public double skipSeconds;
+        public int maxMovieTextureResolution = 1024;
+        double skip_seconds;
+        [HideInInspector]
         public double seek_time;
+        [HideInInspector]
         public bool is_seeking;
         
         public Track[] tracks
@@ -249,9 +252,9 @@ namespace DefaultNamespace
             for (var i = 0; i < frame_buffer_size; i++)
             {
                 if(ratio_bigger)
-                    rt_pool[i] = new RenderTexture(1024, (int)(1024f*((float)h/w)), 0, RenderTextureFormat.Default,0);
+                    rt_pool[i] = new RenderTexture(maxMovieTextureResolution, (int)(maxMovieTextureResolution*((float)h/w)), 0, RenderTextureFormat.Default,0);
                 else
-                    rt_pool[i] = new RenderTexture((int)(1024f*((float)w/h)), 1024, 0, RenderTextureFormat.Default,0);
+                    rt_pool[i] = new RenderTexture((int)(maxMovieTextureResolution*((float)w/h)), maxMovieTextureResolution, 0, RenderTextureFormat.Default,0);
             }
 
             is_prepared = true;
@@ -524,10 +527,10 @@ namespace DefaultNamespace
             switch (requested_command)
             {
                 case PlayerCommands.skip_forward:
-                    vp.time += skipSeconds;
+                    vp.time += skip_seconds;
                     break;
                 case PlayerCommands.skip_backwards:
-                    vp.time -= skipSeconds;
+                    vp.time -= skip_seconds;
                     break;
                 case PlayerCommands.skip_to_time:
                     vp.time = skip_time_target;

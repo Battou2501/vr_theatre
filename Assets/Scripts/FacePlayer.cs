@@ -1,4 +1,5 @@
 using System;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 
 public class FacePlayer : MonoBehaviour
@@ -6,18 +7,23 @@ public class FacePlayer : MonoBehaviour
     public Transform target;
     public float distance;
     public float angle;
+    public float verticalOffset;
     public float followSpeed;
     public float maxTurnAngle;
     public float scaleMultiplier;
+    public float minHeight;
 
     Vector3 rightLimit;
     Vector3 leftLimit;
+    
+    Transform xr_origin;
     
     void Awake()
     {
         rightLimit = Quaternion.AngleAxis(maxTurnAngle, Vector3.up) * Vector3.forward;
         leftLimit = Quaternion.AngleAxis(-maxTurnAngle, Vector3.up) * Vector3.forward;
         transform.localScale *= scaleMultiplier;
+        xr_origin = FindFirstObjectByType<XROrigin>(FindObjectsInactive.Include).transform;
     }
 
     void Update()
@@ -35,10 +41,17 @@ public class FacePlayer : MonoBehaviour
         }
 
         var target_vector = Quaternion.AngleAxis(angle, new_right) * new_forward;
-        var target_position = target.position + target_vector * distance;
+        var target_position = target.position + target_vector * distance + Vector3.up * verticalOffset;
         //var target_position = target.position + new_forward * distance;
+
+        var min_height_adjusted = xr_origin.position.y + minHeight;
+        
+        if(target_position.y < min_height_adjusted)
+            target_position.y = min_height_adjusted;
         
         transform.position = Vector3.Slerp(transform.position, target_position, followSpeed * Time.deltaTime);
-        transform.LookAt(target.position);
+        
+        
+        transform.LookAt(target.position + Vector3.up * verticalOffset);
     }
 }
