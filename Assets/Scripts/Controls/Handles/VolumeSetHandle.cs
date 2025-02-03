@@ -10,15 +10,15 @@ namespace DefaultNamespace
     {
         float set_volume;
         
-        public override void init()
-        {
-            base.init();
-
-            video_manager.set_volume(1);
-            set_volume = 1;
-            transform.position = maxPoint.position;
-            update_value_bar();
-        }
+        //public override void init()
+        //{
+        //    base.init();
+        //
+        //    video_manager.set_volume(1);
+        //    set_volume = 1;
+        //    transform.position = maxPoint.position;
+        //    update_value_bar();
+        //}
         
         protected override void OnDragged()
         {
@@ -38,6 +38,10 @@ namespace DefaultNamespace
             if(Mathf.Abs(video_manager.Audio_volume - set_volume) < 0.01f) return;
             
             transform.position = Vector3.Lerp(minPoint.position, maxPoint.position, video_manager.Audio_volume);
+            
+            set_volume = video_manager.Audio_volume;
+            
+            update_value_bar();
         }
     }
 }

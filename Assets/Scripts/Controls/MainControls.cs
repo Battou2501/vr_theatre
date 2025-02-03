@@ -25,11 +25,9 @@ namespace DefaultNamespace
         public void Construct( UIManager u)
         {
             ui_manager = u;
-
-            init();
         }
         
-        void init()
+        public void init()
         {
             enable_trigger_check();
         }

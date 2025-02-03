@@ -14,17 +14,17 @@ namespace DefaultNamespace
         
         //MainControls main_controls;
         
+        CameraBlackOut camera_black_out;
         XROrigin xr_origin;
 
         [Inject]
-        public void Construct(XROrigin xro)
+        public void Construct(XROrigin xro, CameraBlackOut cb)
         {
             xr_origin = xro;
-            
-            init();
+            camera_black_out = cb;
         }
         
-        void init()
+        public void init()
         {
             var seat_rows = FindObjectsByType<SeatRow>(FindObjectsInactive.Include, FindObjectsSortMode.None).OrderBy(x=>x.rowNumber);
 

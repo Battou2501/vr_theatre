@@ -28,8 +28,6 @@ public abstract class BaseControl : MonoBehaviour
         file_navigation_manager = f;
         ui_manager = u;
         container = dc;
-        
-        init();
     }
     
     public virtual void init()

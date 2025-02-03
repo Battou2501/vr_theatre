@@ -14,13 +14,13 @@ namespace DefaultNamespace
         Transform dragged_by;
         double min_max_distance_ratio;
         
-        protected double slider_position => Vector3.Distance(minPoint.position, transform.position) * min_max_distance_ratio;
+        protected double slider_position => Vector3.Distance(minPoint.localPosition, transform.localPosition) * min_max_distance_ratio;
 
         public override void init()
         {
             base.init();
             
-            min_max_distance_ratio = 1f / Vector3.Distance(minPoint.position, maxPoint.position);
+            min_max_distance_ratio = 1f / Vector3.Distance(minPoint.localPosition, maxPoint.localPosition);
             
             main_controls.leftTriggerPressedAction.performed += StartDrag;
             main_controls.rightTriggerPressedAction.performed += StartDrag;

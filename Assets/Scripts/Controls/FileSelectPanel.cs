@@ -93,13 +93,13 @@ namespace DefaultNamespace
                     var button = container.InstantiatePrefab(directoryButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
                     var dir_button = button.GetComponents<BaseControl>();
-                    dir_button.for_each(main_controls, (o,m) => o.init());
+                    dir_button.for_each( o=> o.init());
                     directory_buttons.Add((DirectoryButton)dir_button.FirstOrDefault(o=>o.GetType() == typeof(DirectoryButton)));
                     
                     button = container.InstantiatePrefab(fileButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
                     var file_button = button.GetComponents<BaseControl>();
-                    file_button.for_each(main_controls, (o,m) => o.init());
+                    file_button.for_each(o => o.init());
                     file_buttons.Add((FileButton)file_button.FirstOrDefault(o=>o.GetType() == typeof(FileButton)));
                 }
             }

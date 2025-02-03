@@ -20,9 +20,10 @@ public class LodSystem : MonoBehaviour
     LodInstance[] lods;
     
     GameObject objects_root;
+    bool is_initialized;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void init()
     {
         var cam = Camera.main;
         main_camera_transform = Camera.main.transform;
@@ -40,13 +41,17 @@ public class LodSystem : MonoBehaviour
         
         lods.for_each(this, (x, s)=>x.init(s));
         
-        //Destroy(objects_root);
+        Destroy(objects_root);
+        
+        is_initialized = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(lods.Length == 0) return;
+        if(!is_initialized) return;
+        
+        if(lods == null || lods.Length == 0) return;
 
         Shader.SetGlobalVector("cam_pos", main_camera_transform.position);// - main_camera_transform.forward);
         Shader.SetGlobalVector("cam_dir", main_camera_transform.forward);

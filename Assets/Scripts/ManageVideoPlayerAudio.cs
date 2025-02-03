@@ -144,7 +144,7 @@ namespace DefaultNamespace
         static readonly int vec_arr_y = Shader.PropertyToID("_VecArrY");
         static readonly int vec_arr_z = Shader.PropertyToID("_VecArrZ");
         
-        public void Awake()
+        public void init()
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 900;
@@ -197,15 +197,17 @@ namespace DefaultNamespace
 
         void OnDestroy()
         {
+            tracks?.for_each(x=>x.Dispose());
+            tracks = null;
+            
+            if(vp == null) return;
+            
             vp.prepareCompleted -= Prepared;
             vp.frameReady       -= VpOnFrameReady;
             vp.seekCompleted    -= VpOnSeekCompleted;
             vp.loopPointReached -= VpOnLoopPointReached;
             vp.frameDropped     -= VpOnFrameDropped;
             vp.errorReceived    -= VpOnErrorReceived;
-            
-            tracks?.for_each(x=>x.Dispose());
-            tracks = null;
         }
 
         void VpOnErrorReceived(VideoPlayer source, string message)

@@ -28,6 +28,13 @@ namespace DefaultNamespace
             video_manager.AudioTrackChanged += set_track_text;
         }
 
+        public override void show()
+        {
+            if(video_manager.FilePath == "") return;
+        
+            gameObject.SetActive(true);
+        }
+
         void set_time_text()
         {
             timeText.text = TimeSpan.FromSeconds(video_manager.is_seeking ? video_manager.seek_time : video_manager.Video_time).ToString(@"hh\:mm\:ss");

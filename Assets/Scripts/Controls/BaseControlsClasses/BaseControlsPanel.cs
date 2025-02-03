@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class BaseControlsPanel : BaseControl
 {
     public event Action Closed;
-    
+
     public virtual void show()
     {
         gameObject.SetActive(true);

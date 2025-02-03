@@ -2,29 +2,31 @@ using System;
 using System.Collections.Generic;
 using DefaultNamespace;
 using UnityEngine;
+using Zenject;
 
-public class UIManager : BaseControl
+public class UIManager : MonoBehaviour
 {
     public BaseControlsPanel playerPanel;
     public BaseControlsPanel fileSelectPanel;
     public ErrorPanel   errorPanel;
-
-    public bool Is_ui_open { get; private set; }
-
+    
     BaseControlsPanel[] panels;
 
-    public override void init()
+    ManageVideoPlayerAudio video_manager;
+    MainControls main_controls;
+    
+    [Inject]
+    public void Construct(ManageVideoPlayerAudio v, MainControls m)
     {
-        base.init();
+        main_controls = m;
+        video_manager = v;
+    }
+    
+    public void init()
+    {
+        var controls = GetComponentsInChildren<BaseControl>(true);
         
-        //var controls = GetComponentsInChildren<BaseControl>(true);
-        //
-        //foreach (var control in controls)
-        //{
-        //    if(control == this) continue;
-        //    
-        //    control.init(main_controls);
-        //}
+        controls.for_each(x=>x.init());
         
         panels = GetComponentsInChildren<BaseControlsPanel>(true);
         
@@ -41,7 +43,7 @@ public class UIManager : BaseControl
 
     void OnDestroy()
     {
-        if(!is_initiated || video_manager == null) return;
+        if(video_manager == null) return;
         
         video_manager.ErrorOccured -= OnVideoErrorOccured;
     }
@@ -80,7 +82,7 @@ public class UIManager : BaseControl
         main_controls.disable_trigger_check();
     }
 
-    public bool is_all_panels_closed
+    bool is_all_panels_closed
     {
         get
         {

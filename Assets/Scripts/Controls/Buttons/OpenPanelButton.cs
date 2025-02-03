@@ -9,15 +9,11 @@ namespace DefaultNamespace
         public BaseControlsPanel panel_to_open;
         BaseControlsPanel parent_panel;
 
-        public override void init()
-        {
-            base.init();
-
-            parent_panel = GetComponentInParent<BaseControlsPanel>(true);
-        }
-
         protected override void Click_Action()
         {
+            if(parent_panel == null)
+                parent_panel = GetComponentInParent<BaseControlsPanel>(true);
+            
             panel_to_open.real_null()?.show();
             parent_panel.real_null()?.hide();
             

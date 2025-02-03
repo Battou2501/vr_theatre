@@ -28,7 +28,7 @@ public class ChangeSeatButton : ClickableButton
     {
         if(seat_change_system == null) return;
         
-        seat_change_system.change_seat(2,5);
+        seat_change_system.change_seat(row_idx,seat_idx);
     }
 
 #if UNITY_EDITOR

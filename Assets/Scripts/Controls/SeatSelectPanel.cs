@@ -23,13 +23,18 @@ public class SeatSelectPanel : BaseControlsPanel
     public void Construct(SeatChangeSystem s)
     {
         seat_change_system = s;
+    }
+
+    public override void init()
+    {
+        base.init();
         
         update_time_cancellation_token_source = new CancellationTokenSource();
         update_time_cancellation_token_source.RegisterRaiseCancelOnDestroy(this);
         
         generate_buttons(update_time_cancellation_token_source.Token).Forget();
     }
-
+    
     void OnDestroy()
     {
         if(update_time_cancellation_token_source == null) return;
