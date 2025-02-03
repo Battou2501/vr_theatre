@@ -15,11 +15,12 @@ namespace DefaultNamespace
 
         CancellationTokenSource update_time_cancellation_token_source;
         
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
             update_time_cancellation_token_source = new CancellationTokenSource();
             update_time_cancellation_token_source.RegisterRaiseCancelOnDestroy(this);
+
             _ = update_time(update_time_cancellation_token_source.Token);
 
             set_track_text();
@@ -55,7 +56,7 @@ namespace DefaultNamespace
             while (true)
             {
                 if(token.IsCancellationRequested)
-                    break;
+                    return;
                 
                 await UniTask.WaitWhile(() => !token.IsCancellationRequested && gameObject != null && !gameObject.activeInHierarchy, cancellationToken: token);
                 

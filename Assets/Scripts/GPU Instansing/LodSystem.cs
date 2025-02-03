@@ -40,7 +40,7 @@ public class LodSystem : MonoBehaviour
         
         lods.for_each(this, (x, s)=>x.init(s));
         
-        Destroy(objects_root);
+        //Destroy(objects_root);
     }
 
     // Update is called once per frame

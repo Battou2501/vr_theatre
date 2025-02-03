@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DefaultNamespace;
 using UnityEngine;
+using Zenject;
 
 public abstract class BaseControl : MonoBehaviour
 {
@@ -16,13 +17,23 @@ public abstract class BaseControl : MonoBehaviour
 
     protected bool is_hovered => hovered_by.Count > 0;
     protected HashSet<GameObject> hovered_by;
+
+    protected DiContainer container;
     
-    public virtual void init(MainControls m)
+    [Inject]
+    public void Construct(MainControls m, UIManager u, ManageVideoPlayerAudio v, FileNavigationManager f, DiContainer dc)
     {
         main_controls = m;
-        video_manager = main_controls.videoManager;
-        file_navigation_manager = main_controls.fileNavigationManager;
-        ui_manager = main_controls.uiManager;
+        video_manager = v;
+        file_navigation_manager = f;
+        ui_manager = u;
+        container = dc;
+        
+        init();
+    }
+    
+    public virtual void init()
+    {
         animation_feedback = GetComponent<ControlsAnimationFeedback>();
         hovered_by = new HashSet<GameObject>();
 

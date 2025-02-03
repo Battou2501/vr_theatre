@@ -8,9 +8,9 @@ namespace DefaultNamespace
 {
     public class ClickableButton : BaseControl
     {
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
 
             main_controls.leftTriggerPressedAction.performed += OnClick;
             main_controls.rightTriggerPressedAction.performed += OnClick;

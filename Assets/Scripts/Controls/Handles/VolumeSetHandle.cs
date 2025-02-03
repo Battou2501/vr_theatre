@@ -10,9 +10,9 @@ namespace DefaultNamespace
     {
         float set_volume;
         
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
 
             video_manager.set_volume(1);
             set_volume = 1;

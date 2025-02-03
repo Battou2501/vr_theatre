@@ -16,9 +16,9 @@ namespace DefaultNamespace
         
         protected double slider_position => Vector3.Distance(minPoint.position, transform.position) * min_max_distance_ratio;
 
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
             
             min_max_distance_ratio = 1f / Vector3.Distance(minPoint.position, maxPoint.position);
             

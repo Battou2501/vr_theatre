@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace DefaultNamespace
 {
@@ -17,9 +18,9 @@ namespace DefaultNamespace
         List<SetAudioTrackButton> track_buttons;
         string file_path;
         
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
             
             middle_initial_scale = middle.localScale;
 
@@ -52,9 +53,9 @@ namespace DefaultNamespace
             {
                 var track = tracks[i];
 
-                var button = Instantiate(trackPrefab, contentBlock).GetComponent<SetAudioTrackButton>();
+                var button = container.InstantiatePrefab(trackPrefab, contentBlock).GetComponent<SetAudioTrackButton>();
                 
-                button.init(main_controls);
+                button.init();
                 
                 button.set_track_dta(i, track.lang);
                 

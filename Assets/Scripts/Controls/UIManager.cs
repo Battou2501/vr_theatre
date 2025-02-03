@@ -13,18 +13,18 @@ public class UIManager : BaseControl
 
     BaseControlsPanel[] panels;
 
-    public override void init(MainControls m)
+    public override void init()
     {
-        base.init(m);
+        base.init();
         
-        var controls = GetComponentsInChildren<BaseControl>(true);
-
-        foreach (var control in controls)
-        {
-            if(control == this) continue;
-            
-            control.init(main_controls);
-        }
+        //var controls = GetComponentsInChildren<BaseControl>(true);
+        //
+        //foreach (var control in controls)
+        //{
+        //    if(control == this) continue;
+        //    
+        //    control.init(main_controls);
+        //}
         
         panels = GetComponentsInChildren<BaseControlsPanel>(true);
         
@@ -36,7 +36,7 @@ public class UIManager : BaseControl
 
         video_manager.ErrorOccured += OnVideoErrorOccured;
         
-        main_controls.check_hands_display();
+        main_controls.check_hands_display(is_all_panels_closed);
     }
 
     void OnDestroy()
@@ -52,7 +52,7 @@ public class UIManager : BaseControl
         
         errorPanel.showError(message);
         
-        main_controls.check_hands_display();
+        main_controls.check_hands_display(is_all_panels_closed);
         
         main_controls.disable_trigger_check();
     }
@@ -61,7 +61,7 @@ public class UIManager : BaseControl
     {
         if(!is_all_panels_closed) return;
         
-        main_controls.check_hands_display();
+        main_controls.check_hands_display(is_all_panels_closed);
 
         main_controls.enable_trigger_check();
     }
@@ -75,7 +75,7 @@ public class UIManager : BaseControl
         else
             fileSelectPanel.show();
         
-        main_controls.check_hands_display();
+        main_controls.check_hands_display(is_all_panels_closed);
 
         main_controls.disable_trigger_check();
     }

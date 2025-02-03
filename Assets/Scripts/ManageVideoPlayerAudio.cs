@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.Experimental.Audio;
 using UnityEngine.Experimental.Video;
 using UnityEngine.Video;
+using Zenject;
 using Debug = UnityEngine.Debug;
 
 namespace DefaultNamespace
@@ -143,7 +144,7 @@ namespace DefaultNamespace
         static readonly int vec_arr_y = Shader.PropertyToID("_VecArrY");
         static readonly int vec_arr_z = Shader.PropertyToID("_VecArrZ");
         
-        public void init()
+        public void Awake()
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 900;

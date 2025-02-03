@@ -4,7 +4,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class FileNavigationManager : MonoBehaviour
+public class FileNavigationManager// : MonoBehaviour
 {
     DriveInfo[] drives;
     DirectoryInfo[] directories;

@@ -9,9 +9,9 @@ namespace DefaultNamespace
         public BaseControlsPanel panel_to_open;
         BaseControlsPanel parent_panel;
 
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
 
             parent_panel = GetComponentInParent<BaseControlsPanel>(true);
         }

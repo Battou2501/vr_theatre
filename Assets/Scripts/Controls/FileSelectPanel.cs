@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using Zenject;
 
 namespace DefaultNamespace
 {
@@ -44,9 +46,9 @@ namespace DefaultNamespace
         bool has_next => current_page < total_pages;
         bool has_previous => current_page > 0;
         
-        public override void init(MainControls m)
+        public override void init()
         {
-            base.init(m);
+            base.init();
 
             file_navigation_manager.PathChanged += OnPathChanged;
 
@@ -88,16 +90,16 @@ namespace DefaultNamespace
                     
                     Debug.Log(pos);
                     
-                    var button = Instantiate(directoryButtonPrefab, contentBlock);
+                    var button = container.InstantiatePrefab(directoryButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
                     var dir_button = button.GetComponents<BaseControl>();
-                    dir_button.for_each(main_controls, (o,m) => o.init(m));
+                    dir_button.for_each(main_controls, (o,m) => o.init());
                     directory_buttons.Add((DirectoryButton)dir_button.FirstOrDefault(o=>o.GetType() == typeof(DirectoryButton)));
                     
-                    button = Instantiate(fileButtonPrefab, contentBlock);
+                    button = container.InstantiatePrefab(fileButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
                     var file_button = button.GetComponents<BaseControl>();
-                    file_button.for_each(main_controls, (o,m) => o.init(m));
+                    file_button.for_each(main_controls, (o,m) => o.init());
                     file_buttons.Add((FileButton)file_button.FirstOrDefault(o=>o.GetType() == typeof(FileButton)));
                 }
             }

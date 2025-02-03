@@ -1,16 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Zenject;
 
 namespace DefaultNamespace
 {
     public class MainControls : MonoBehaviour
     {
-        [Header("UI Controls elements")]
-        public UIManager uiManager;
-        
         [Header("Hand controls")]
         public GameObject leftHandTriggerCollider;
         public GameObject rightHandTriggerCollider;
@@ -18,20 +17,20 @@ namespace DefaultNamespace
         public InputAction leftTriggerPressedAction;
         public InputAction rightTriggerPressedAction;
         
-        [Header("Video player manager")]
-        public ManageVideoPlayerAudio videoManager;
-        
-        [Header("File navigation manager")]
-        public FileNavigationManager fileNavigationManager;
-
         bool subscriber_to_trigger_actions;
-        
-        void Awake()
-        {
-            videoManager.init();
-            
-            uiManager.init(this);
 
+        UIManager ui_manager;
+        
+        [Inject]
+        public void Construct( UIManager u)
+        {
+            ui_manager = u;
+
+            init();
+        }
+        
+        void init()
+        {
             enable_trigger_check();
         }
 
@@ -40,9 +39,9 @@ namespace DefaultNamespace
             disable_trigger_check();
         }
 
-        public void check_hands_display()
+        public void check_hands_display(bool hide)
         {
-            if(uiManager.is_all_panels_closed)
+            if(hide)
                 hide_hands();
             else
                 show_hands();
@@ -91,7 +90,7 @@ namespace DefaultNamespace
         {
             if (!callbackContext.control.IsPressed()) return;
             
-            uiManager.show_ui();
+            ui_manager.show_ui();
         }
     }
 }
