@@ -10,6 +10,10 @@ public class BootLoader : MonoBehaviour
     public LoadingScreen loadingScreen;
     public GameObject movieTheatreRoom;
 
+    public int delayBetweenLoadStepsMillis;
+    public int defaultRow;
+    public int defaultSeat;
+    
     MainControls main_controls;
     UIManager ui_manager;
     ManageVideoPlayerAudio video_manager;
@@ -59,31 +63,38 @@ public class BootLoader : MonoBehaviour
 
     async UniTask load_program()
     {
+        loadingScreen.set_progress(0);
+        lod_system.gameObject.SetActive(false);
+        ui_manager.gameObject.SetActive(false);
         camera_black_out.show_immediately();
-        Debug.Log("loading program");
-        await UniTask.Delay(1000);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         await camera_black_out.fade();
-        await UniTask.Delay(100);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         main_controls.init();
-        loadingScreen.set_progress(0.1f);
-        await UniTask.Delay(10);
+        await loadingScreen.move_progress_to(0.1f);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         seat_change_system.init();
-        loadingScreen.set_progress(0.2f);
-        await UniTask.Delay(10);
+        await loadingScreen.move_progress_to(0.2f);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         lod_system.init();
-        loadingScreen.set_progress(0.4f);
-        await UniTask.Delay(10);
-        ui_manager.init();
-        loadingScreen.set_progress(0.7f);
-        await UniTask.Delay(10);
+        await loadingScreen.move_progress_to(0.4f);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         video_manager.init();
-        loadingScreen.set_progress(1f);
-        await UniTask.Delay(10);
+        await loadingScreen.move_progress_to(0.7f);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
+        ui_manager.init();
+        await loadingScreen.move_progress_to(1f);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         await camera_black_out.show();
-        await UniTask.Delay(100);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
+        await seat_change_system.change_seat(defaultRow,defaultSeat, false);
         loadingScreen.gameObject.SetActive(false);
         movieTheatreRoom.SetActive(true);
-        await UniTask.Delay(10);
+        lod_system.gameObject.SetActive(true);
+        ui_manager.display_initial_ui_if_needed();
+        ui_manager.gameObject.SetActive(true);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         await camera_black_out.fade();
+        
     }
 }

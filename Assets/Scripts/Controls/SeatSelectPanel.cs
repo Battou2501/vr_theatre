@@ -61,7 +61,7 @@ public class SeatSelectPanel : BaseControlsPanel
                 
                 var button = container.InstantiatePrefab(seatSelectButtonPrefab, seatSelectButtonsContainer).GetComponent<ChangeSeatButton>();
                 
-                button.transform.localPosition  = Vector3.down * rowStep * i + Vector3.down * rowStep * (i>4 ? 1 : 0) + Vector3.right * seatStep * ((float)-seat_count/2 + j);
+                button.transform.localPosition  = Vector3.down * rowStep * i + Vector3.down * rowStep * (i>4 ? 1 : 0) + Vector3.left * seatStep * ((float)-seat_count/2 + j);
                 
                 button.set_data(row.rowNumber,seat.seatNumber);
             }

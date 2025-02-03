@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Cysharp.Threading.Tasks;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using Zenject;
@@ -61,10 +62,16 @@ namespace DefaultNamespace
             }
         }
 
-        public void change_seat(int row, int seat)
+        public async UniTask change_seat(int row, int seat, bool black_out = true)
         {
+            if(black_out)
+                await camera_black_out.show();
+            
             xr_origin.transform.position = rows[row].seats[seat].position;
             xr_origin.transform.rotation = rows[row].seats[seat].rotation;
+            
+            if(black_out)
+                await camera_black_out.fade();
         }
 
         public class Row

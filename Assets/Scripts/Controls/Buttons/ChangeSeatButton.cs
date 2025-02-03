@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using DefaultNamespace;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -28,7 +29,7 @@ public class ChangeSeatButton : ClickableButton
     {
         if(seat_change_system == null) return;
         
-        seat_change_system.change_seat(row_idx,seat_idx);
+        seat_change_system.change_seat(row_idx,seat_idx).Forget();
     }
 
 #if UNITY_EDITOR

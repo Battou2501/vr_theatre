@@ -6,6 +6,9 @@ using Zenject;
 
 public class UIManager : MonoBehaviour
 {
+    public event Action PanelClosed;
+    public event Action PanelOpened;
+    
     public BaseControlsPanel playerPanel;
     public BaseControlsPanel fileSelectPanel;
     public ErrorPanel   errorPanel;
@@ -33,19 +36,39 @@ public class UIManager : MonoBehaviour
         panels.for_each(x=>
         {
             x.Closed += OnPanelClosed;
-            x.gameObject.SetActive(false);
+            x.Opened += OnPanelOpened;
+            x.hide();
         });
 
         video_manager.ErrorOccured += OnVideoErrorOccured;
         
-        main_controls.check_hands_display(is_all_panels_closed);
+        //if(video_manager.FilePath == "")
+        //    fileSelectPanel.show();
+        
+        //main_controls.check_hands_display(is_all_panels_closed);
+    }
+
+    public void display_initial_ui_if_needed()
+    {
+        if(video_manager.FilePath == "")
+            fileSelectPanel.show();
+    }
+
+    void OnPanelOpened()
+    {
+        PanelOpened?.Invoke();
     }
 
     void OnDestroy()
     {
-        if(video_manager == null) return;
+        if(video_manager != null)
+            video_manager.ErrorOccured -= OnVideoErrorOccured;
         
-        video_manager.ErrorOccured -= OnVideoErrorOccured;
+        panels?.for_each(x=>
+        {
+            x.Closed -= OnPanelClosed;
+            x.Opened -= OnPanelOpened;
+        });
     }
 
     void OnVideoErrorOccured(string message)
@@ -54,18 +77,19 @@ public class UIManager : MonoBehaviour
         
         errorPanel.showError(message);
         
-        main_controls.check_hands_display(is_all_panels_closed);
+        //main_controls.check_hands_display(is_all_panels_closed);
         
-        main_controls.disable_trigger_check();
+        //main_controls.disable_trigger_check();
     }
 
     void OnPanelClosed()
     {
-        if(!is_all_panels_closed) return;
-        
-        main_controls.check_hands_display(is_all_panels_closed);
-
-        main_controls.enable_trigger_check();
+        //if(!is_all_panels_closed) return;
+        //
+        //main_controls.check_hands_display(is_all_panels_closed);
+        //
+        //main_controls.enable_trigger_check();
+        PanelClosed?.Invoke();
     }
 
     public void show_ui()
@@ -77,9 +101,9 @@ public class UIManager : MonoBehaviour
         else
             fileSelectPanel.show();
         
-        main_controls.check_hands_display(is_all_panels_closed);
+        //main_controls.check_hands_display(is_all_panels_closed);
 
-        main_controls.disable_trigger_check();
+        //main_controls.disable_trigger_check();
     }
 
     bool is_all_panels_closed

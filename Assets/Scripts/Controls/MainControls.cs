@@ -29,20 +29,33 @@ namespace DefaultNamespace
         
         public void init()
         {
+
+            ui_manager.PanelOpened += OnPanelOpened;
+            ui_manager.PanelClosed += OnPanelClosed;
+            
             enable_trigger_check();
+        }
+
+        void OnPanelClosed()
+        {
+            hide_hands();
+            enable_trigger_check();
+        }
+
+        void OnPanelOpened()
+        {
+            show_hands();
+            disable_trigger_check();
         }
 
         void OnDestroy()
         {
             disable_trigger_check();
-        }
-
-        public void check_hands_display(bool hide)
-        {
-            if(hide)
-                hide_hands();
-            else
-                show_hands();
+            
+            if(ui_manager == null) return;
+            
+            ui_manager.PanelOpened -= OnPanelOpened;
+            ui_manager.PanelClosed -= OnPanelClosed;
         }
         
         void show_hands()
@@ -57,7 +70,7 @@ namespace DefaultNamespace
             rightHandTriggerCollider.real_null()?.SetActive(false);
         }
 
-        public void enable_trigger_check()
+        void enable_trigger_check()
         {
             if(subscriber_to_trigger_actions) return;
             
@@ -76,7 +89,7 @@ namespace DefaultNamespace
             subscriber_to_trigger_actions = true;
         }
 
-        public void disable_trigger_check()
+        void disable_trigger_check()
         {
             leftTriggerPressedAction.performed -= TriggerPressedActionOnStarted;
             rightTriggerPressedAction.performed -= TriggerPressedActionOnStarted;
