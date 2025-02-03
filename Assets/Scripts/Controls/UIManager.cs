@@ -52,6 +52,8 @@ public class UIManager : MonoBehaviour
     {
         if(video_manager.FilePath == "")
             fileSelectPanel.show();
+        else
+            playerPanel.show();
     }
 
     void OnPanelOpened()

@@ -32,7 +32,7 @@ namespace DefaultNamespace
         {
             if(video_manager.FilePath == "") return;
         
-            gameObject.SetActive(true);
+            base.show();
         }
 
         void set_time_text()
