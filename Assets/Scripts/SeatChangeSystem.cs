@@ -9,7 +9,8 @@ namespace DefaultNamespace
     {
         public float forwardOffsetFromSeat;
         
-        Row[] rows;
+        [HideInInspector]
+        public Row[] rows;
         
         //MainControls main_controls;
         
