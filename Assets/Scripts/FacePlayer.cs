@@ -4,7 +4,18 @@ using UnityEngine;
 
 public class FacePlayer : MonoBehaviour
 {
+    public enum FaceType
+    {
+        DoNotFace = 0,
+        FaceHorizontally,
+        FaceAllDirections
+    }
+    
     public Transform target;
+
+    public FaceType faceTargetType;
+    public bool followTarget;
+    
     public float distance;
     public float angle;
     public float verticalOffset;
@@ -17,18 +28,30 @@ public class FacePlayer : MonoBehaviour
     Vector3 leftLimit;
     
     Transform xr_origin;
+    Transform this_transform;
     
     void Awake()
     {
+        this_transform = transform;
         rightLimit = Quaternion.AngleAxis(maxTurnAngle, Vector3.up) * Vector3.forward;
         leftLimit = Quaternion.AngleAxis(-maxTurnAngle, Vector3.up) * Vector3.forward;
-        transform.localScale *= scaleMultiplier;
+        this_transform.localScale *= scaleMultiplier;
         xr_origin = FindFirstObjectByType<XROrigin>(FindObjectsInactive.Include).transform;
+        
     }
 
     void Update()
     {
         if(target == null)return;
+
+        follow();
+        
+        face();
+    }
+
+    void follow()
+    {
+        if(!followTarget) return;
         
         var new_right = Vector3.Cross(Vector3.up, target.forward).normalized;
         var new_forward = Vector3.Cross(new_right, Vector3.up).normalized;
@@ -42,16 +65,31 @@ public class FacePlayer : MonoBehaviour
 
         var target_vector = Quaternion.AngleAxis(angle, new_right) * new_forward;
         var target_position = target.position + target_vector * distance + Vector3.up * verticalOffset;
-        //var target_position = target.position + new_forward * distance;
 
         var min_height_adjusted = xr_origin.position.y + minHeight;
         
         if(target_position.y < min_height_adjusted)
             target_position.y = min_height_adjusted;
         
-        transform.position = Vector3.Slerp(transform.position, target_position, followSpeed * Time.deltaTime);
+        this_transform.position = Vector3.Slerp(this_transform.position, target_position, followSpeed * Time.deltaTime);
+    }
+
+    void face()
+    {
+        if(faceTargetType == FaceType.DoNotFace) return;
+
+        switch (faceTargetType)
+        {
+            case FaceType.FaceHorizontally:
+                this_transform.rotation = Quaternion.LookRotation(target.position - this_transform.position, Vector3.up);
+                this_transform.eulerAngles = new Vector3(0, this_transform.eulerAngles.y, 0);
+                break;
+            case FaceType.FaceAllDirections:
+                this_transform.LookAt(target.position + Vector3.up * verticalOffset);
+                break;
+            default:
+                return;
+        }
         
-        
-        transform.LookAt(target.position + Vector3.up * verticalOffset);
     }
 }
