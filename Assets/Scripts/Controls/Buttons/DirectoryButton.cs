@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Cysharp.Threading.Tasks;
 using TMPro;
+using Zenject;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -12,6 +13,14 @@ namespace DefaultNamespace
         public TMP_Text text;
         
         DirectoryInfo dir_info;
+
+        FileNavigationManager file_navigation_manager;
+        
+        [Inject]
+        public void Construct(FileNavigationManager f)
+        {
+            file_navigation_manager = f;
+        }
         
         public void set_data(DirectoryInfo d)
         {

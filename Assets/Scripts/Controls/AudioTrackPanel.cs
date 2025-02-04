@@ -18,6 +18,16 @@ namespace DefaultNamespace
         List<SetAudioTrackButton> track_buttons;
         string file_path;
         
+        ManageVideoPlayerAudio video_manager;
+        DiContainer container;
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v, DiContainer c)
+        {
+            video_manager = v;
+            container = c;
+        }
+        
         public override void init()
         {
             base.init();

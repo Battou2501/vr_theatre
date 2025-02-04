@@ -2,6 +2,7 @@
 using System.Numerics;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Zenject;
 using Vector3 = UnityEngine.Vector3;
 
 namespace DefaultNamespace
@@ -9,6 +10,14 @@ namespace DefaultNamespace
     public class VolumeSetHandle : DraggableHandle
     {
         float set_volume;
+
+        ManageVideoPlayerAudio video_manager;
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v)
+        {
+            video_manager = v;
+        }
         
         //public override void init()
         //{

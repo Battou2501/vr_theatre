@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
+using Zenject;
 
 namespace DefaultNamespace
 {
@@ -14,6 +15,14 @@ namespace DefaultNamespace
         public TMP_Text trackText;
 
         CancellationTokenSource update_time_cancellation_token_source;
+
+        ManageVideoPlayerAudio video_manager;
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v)
+        {
+            video_manager = v;
+        }
         
         public override void init()
         {

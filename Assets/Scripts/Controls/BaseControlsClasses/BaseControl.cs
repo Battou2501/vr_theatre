@@ -7,9 +7,9 @@ using Zenject;
 public abstract class BaseControl : MonoBehaviour
 {
     protected MainControls main_controls;
-    protected ManageVideoPlayerAudio video_manager;
-    protected FileNavigationManager file_navigation_manager;
-    protected UIManager ui_manager;
+    //protected ManageVideoPlayerAudio video_manager;
+    //protected FileNavigationManager file_navigation_manager;
+    //protected UIManager ui_manager;
 
     protected ControlsAnimationFeedback animation_feedback;
     
@@ -18,16 +18,16 @@ public abstract class BaseControl : MonoBehaviour
     protected bool is_hovered => hovered_by.Count > 0;
     protected HashSet<GameObject> hovered_by;
 
-    protected DiContainer container;
+    //protected DiContainer container;
     
     [Inject]
     public void Construct(MainControls m, UIManager u, ManageVideoPlayerAudio v, FileNavigationManager f, DiContainer dc)
     {
         main_controls = m;
-        video_manager = v;
-        file_navigation_manager = f;
-        ui_manager = u;
-        container = dc;
+        //video_manager = v;
+        //file_navigation_manager = f;
+        //ui_manager = u;
+        //container = dc;
     }
     
     public virtual void init()

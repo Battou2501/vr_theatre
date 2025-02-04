@@ -1,6 +1,7 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace DefaultNamespace
 {
@@ -9,6 +10,14 @@ namespace DefaultNamespace
         double video_length => video_manager.Video_length;
         double video_time_dragged => slider_position * video_length;
 
+        ManageVideoPlayerAudio video_manager;
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v)
+        {
+            video_manager = v;
+        }
+        
         protected override void StopDrag_Action()
         {
             if(video_manager.is_seeking)

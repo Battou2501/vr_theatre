@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using DefaultNamespace;
 using UnityEngine;
 using Zenject;
@@ -17,38 +14,24 @@ public class SeatSelectPanel : BaseControlsPanel
     
     SeatChangeSystem seat_change_system;
     
-    CancellationTokenSource update_time_cancellation_token_source;
+    DiContainer container;
     
     [Inject]
-    public void Construct(SeatChangeSystem s)
+    public void Construct(SeatChangeSystem s, DiContainer d)
     {
         seat_change_system = s;
+        container = d;
     }
 
     public override void init()
     {
         base.init();
         
-        update_time_cancellation_token_source = new CancellationTokenSource();
-        update_time_cancellation_token_source.RegisterRaiseCancelOnDestroy(this);
-        
-        generate_buttons(update_time_cancellation_token_source.Token).Forget();
-    }
-    
-    void OnDestroy()
-    {
-        if(update_time_cancellation_token_source == null) return;
-        
-        update_time_cancellation_token_source.Cancel();
+        generate_buttons();
     }
 
-    async UniTask generate_buttons(CancellationToken token)
+    void generate_buttons()
     {
-        await UniTask.WaitWhile(() => !token.IsCancellationRequested && container == null && (seat_change_system.rows == null || seat_change_system.rows.Length == 0));
-        
-        if(token.IsCancellationRequested)
-            return;
-        
         for (var i = 0; i < seat_change_system.rows.Length; i++)
         {
             var row = seat_change_system.rows[i];

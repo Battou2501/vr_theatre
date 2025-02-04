@@ -2,6 +2,7 @@
 using UnityEditor;
 #endif
 using UnityEngine;
+using Zenject;
 
 namespace DefaultNamespace
 {
@@ -9,6 +10,14 @@ namespace DefaultNamespace
     {
         public GameObject playButtonObject;
         public GameObject pauseButtonObject;
+        
+        ManageVideoPlayerAudio video_manager;
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v)
+        {
+            video_manager = v;
+        }
         
         protected override void Click_Action()
         {

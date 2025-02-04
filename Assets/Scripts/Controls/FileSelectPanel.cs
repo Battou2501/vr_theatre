@@ -45,6 +45,16 @@ namespace DefaultNamespace
 
         bool has_next => current_page < total_pages;
         bool has_previous => current_page > 0;
+
+        FileNavigationManager file_navigation_manager;
+        DiContainer container;
+        
+        [Inject]
+        public void Construct(FileNavigationManager f, DiContainer c)
+        {
+            file_navigation_manager = f;
+            container = c;
+        }
         
         public override void init()
         {
