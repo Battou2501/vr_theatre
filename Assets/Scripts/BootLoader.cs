@@ -44,6 +44,9 @@ public class BootLoader : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 900;
+        
         cancellation_token_source = new CancellationTokenSource();
         //cancellation_token_source.RegisterRaiseCancelOnDestroy(this.gameObject);
         loadingScreen.gameObject.SetActive(true);

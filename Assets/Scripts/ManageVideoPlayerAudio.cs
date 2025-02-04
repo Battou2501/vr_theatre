@@ -146,9 +146,6 @@ namespace DefaultNamespace
         
         public void init()
         {
-            QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = 900;
-            
             trim_seconds_static = trimSeconds;
             trim_after_reaching_seconds_static = trimAfterReachingSeconds;
             track_audio_clip_buffer_length_sec_static = trackAudioClipBufferLengthSec;

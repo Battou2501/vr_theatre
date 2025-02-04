@@ -149,6 +149,7 @@ Shader "Unlit/Screen Shader"
                 
                 const fixed4 col_movie = tex_movie * lerp(grain,1,1-_GrainStrength) * (1-border_factor) + tex_ambient * 10 * _ScreenAmbientStrength * l_ambient * (1-saturate( l * (1-border_factor)*5)) ;
                 const fixed light_coef = pow(_LightStrength,1.5) * _AffectedByLight;
+
                 return  lerp(col_movie * lerp(1,tex_screen,0.6),col,light_coef) * 0.95 + col_movie * 0.05;
             }
             ENDCG
