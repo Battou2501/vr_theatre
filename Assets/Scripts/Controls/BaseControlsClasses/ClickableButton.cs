@@ -16,7 +16,7 @@ namespace DefaultNamespace
             main_controls.rightTriggerPressedAction.performed += OnClick;
         }
 
-        void OnDestroy()
+        protected virtual void OnDestroy()
         {
             if(!is_initiated) return;
             

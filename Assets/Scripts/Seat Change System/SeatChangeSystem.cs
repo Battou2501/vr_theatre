@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -8,6 +9,8 @@ namespace DefaultNamespace
 {
     public class SeatChangeSystem : MonoBehaviour
     {
+        public Action SeatChanged; 
+        
         public float forwardOffsetFromSeat;
         
         [HideInInspector]
@@ -17,6 +20,9 @@ namespace DefaultNamespace
         
         CameraBlackOut camera_black_out;
         XROrigin xr_origin;
+        
+        int current_row = -1;
+        int current_seat = -1;
 
         [Inject]
         public void Construct(XROrigin xro, CameraBlackOut cb)
@@ -62,8 +68,18 @@ namespace DefaultNamespace
             }
         }
 
+        public bool is_current_seat(int r, int s)
+        {
+            return current_row == r && current_seat == s;
+        }
+        
         public async UniTask change_seat(int row, int seat, bool black_out = true)
         {
+            current_seat = seat;
+            current_row = row;
+            
+            SeatChanged?.Invoke();
+            
             if(black_out)
                 await camera_black_out.show();
             

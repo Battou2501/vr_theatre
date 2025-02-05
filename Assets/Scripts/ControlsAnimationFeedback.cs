@@ -3,6 +3,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(BaseControl))]
 public class ControlsAnimationFeedback : MonoBehaviour
 {
     [SerializeField]
@@ -18,11 +19,11 @@ public class ControlsAnimationFeedback : MonoBehaviour
     bool is_hovered;
     bool is_initial_scale_set;
     
-    void OnEnable()
-    {
-        set_initial_scale();
-        reset();
-    }
+    //void OnEnable()
+    //{
+    //    set_initial_scale();
+    //    reset();
+    //}
 
     void set_initial_scale()
     {
@@ -34,8 +35,10 @@ public class ControlsAnimationFeedback : MonoBehaviour
         is_initial_scale_set = true;
     }
     
-    void reset()
+    public void reset()
     {
+        if(!is_initial_scale_set) return;
+        
         transform.localScale = initial_scale;
     }
     
@@ -48,6 +51,8 @@ public class ControlsAnimationFeedback : MonoBehaviour
     
     public void OnHoverStart()
     {
+        set_initial_scale();
+        
         transform.DOScale(increased_scale, duration).SetEase(easeType, overshoot);
     }
 

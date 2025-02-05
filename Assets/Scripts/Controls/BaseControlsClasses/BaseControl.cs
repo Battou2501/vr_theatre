@@ -18,6 +18,8 @@ public abstract class BaseControl : MonoBehaviour
     protected bool is_hovered => hovered_by.Count > 0;
     protected HashSet<GameObject> hovered_by;
 
+    protected Transform this_transform;
+    
     //protected DiContainer container;
     
     [Inject]
@@ -35,16 +37,22 @@ public abstract class BaseControl : MonoBehaviour
         animation_feedback = GetComponent<ControlsAnimationFeedback>();
         hovered_by = new HashSet<GameObject>();
 
-        var parent_panel = gameObject.GetComponentInParent<BaseControlsPanel>(true);
-        if (parent_panel != null)
-            parent_panel.Closed += OnParentPanelClosed;
-        
+        //var parent_panel = gameObject.GetComponentInParent<BaseControlsPanel>(true);
+        //if (parent_panel != null)
+        //    parent_panel.Closed += OnParentPanelClosed;
+        this_transform = transform;
         is_initiated = true;
     }
 
-    void OnParentPanelClosed()
+    //void OnParentPanelClosed()
+    //{
+    //    hovered_by.Clear();
+    //}
+
+    void OnDisable()
     {
-        hovered_by.Clear();
+        hovered_by?.Clear();
+        animation_feedback?.reset();
     }
 
     void OnTriggerEnter(Collider other)

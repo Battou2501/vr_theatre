@@ -28,7 +28,7 @@ namespace DefaultNamespace
             stop
         }
 
-        enum PlayerStates
+        public enum PlayerStates
         {
             stopped,
             playing,
@@ -38,6 +38,8 @@ namespace DefaultNamespace
         public Action AudioTrackChanged;
         public Action VideoPrepared;
         public Action<string> ErrorOccured;
+        public Action PlayerStateChanged;
+        public Action VideoEnded;
         
         public AudioSource[] audioSources;
         public Material mat;
@@ -57,11 +59,13 @@ namespace DefaultNamespace
         public float movie_light_strength = 0.2f;
         public bool loop_video;
         public int maxMovieTextureResolution = 1024;
-        double skip_seconds;
+        double skip_seconds = 10;
         [HideInInspector]
         public double seek_time;
         [HideInInspector]
         public bool is_seeking;
+        [HideInInspector]
+        public PlayerStates player_state;
         
         public Track[] tracks
         {
@@ -82,7 +86,6 @@ namespace DefaultNamespace
         
         
         PlayerCommands requested_command; 
-        PlayerStates player_state;
         AudioSampleProvider[] providers;
         bool light_affects_screen_current;
         int iterations;
@@ -107,14 +110,14 @@ namespace DefaultNamespace
         int requested_track_idx = -1;
         double skip_time_target;
         double audio_trimmed_time;
+        bool is_video_playing_for_other_threads;
 
         bool Vp_is_playing => vp.isPlaying;
+        
         bool tracks_in_sync
         {
             get
             {
-                //return true;
-                
                 if (tracks is not {Length: > 0})
                     return true;
         
@@ -189,11 +192,20 @@ namespace DefaultNamespace
                 set_file(vp.url);
             }
 
-            player_state = PlayerStates.stopped;
+            change_player_state(PlayerStates.stopped);
         }
 
+        void change_player_state(PlayerStates state)
+        {
+            player_state = state;
+            
+            PlayerStateChanged?.Invoke();
+        }
+        
         void OnDestroy()
         {
+            is_video_playing_for_other_threads = false;
+            
             tracks?.for_each(x=>x.Dispose());
             tracks = null;
             
@@ -212,7 +224,7 @@ namespace DefaultNamespace
             vp.url = "";
             reset_state();
             vp.Stop();
-            player_state = PlayerStates.stopped;
+            change_player_state(PlayerStates.stopped);
             ErrorOccured?.Invoke(message);
         }
 
@@ -276,6 +288,8 @@ namespace DefaultNamespace
             
             current_track_idx = vp.audioTrackCount>0 ? 0 : -1;
             AudioTrackChanged?.Invoke();
+            
+            requested_command = PlayerCommands.play_pause;
         }
         
         static void VpOnFrameDropped(VideoPlayer source)
@@ -285,15 +299,17 @@ namespace DefaultNamespace
         
         void VpOnLoopPointReached(VideoPlayer source)
         {
-            reset_state();
+            vp.Play();
             
-            vp.Stop();
+            request_stop();
 
-            player_state = PlayerStates.stopped;
-            
-            if(!loop_video) return;
+            if (!loop_video)
+            {
+                VideoEnded?.Invoke();
+                return;
+            }
 
-            player_state = PlayerStates.playing;
+            change_player_state(PlayerStates.playing);
             
             vp.Play();
         }
@@ -368,6 +384,9 @@ namespace DefaultNamespace
                 
                 while (sf_count!=sampleFrameCount)
                 { 
+                    if(!is_video_playing_for_other_threads)
+                        return;
+                    
                     sf_count = provider.ConsumeSampleFrames(buffer);
                 }
                    
@@ -421,6 +440,7 @@ namespace DefaultNamespace
             delay_seconds = 0;
             audio_trimmed_time = 0;
             play_start_time = 0;
+            is_video_playing_for_other_threads = false;
         }
 
         public void set_file(string file)
@@ -432,9 +452,9 @@ namespace DefaultNamespace
             }
             
             vp.Stop();
+            change_player_state(PlayerStates.stopped);
             vp.url = file;
             vp.Prepare();
-            requested_command = PlayerCommands.play_pause;
         }
         
         public void request_play_pause()
@@ -455,7 +475,7 @@ namespace DefaultNamespace
             if (state)
             {
                 vp.Pause();
-                player_state = PlayerStates.paused;
+                change_player_state(PlayerStates.paused);
                 
                 if(no_audio) return;
                 
@@ -464,11 +484,8 @@ namespace DefaultNamespace
                 return;
             }
             
-            //if(!is_prepared && vp.url != "") 
-            //    vp.Prepare();
-            
             vp.Play();
-            player_state = PlayerStates.playing;
+            change_player_state(PlayerStates.playing);
             
             if(no_audio) return;
             
@@ -486,14 +503,10 @@ namespace DefaultNamespace
             
             reset_state();
             
-            //vp.Stop();
             vp.Pause();
             vp.time = 0;
-            play_start_time = 0;
             clear_screen();
-            //vp.Prepare();
-            player_state = PlayerStates.stopped;
-            //vp.Prepare();
+            change_player_state(PlayerStates.stopped);
         }
 
         public void request_skip_to_time(double t)
@@ -527,10 +540,10 @@ namespace DefaultNamespace
             switch (requested_command)
             {
                 case PlayerCommands.skip_forward:
-                    vp.time += skip_seconds;
+                    vp.time += Mathf.Min((float)skip_seconds, Mathf.Max(0,(float)vp.length - (float)vp.time - 1));
                     break;
                 case PlayerCommands.skip_backwards:
-                    vp.time -= skip_seconds;
+                    vp.time -= Mathf.Min((float)skip_seconds, (float)vp.time);
                     break;
                 case PlayerCommands.skip_to_time:
                     vp.time = skip_time_target;
@@ -558,9 +571,6 @@ namespace DefaultNamespace
             light_strength = Mathf.Lerp(light_strength, target_light,Time.deltaTime);
             
             Shader.SetGlobalFloat(l_strength, light_strength);
-
-            //if (light_strength<0.1f)
-            //Debug.Log(light_strength);
         }
 
         void update_light_affects_screen()
@@ -725,7 +735,11 @@ namespace DefaultNamespace
             if (Mathf.Abs((float) (at - vpt)) > videoAudioDesyncThreshold)
             {
                 var correct_time = vpt - audio_trimmed_time - play_start_time;
-                audioSources.for_each(correct_time, (x,t) => x.time = (float)t);
+                audioSources.for_each(correct_time, (x,t) =>
+                {
+                    if(x.isPlaying)
+                        x.time = (float) t;
+                });
             }
 
             //Debug.Log("At: " + at + " Vt: " + vpt);
@@ -761,7 +775,6 @@ namespace DefaultNamespace
         void handle_change_track_request()
         {
             if(!audio_started || !tracks_in_sync || !Vp_is_playing) return;
-            //if(!audio_started || !Vp_is_playing) return;
             
             if(requested_track_idx == -1 || requested_track_idx >= vp.audioTrackCount || requested_track_idx == current_track_idx ) return;
 
@@ -788,6 +801,8 @@ namespace DefaultNamespace
             
             is_delay_set = true;
             is_delay_set_needed = false;
+            
+            is_video_playing_for_other_threads = true;
             
             Debug.Log(vp.time);
         }
@@ -849,30 +864,25 @@ namespace DefaultNamespace
                 channels.for_each(t, (x,d) => x?.set_clip(d));
             }
             
-            public void add_samples(uint sfCount, NativeArray<float> buffer, int channelCount)
+            public void add_samples(uint sfCount, NativeArray<float> samples_buffer, int channelCount)
             {
                 add_count += 1;
 
-                if(channelCount*sfCount>buffer.Length)
+                if(channelCount*sfCount>samples_buffer.Length)
                     return;
                 
-                var b_length = buffer.Length;
-                var buff = new float[sfCount];
-                var c = 0;
-                var j = 0;
+                var samples_buffer_length = samples_buffer.Length;
+                var chnnel_buffer = new float[sfCount];
                 
-                for (var i = 0; i < b_length; i+=1)
+                for (var c = 0; c < channelCount; c++)
                 {
-                    buff[j] = buffer[c + j * channelCount];
-
-                    j++;
-
-                    if (j < sfCount) continue;
-
-                    channels[c].add_data(buff);
-                    
-                    j = 0;
-                    c++;
+                    var b = 0;
+                    for (var i = c; i < samples_buffer_length; i += channelCount)
+                    {
+                        chnnel_buffer[b] = samples_buffer[i];
+                        b++;
+                    }
+                    channels[c].add_data(chnnel_buffer);
                 }
             }
 

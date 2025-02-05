@@ -13,6 +13,9 @@ namespace DefaultNamespace
         public Transform middle;
         public Transform bottomCup;
         public float stepBetweenButtons;
+        
+        public Color defaultColor;
+        public Color selectedColor;
 
         Vector3 middle_initial_scale;
         List<SetAudioTrackButton> track_buttons;
@@ -34,17 +37,19 @@ namespace DefaultNamespace
             
             middle_initial_scale = middle.localScale;
 
-            video_manager.VideoPrepared += refresh_buttons;
+            video_manager.VideoPrepared += generate_buttons;
+            video_manager.AudioTrackChanged += update_buttons_color;
         }
+
 
         void OnDestroy()
         {
             if(!is_initiated || video_manager == null) return;
             
-            video_manager.VideoPrepared -= refresh_buttons;
+            video_manager.VideoPrepared -= generate_buttons;
         }
 
-        void refresh_buttons()
+        void generate_buttons()
         {
             if(file_path == video_manager.FilePath)
                 return;
@@ -71,12 +76,22 @@ namespace DefaultNamespace
                 
                 button.transform.localPosition += Vector3.up * stepBetweenButtons * (tracks.Length - 1 - i);
                 
+                button.set_color(button.track_idx == video_manager.CurrentTrackNumber ? selectedColor : defaultColor);
+                
                 track_buttons.Add(button);
             }
             
             topCup.localPosition = bottomCup.localPosition + Vector3.up * stepBetweenButtons * tracks.Length;
             middle.position = Vector3.Lerp(topCup.position,bottomCup.position,0.5f);
             middle.localScale = Vector3.Scale(middle_initial_scale,new Vector3(tracks.Length,1,1));
+        }
+
+        void update_buttons_color()
+        {
+            foreach (var button in track_buttons)
+            {
+                button.set_color(button.track_idx == video_manager.CurrentTrackNumber ? selectedColor : defaultColor);
+            }
         }
     }
 }

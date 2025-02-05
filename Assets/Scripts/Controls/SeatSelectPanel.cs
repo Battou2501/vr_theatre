@@ -11,6 +11,9 @@ public class SeatSelectPanel : BaseControlsPanel
     public float rowStep;
 
     public float seatStep;
+
+    public Color defaultButtonColor;
+    public Color selectedButtonColor;
     
     SeatChangeSystem seat_change_system;
     
@@ -37,6 +40,8 @@ public class SeatSelectPanel : BaseControlsPanel
             var row = seat_change_system.rows[i];
 
             var seat_count = row.seats.Length;
+
+            var left_shift = (float) -(seat_count - 1) / 2;
             
             for (var j = 0; j < seat_count; j++)
             {
@@ -44,9 +49,9 @@ public class SeatSelectPanel : BaseControlsPanel
                 
                 var button = container.InstantiatePrefab(seatSelectButtonPrefab, seatSelectButtonsContainer).GetComponent<ChangeSeatButton>();
                 
-                button.transform.localPosition  = Vector3.down * rowStep * i + Vector3.down * rowStep * (i>4 ? 1 : 0) + Vector3.left * seatStep * ((float)-seat_count/2 + j);
-                
-                button.set_data(row.rowNumber,seat.seatNumber);
+                button.transform.localPosition  = Vector3.down * (rowStep * i) + Vector3.down * (rowStep * (i>4 ? 1 : 0)) + Vector3.left * (seatStep * (left_shift + j));
+                button.init();
+                button.set_data(row.rowNumber,seat.seatNumber, defaultButtonColor, selectedButtonColor);
             }
         }
     }

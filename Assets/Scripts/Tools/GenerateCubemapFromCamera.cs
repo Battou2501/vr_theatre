@@ -1,18 +1,21 @@
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GenerateCubemapFromCamera : MonoBehaviour
 {
-    public Camera camera;
+    public Camera source_camera;
     public Cubemap cubemap;
 
     void capture_cubemap()
     {
-        if(camera == null || cubemap == null) return;
+        if(source_camera == null || cubemap == null) return;
         
-        camera.RenderToCubemap(cubemap);
+        source_camera.RenderToCubemap(cubemap);
     }
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(GenerateCubemapFromCamera))]
     public class GenerateCubemapFromCameraEditor : Editor
     {
@@ -26,4 +29,5 @@ public class GenerateCubemapFromCamera : MonoBehaviour
             }
         }
     }
+#endif
 }

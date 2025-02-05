@@ -37,11 +37,11 @@ namespace DefaultNamespace
             video_manager.AudioTrackChanged += set_track_text;
         }
 
-        public override void show()
+        public override async UniTask show()
         {
             if(video_manager.FilePath == "") return;
         
-            base.show();
+            await base.show();
         }
 
         void set_time_text()
@@ -51,9 +51,11 @@ namespace DefaultNamespace
 
         void set_track_text()
         {
-            trackText.gameObject.SetActive(video_manager.CurrentTrackNumber>=0);
+            var show_audio_track_button = video_manager.tracks is {Length: > 1} && video_manager.CurrentTrackNumber >= 0;
             
-            if(video_manager.CurrentTrackNumber < 0) return;
+            trackText.gameObject.SetActive(show_audio_track_button);
+            
+            if(!show_audio_track_button) return;
             
             trackText.text = "" + video_manager.CurrentTrackNumber + "." + video_manager.CurrentTrackLang;
         }

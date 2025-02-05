@@ -92,8 +92,8 @@ public class BootLoader : MonoBehaviour
         loadingScreen.gameObject.SetActive(false);
         movieTheatreRoom.SetActive(true);
         lod_system.gameObject.SetActive(true);
-        ui_manager.display_initial_ui_if_needed();
         ui_manager.gameObject.SetActive(true);
+        await ui_manager.show_ui();
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         await camera_black_out.fade();
         

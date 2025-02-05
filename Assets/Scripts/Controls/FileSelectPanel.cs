@@ -59,7 +59,7 @@ namespace DefaultNamespace
         public override void init()
         {
             base.init();
-
+            
             file_navigation_manager.PathChanged += OnPathChanged;
 
             if(nextPageButton != null)
