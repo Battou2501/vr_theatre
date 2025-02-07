@@ -21,7 +21,7 @@ public class IndexPose : ScriptableObject
         var new_pose = new IndexPose();
         new_pose.indexPose.bend = Mathf.Lerp(a.indexPose.bend, b.indexPose.bend, t);
         //new_pose.indexPose.rootRotation = Vector3.Slerp(a.indexPose.rootRotation, b.indexPose.rootRotation, t);
-        new_pose.indexPose.rootRotation = Quaternion.Slerp(Quaternion.Euler(a.indexPose.rootRotation), Quaternion.Euler(b.indexPose.rootRotation), t).eulerAngles;
+        new_pose.indexPose.rootRotation = Quaternion.Slerp(a.indexPose.rootRotation, b.indexPose.rootRotation, t);
         return new_pose;
     }
 }

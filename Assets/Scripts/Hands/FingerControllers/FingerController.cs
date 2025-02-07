@@ -10,9 +10,9 @@ public class FingerController : MonoBehaviour
     [SerializeField] 
     Transform thirdPhalanxBone;
     [SerializeField]
-    Vector3[] minBendRotations;
+    Quaternion[] minBendRotations;
     [SerializeField]
-    Vector3[] maxBendRotations;
+    Quaternion[] maxBendRotations;
 
     public void set_pose(FingerPose pose)
     {
@@ -25,9 +25,9 @@ public class FingerController : MonoBehaviour
            ) 
             return;
         
-        rootBone.rotation = Quaternion.Euler(pose.rootRotation);
-        secondPhalanxBone.rotation = Quaternion.Slerp(Quaternion.Euler(minBendRotations[0]), Quaternion.Euler(maxBendRotations[0]), pose.bend);
-        thirdPhalanxBone.rotation = Quaternion.Slerp(Quaternion.Euler(minBendRotations[1]), Quaternion.Euler(maxBendRotations[1]), pose.bend);
+        rootBone.rotation = pose.rootRotation;
+        secondPhalanxBone.rotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], pose.bend);
+        thirdPhalanxBone.rotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], pose.bend);
     }
 
 
