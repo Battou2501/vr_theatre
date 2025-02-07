@@ -1,4 +1,5 @@
 using System;
+using DefaultNamespace;
 using NUnit.Compatibility;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -35,6 +36,18 @@ public class IndexPoseController : FingerPoseController
     
     public override void init(bool l)
     {
+        if(indexFingerController == null) return;
+        if(indexPoseIdle == null) return;
+        if(indexPosePoint == null) return;
+        if(indexPoseOK == null) return;
+        if(indexPoseFist == null) return;
+        
+        current_pose = indexPoseIdle;
+        
+        target_pose = current_pose;
+        
+        indexFingerController.set_pose(current_pose.indexPose);
+        
         action_map = InputSystem.actions.FindActionMap( is_left ? "Left Controller" : "Right Controller" );
         
         if( action_map == null ) return;
@@ -125,7 +138,6 @@ public class IndexPoseController : FingerPoseController
     void update_trigger_value(InputAction.CallbackContext context)
     {
         current_trigger_value = context.ReadValue<float>();
-        update_target_pose();
     }
 
     public void set_grip_override_pose(IndexPose pose)
@@ -140,7 +152,7 @@ public class IndexPoseController : FingerPoseController
     
     public override void update_current_pose()
     {
-        if(current_pose.Equals(target_pose)) return;
+        if (!is_initialized || current_pose.Equals(target_pose)) return;
         
         //current_pose.Lerp(target_pose, Time.deltaTime * poseUpdateSpeed);
         current_pose.move_towards_linear_ease_out(target_pose, Time.deltaTime * poseUpdateSpeed);
@@ -150,13 +162,19 @@ public class IndexPoseController : FingerPoseController
 
     protected override void update_target_pose()
     {
-        if (grab_override_pose != null && !target_pose.Equals(grab_override_pose))
-        {
-            target_pose = grab_override_pose;
-            return;
-        }
+        if (has_grab_override_pose()) return;
         
         target_pose = check_trigger_touched();
+    }
+
+    bool has_grab_override_pose()
+    {
+        var result = grab_override_pose != null;
+        
+        if(result && target_pose != grab_override_pose)
+            target_pose = grab_override_pose;
+        
+        return result;
     }
 
     IndexPose check_trigger_touched()

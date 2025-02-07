@@ -4,9 +4,8 @@ using UnityEngine.InputSystem;
 public abstract class FingerPoseController : MonoBehaviour
 {
     [SerializeField]
-    protected FingerController fingerController;
-    [SerializeField]
     protected float poseUpdateSpeed;
+    
     protected bool is_left;
     protected bool is_initialized; 
     protected InputActionMap action_map;
