@@ -7,6 +7,8 @@ using VrTheatre.Hands;
 public class IndexPoseController : FingerPoseController
 {
     [SerializeField]
+    FingerController indexFingerController;
+    [SerializeField]
     IndexPose indexPoseIdle;
     [SerializeField]
     IndexPose indexPosePoint;
@@ -140,7 +142,10 @@ public class IndexPoseController : FingerPoseController
     {
         if(current_pose.Equals(target_pose)) return;
         
-        current_pose.Lerp(target_pose, Time.deltaTime * poseUpdateSpeed);
+        //current_pose.Lerp(target_pose, Time.deltaTime * poseUpdateSpeed);
+        current_pose.move_towards_linear_ease_out(target_pose, Time.deltaTime * poseUpdateSpeed);
+        
+        indexFingerController.set_pose(current_pose.indexPose);
     }
 
     protected override void update_target_pose()
