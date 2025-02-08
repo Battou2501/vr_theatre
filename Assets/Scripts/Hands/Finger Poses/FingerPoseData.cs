@@ -2,7 +2,7 @@
 
 namespace VrTheatre.Hands
 {
-    public struct FingerPose
+    public struct FingerPoseData
     {
         //Multiplier to convert 180 degree to 2.0f
         const float HalfRotationTo2 = 0.0111111111f;
@@ -10,13 +10,19 @@ namespace VrTheatre.Hands
         public Quaternion rootRotation;
         public float bend;
 
-        public void Lerp(FingerPose other, float t)
+        public void Lerp(FingerPoseData other, float t)
         {
             bend = Mathf.Lerp(bend, other.bend, t);
             rootRotation = Quaternion.Slerp(rootRotation, other.rootRotation, t);
         }
+
+        public static void Lerp(FingerPoseData a, FingerPoseData b, float t, ref FingerPoseData target)
+        {
+            target.rootRotation = Quaternion.Slerp(a.rootRotation, b.rootRotation, t);
+            target.bend = Mathf.Lerp(b.bend, a.bend, t);
+        }
         
-        public void move_towards_linear_ease_out(FingerPose other, float t)
+        public void move_towards_linear_ease_out(FingerPoseData other, float t)
         {
             var bend_distance = Mathf.Abs(other.bend - bend);
             var lerp_pos_bend = 1f - (bend_distance > 0 ? t / bend_distance : 1);
@@ -37,20 +43,12 @@ namespace VrTheatre.Hands
 
         public override bool Equals(object obj)
         {
-            return obj is FingerPose other && rootRotation.Equals(other.rootRotation) && bend.Equals(other.bend);
+            return obj is FingerPoseData other && rootRotation.Equals(other.rootRotation) && bend.Equals(other.bend);
         }
 
         public override int GetHashCode()
         {
             return rootRotation.GetHashCode() ^ bend.GetHashCode();
         }
-
-        //public static FingerPose Lerp(FingerPose a, FingerPose b, float t)
-        //{
-        //    var new_pose = new FingerPose();
-        //    new_pose.bend = Mathf.Lerp(a.bend, b.bend, t);
-        //    new_pose.rootRotation = Vector3.Slerp(a.rootRotation, b.rootRotation, t);
-        //    return new_pose;
-        //}
     }
 }

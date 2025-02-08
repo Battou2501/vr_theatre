@@ -1,7 +1,7 @@
 using UnityEngine;
 using VrTheatre.Hands;
 
-public class FingerController : MonoBehaviour
+public class FingerRigController : MonoBehaviour
 {
     [SerializeField] 
     Transform rootBone;
@@ -14,7 +14,7 @@ public class FingerController : MonoBehaviour
     [SerializeField]
     Quaternion[] maxBendRotations;
 
-    public void set_pose(FingerPose pose)
+    public void set_pose(FingerPoseData poseData)
     {
         if(
               rootBone == null 
@@ -25,9 +25,9 @@ public class FingerController : MonoBehaviour
            ) 
             return;
         
-        rootBone.localRotation = pose.rootRotation;
-        secondPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], pose.bend);
-        thirdPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], pose.bend);
+        rootBone.localRotation = poseData.rootRotation;
+        secondPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], poseData.bend);
+        thirdPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], poseData.bend);
     }
 
 

@@ -1,24 +1,51 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class LowerFingersPoseController : FingerPoseController
 {
     [SerializeField]
-    LowerFingersPose lowerFingersPoseIdle;
+    FingersPoseSO lowerFingersPoseIdle;
     [SerializeField]
-    LowerFingersPose lowerFingersPoseFist;
+    FingersPoseSO lowerFingersPoseFist;
+    
+    float current_grip_value;
 
-    public override void init(bool l)
+    InputAction grip_value_action;
+
+    public override bool init(bool l)
     {
-        throw new System.NotImplementedException();
-    }
+        if(!base.init(l)) return false;
 
-    public override void update_current_pose()
-    {
-        throw new System.NotImplementedException();
-    }
+        grip_value_action = action_map.FindAction("Grip Value");
 
+        if (grip_value_action != null)
+        {
+            grip_value_action.performed += update_grip_value;
+            grip_value_action.canceled += update_grip_value;
+        }
+        
+        return true;
+    }
+    
     protected override void update_target_pose()
     {
-        throw new System.NotImplementedException();
+        FingersPoseSO.Lerp(lowerFingersPoseIdle, lowerFingersPoseFist, current_grip_value, target_pose);
+    }
+
+    private void OnDestroy()
+    {
+        if (!is_initialized) return;
+        
+        if (grip_value_action != null)
+        {
+            grip_value_action.performed -= update_grip_value;
+            grip_value_action.canceled -= update_grip_value;
+        }
+    }
+
+    private void update_grip_value(InputAction.CallbackContext context)
+    {
+        current_grip_value = context.ReadValue<float>();
+        update_target_pose();
     }
 }

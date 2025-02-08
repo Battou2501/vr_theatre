@@ -12,6 +12,8 @@ public class HandPoseSystem : MonoBehaviour
     HandPoseController leftHandPoseController;
     [SerializeField]
     HandPoseController rightHandPoseController;
+    [SerializeField]
+    public float poseUpdateSpeed;
 
     public void init()
     {
