@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using VrTheatre.Hands;
 using Zenject;
-using static HandPoseSystem;
+using static HandControlSystem;
 using static UnityEngine.ScriptableObject;
 
 public class HandPoseController : MonoBehaviour
@@ -34,15 +34,15 @@ public class HandPoseController : MonoBehaviour
     private FingersPoseSO target_pose;
     private FingersPoseSO current_pose;
     private FingersPoseSO grab_override_pose;
-    private HandPoseSystem hand_pose_system;
+    private HandControlSystem hand_control_system;
     
-    private float pose_update_speed => hand_pose_system == null ? 1 : hand_pose_system.poseUpdateSpeed;
+    private float pose_update_speed => hand_control_system == null ? 1 : hand_control_system.poseUpdateSpeed;
     private bool has_grab_override_pose => grab_override_pose != null;
 
     [Inject]
-    public void Construct(HandPoseSystem handPoseSystem)
+    public void Construct(HandControlSystem handControlSystem)
     {
-        hand_pose_system = handPoseSystem;
+        hand_control_system = handControlSystem;
     }
 
     public void init(Handedness handedness)
@@ -133,7 +133,7 @@ public class HandPoseController : MonoBehaviour
         update_target_pose();
     }
     
-    public void set_grip_override_pose(FingersPoseSO pose)
+    public void set_grab_override_pose(FingersPoseSO pose)
     {
         if(pose == null || pose.pose_data == null ||  pose.pose_data.Length != fingers_count) return;
         
@@ -142,7 +142,7 @@ public class HandPoseController : MonoBehaviour
         target_pose.set_data(grab_override_pose);
     }
 
-    public void remove_grip_override_pose()
+    public void remove_grab_override_pose()
     {
         grab_override_pose = null;
     }

@@ -21,7 +21,7 @@ public class BootLoader : MonoBehaviour
     SeatChangeSystem seat_change_system;
     LodSystem lod_system;
     CameraBlackOut camera_black_out;
-    HandPoseSystem hand_pose_system;
+    HandControlSystem hand_control_system;
     
     [Inject]
     public void Construct(
@@ -31,7 +31,7 @@ public class BootLoader : MonoBehaviour
         SeatChangeSystem seatChangeSystem,
         LodSystem lodSystem,
         CameraBlackOut cameraBlackOut,
-        HandPoseSystem handPoseSystem
+        HandControlSystem handControlSystem
     )
     {
         main_controls = mainControls;
@@ -40,7 +40,7 @@ public class BootLoader : MonoBehaviour
         seat_change_system = seatChangeSystem;
         lod_system = lodSystem;
         camera_black_out = cameraBlackOut;
-        hand_pose_system = handPoseSystem;
+        hand_control_system = handControlSystem;
     }
     
     void Awake()
@@ -70,7 +70,7 @@ public class BootLoader : MonoBehaviour
         result &= seat_change_system != null;
         result &= lod_system != null;
         result &= camera_black_out != null;
-        result &= hand_pose_system != null;
+        result &= hand_control_system != null;
         result &= camera_black_out != null;
         result &= loadingScreen != null;
         result &= movieTheatreRoom != null;
@@ -92,7 +92,7 @@ public class BootLoader : MonoBehaviour
         main_controls.init();
         await loadingScreen.move_progress_to(0.1f);
         await UniTask.Delay(delayBetweenLoadStepsMillis);
-        hand_pose_system.init();
+        hand_control_system.init();
         await loadingScreen.move_progress_to(0.2f);
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         seat_change_system.init();
