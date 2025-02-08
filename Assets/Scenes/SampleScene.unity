@@ -9264,6 +9264,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 969c0efcc98143df81f33697e30ecfc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &364585380
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 364585381}
+  - component: {fileID: 364585382}
+  m_Layer: 0
+  m_Name: HandPoseSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &364585381
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364585380}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1656326884}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &364585382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364585380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bda2eec091bebb4db0ce6738fa7f4fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHandPoseController: {fileID: 0}
+  rightHandPoseController: {fileID: 0}
 --- !u!1 &368545173 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4908983310494066302, guid: 1e83015cc8a8c794193123814b6eb70d, type: 3}
@@ -38314,6 +38360,7 @@ Transform:
   - {fileID: 892834229}
   - {fileID: 132315771}
   - {fileID: 1746258025}
+  - {fileID: 364585381}
   - {fileID: 1174948261}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -41924,6 +41971,7 @@ MonoBehaviour:
   videoManager: {fileID: 1798628428}
   seatChangeSystem: {fileID: 892834228}
   lodSystem: {fileID: 132315770}
+  handPoseSystem: {fileID: 364585382}
   cameraBlackOut: {fileID: 624518907}
   xrOrigin: {fileID: 1976068639}
 --- !u!114 &1907803859

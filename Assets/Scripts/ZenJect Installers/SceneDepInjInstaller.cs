@@ -11,6 +11,7 @@ public class SceneDepInjInstaller : MonoInstaller
     public ManageVideoPlayerAudio videoManager;
     public SeatChangeSystem seatChangeSystem;
     public LodSystem lodSystem;
+    public HandPoseSystem handPoseSystem;
     public CameraBlackOut cameraBlackOut;
     public XROrigin xrOrigin;
     
@@ -21,6 +22,7 @@ public class SceneDepInjInstaller : MonoInstaller
         Container.Bind<ManageVideoPlayerAudio>().FromInstance(videoManager).AsSingle();
         Container.Bind<SeatChangeSystem>().FromInstance(seatChangeSystem).AsSingle();
         Container.Bind<LodSystem>().FromInstance(lodSystem).AsSingle();
+        Container.Bind<HandPoseSystem>().FromInstance(handPoseSystem).AsSingle();
         Container.Bind<CameraBlackOut>().FromInstance(cameraBlackOut).AsSingle();
         Container.Bind<XROrigin>().FromInstance(xrOrigin).AsSingle();
         Container.Bind<FileNavigationManager>().AsSingle();

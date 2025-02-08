@@ -1,25 +1,19 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static HandPoseSystem;
 
 public class HandPoseController : MonoBehaviour
 {
-    public enum Handedness
-    {
-        Left = 0,
-        Right = 1
-    }
     [SerializeField]
     ThumbPoseController thumbPoseController;
     [SerializeField]
     IndexPoseController indexPoseController;
     [SerializeField]
     LowerFingersPoseController lowerFingersPoseController;
-    [SerializeField]
-    Handedness hand;
 
     bool is_initialized;
     
-    public void init()
+    public void init(Handedness hand)
     {
         thumbPoseController.init(hand == Handedness.Left);
         indexPoseController.init(hand == Handedness.Left);
