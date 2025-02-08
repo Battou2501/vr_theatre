@@ -25,9 +25,9 @@ public class FingerController : MonoBehaviour
            ) 
             return;
         
-        rootBone.rotation = pose.rootRotation;
-        secondPhalanxBone.rotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], pose.bend);
-        thirdPhalanxBone.rotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], pose.bend);
+        rootBone.localRotation = pose.rootRotation;
+        secondPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], pose.bend);
+        thirdPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], pose.bend);
     }
 
 
