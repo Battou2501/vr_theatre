@@ -37,7 +37,7 @@ public class HandPoseController : MonoBehaviour
     private HandControlSystem hand_control_system;
     
     private float pose_update_speed => hand_control_system == null ? 1 : hand_control_system.poseUpdateSpeed;
-    private bool has_grab_override_pose => grab_override_pose != null;
+    public bool has_grab_override_pose => grab_override_pose != null;
 
     [Inject]
     public void Construct(HandControlSystem handControlSystem)

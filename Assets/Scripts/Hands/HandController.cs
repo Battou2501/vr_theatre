@@ -18,6 +18,8 @@ public class HandController : MonoBehaviour
     [SerializeField] 
     public Collider grabCollider;
 
+    public bool is_grabbing => poseController.has_grab_override_pose;
+
     InputAction trigger_pressed_action;
     InputAction grip_pressed_action;
 

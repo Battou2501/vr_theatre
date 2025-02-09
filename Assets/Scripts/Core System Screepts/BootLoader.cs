@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DefaultNamespace;
@@ -22,6 +24,8 @@ public class BootLoader : MonoBehaviour
     LodSystem lod_system;
     CameraBlackOut camera_black_out;
     HandControlSystem hand_control_system;
+
+    private IEnumerable<IInitable> initializable_objects;
     
     [Inject]
     public void Construct(
@@ -88,18 +92,21 @@ public class BootLoader : MonoBehaviour
         InputSystem.actions.Enable();
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         await camera_black_out.fade();
-        await UniTask.Delay(delayBetweenLoadStepsMillis);
-        main_controls.init();
+        initializable_objects = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None).OfType<IInitable>();
+        initializable_objects.for_each(x=>x?.init());
         await loadingScreen.move_progress_to(0.1f);
         await UniTask.Delay(delayBetweenLoadStepsMillis);
-        hand_control_system.init();
+        main_controls.init();
         await loadingScreen.move_progress_to(0.2f);
         await UniTask.Delay(delayBetweenLoadStepsMillis);
+        hand_control_system.init();
+        await loadingScreen.move_progress_to(0.3f);
+        await UniTask.Delay(delayBetweenLoadStepsMillis);
         seat_change_system.init();
-        await loadingScreen.move_progress_to(0.4f);
+        await loadingScreen.move_progress_to(0.5f);
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         lod_system.init();
-        await loadingScreen.move_progress_to(0.6f);
+        await loadingScreen.move_progress_to(0.7f);
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         video_manager.init();
         await loadingScreen.move_progress_to(0.8f);

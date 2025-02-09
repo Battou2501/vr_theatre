@@ -14,9 +14,12 @@ public class SceneDepInjInstaller : MonoInstaller
     [FormerlySerializedAs("handPoseSystem")] public HandControlSystem handControlSystem;
     public CameraBlackOut cameraBlackOut;
     public XROrigin xrOrigin;
+    public AudioSource headAudioSource;
     
     public override void InstallBindings()
     {
+        Container.BindInterfacesTo<SceneDepInjInstaller>().FromInstance(this).AsSingle();
+        
         Container.Bind<MainControls>().FromInstance(mainControls).AsSingle();
         Container.Bind<UIManager>().FromInstance(uiManager).AsSingle();
         Container.Bind<ManageVideoPlayerAudio>().FromInstance(videoManager).AsSingle();
@@ -25,6 +28,7 @@ public class SceneDepInjInstaller : MonoInstaller
         Container.Bind<HandControlSystem>().FromInstance(handControlSystem).AsSingle();
         Container.Bind<CameraBlackOut>().FromInstance(cameraBlackOut).AsSingle();
         Container.Bind<XROrigin>().FromInstance(xrOrigin).AsSingle();
+        Container.Bind<AudioSource>().FromInstance(headAudioSource).AsSingle();
         Container.Bind<FileNavigationManager>().AsSingle();
     }
 }

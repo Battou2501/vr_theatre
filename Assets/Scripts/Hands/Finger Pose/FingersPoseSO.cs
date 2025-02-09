@@ -6,6 +6,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Fingers Pose Preset", menuName = "Hand Poses")]
 public class FingersPoseSO : ScriptableObject
 {
+    [SerializeField]
     public FingerPoseData[] pose_data;
 
     public void Lerp(FingersPoseSO other, float lerp)

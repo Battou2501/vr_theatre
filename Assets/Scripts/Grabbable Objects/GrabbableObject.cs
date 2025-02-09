@@ -1,17 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
-public class GrabbableObject : MonoBehaviour
+public class GrabbableObject : HoverableObjectBase
 {
-    public enum GrabbedWith
-    {
-        Trigger = 0,
-        Grip
-    }
     
-    [SerializeField]
-    private GrabbedWith grabbedWith;
     [SerializeField]
     private FingersPoseSO grabPose;
     [SerializeField]
@@ -19,76 +13,23 @@ public class GrabbableObject : MonoBehaviour
     
     private HandController grabbed_by_hand_controller;
 
-    private TagHandle hand_tag_handle;
-    
-    private Dictionary<HandController, List<Collider>> hovered_by_hand_collider_dict;
 
-    public void init()
+    protected override void OnTriggerEnter(Collider other)
     {
-        hovered_by_hand_collider_dict = new Dictionary<HandController, List<Collider>>();
-
-        hand_tag_handle = TagHandle.GetExistingTag("Hand");
+        if (grabbed_by_hand_controller != null) return;
+        
+        base.OnTriggerEnter(other);
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if(grabbed_by_hand_controller != null) return;
-        
-        if(!other.CompareTag(hand_tag_handle)) return;
-        
-        var hand_controller = other.GetComponentInParent<HandController>();
-        
-        if(hand_controller == null) return;
-        
-        if(!hovered_by_hand_collider_dict.ContainsKey(hand_controller))
-            hovered_by_hand_collider_dict[hand_controller] = new List<Collider>();
-        
-        if(!hovered_by_hand_collider_dict[hand_controller].Contains(other))
-            hovered_by_hand_collider_dict[hand_controller].Add(other);
 
-        if(hovered_by_hand_collider_dict[hand_controller].Count != 1) return;
-        
-        switch (grabbedWith)
-        {
-            case GrabbedWith.Trigger:
-                hand_controller.triggerPressed += OnGrabbed;
-                break;
-            case GrabbedWith.Grip:
-                hand_controller.gripPressed += OnGrabbed;
-                break;
-        }
-    }
-
-    void OnTriggerExit(Collider other)
+    protected override void OnTriggerExit(Collider other)
     {
         if(grabbed_by_hand_controller != null) return;
 
-        if (!other.CompareTag(hand_tag_handle)) return;
-            
-        var hand_controller = other.GetComponentInParent<HandController>();
-        
-        if(hand_controller == null) return;
-        
-        if(!hovered_by_hand_collider_dict.ContainsKey(hand_controller)) return;
-        
-        hovered_by_hand_collider_dict[hand_controller].Remove(other);
-        
-        if(hovered_by_hand_collider_dict[hand_controller].Count > 0) return;
-        
-        hovered_by_hand_collider_dict.Remove(hand_controller);
-        
-        switch (grabbedWith)
-        {
-            case GrabbedWith.Trigger:
-                hand_controller.triggerPressed -= OnGrabbed;
-                break;
-            case GrabbedWith.Grip:
-                hand_controller.gripPressed -= OnGrabbed;
-                break;
-        }
+        base.OnTriggerExit(other);
     }
 
-    void OnGrabbed(HandController hand_controller)
+    protected override void OnGrabbed(HandController hand_controller)
     {
         grabbed_by_hand_controller = hand_controller;
         
@@ -116,10 +57,17 @@ public class GrabbableObject : MonoBehaviour
 
     }
 
-    void OnReleased(HandController hand_controller)
+    protected override void OnReleased(HandController hand_controller)
     {
         transform.SetParent(null);
         grabbed_by_hand_controller = null;
         hand_controller.remove_grab_pose();
+    }
+
+    public void release()
+    {
+        if(grabbed_by_hand_controller == null) return;
+        
+        OnReleased(grabbed_by_hand_controller);
     }
 }

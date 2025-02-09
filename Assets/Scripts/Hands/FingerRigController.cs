@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 using VrTheatre.Hands;
 
@@ -30,5 +31,17 @@ public class FingerRigController : MonoBehaviour
         thirdPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], poseData.bend);
     }
 
-
+    [CustomEditor(typeof(FingerRigController))]
+    public class FingerRigControllerEditor : Editor
+    {
+        
+        float bend;
+        
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            
+            
+        }
+    }
 }

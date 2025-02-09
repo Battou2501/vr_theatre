@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Controller Ray
   - Hand
+  - Mouth
   layers:
   - Default
   - TransparentFX

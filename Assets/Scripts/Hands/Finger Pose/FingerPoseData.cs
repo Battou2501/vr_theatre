@@ -1,13 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace VrTheatre.Hands
 {
+    [Serializable]
     public struct FingerPoseData
     {
         //Multiplier to convert 180 degree to 2.0f
         const float HalfRotationTo2 = 0.0111111111f;
         
+        [SerializeField]
         public Quaternion rootRotation;
+        [SerializeField]
         public float bend;
 
         public void Lerp(FingerPoseData other, float t)
