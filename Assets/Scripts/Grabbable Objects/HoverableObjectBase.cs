@@ -17,7 +17,7 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
 
     protected Dictionary<HandController, List<Collider>> hovered_by_hand_collider_dict;
     
-    public void init()
+    public virtual void init()
     {
         hovered_by_hand_collider_dict = new Dictionary<HandController, List<Collider>>();
 

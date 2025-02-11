@@ -9,7 +9,7 @@ namespace DefaultNamespace
 {
     public class SeatChangeSystem : MonoBehaviour
     {
-        public Action SeatChanged; 
+        public event Action SeatChanged; 
         
         public float forwardOffsetFromSeat;
         

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using MediaInfoLib;
 using NReco.VideoConverter;
 using Unity.Collections;
 using Unity.VisualScripting;
@@ -35,11 +36,11 @@ namespace DefaultNamespace
             paused
         }
 
-        public Action AudioTrackChanged;
-        public Action VideoPrepared;
-        public Action<string> ErrorOccured;
-        public Action PlayerStateChanged;
-        public Action VideoEnded;
+        public event Action AudioTrackChanged;
+        public event Action VideoPrepared;
+        public event Action<string> ErrorOccured;
+        public event Action PlayerStateChanged;
+        public event Action VideoEnded;
         
         public AudioSource[] audioSources;
         public Material mat;
@@ -111,7 +112,8 @@ namespace DefaultNamespace
         double skip_time_target;
         double audio_trimmed_time;
         bool is_video_playing_for_other_threads;
-
+        private MediaInfo media_info;
+        
         bool Vp_is_playing => vp.isPlaying;
         
         bool tracks_in_sync
@@ -149,6 +151,7 @@ namespace DefaultNamespace
         
         public void init()
         {
+            media_info = new MediaInfo();
             trim_seconds_static = trimSeconds;
             trim_after_reaching_seconds_static = trimAfterReachingSeconds;
             track_audio_clip_buffer_length_sec_static = trackAudioClipBufferLengthSec;
@@ -753,13 +756,20 @@ namespace DefaultNamespace
             tracks?.for_each( x=> x?.Dispose());
             tracks = new Track[audioTrackCount];
             
+            media_info.Close();
+            media_info.Open(vp.url);
+            
             for (var t = 0; t < vp.audioTrackCount; t++)
             {
                 var track = new Track();
 
                 track.init(vp.GetAudioSampleProvider((ushort)t), audioSources, SampleFramesAvailable, ProviderOnSampleFramesOverflow);
 
-                track.lang = vp.GetAudioLanguageCode((ushort)t);
+                var track_title = media_info.Get(StreamKind.Audio, t, "Title");
+                
+                track.lang = string.IsNullOrWhiteSpace(track_title) ? vp.GetAudioLanguageCode((ushort)t) : track_title;
+
+                Debug.Log(track.lang);
                 
                 tracks[t] = track;
             }

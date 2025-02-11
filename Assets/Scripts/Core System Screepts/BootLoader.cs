@@ -4,9 +4,13 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DefaultNamespace;
+using FFmpeg.NET.Models;
+using MediaInfoLib;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
+
 
 public class BootLoader : MonoBehaviour
 {
@@ -47,7 +51,7 @@ public class BootLoader : MonoBehaviour
         hand_control_system = handControlSystem;
     }
     
-    void Awake()
+    void Start()
     {
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 900;
