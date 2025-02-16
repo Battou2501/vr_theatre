@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using MediaInfoLib;
@@ -53,7 +54,7 @@ namespace DefaultNamespace
         public int frame_buffer_seconds = 2;
         public int trimSeconds;
         public int trimAfterReachingSeconds;
-        public int trackAudioClipBufferLengthSec;
+        //public int trackAudioClipBufferLengthSec;
         public float videoAudioDesyncThreshold;
         public bool sync_audio_if_needed;
         [Range(0,1)]
@@ -138,7 +139,7 @@ namespace DefaultNamespace
         static int trim_seconds_static;
         static int trim_after_reaching_seconds_static;
         static int sample_time;
-        static int track_audio_clip_buffer_length_sec_static;
+        //static int track_audio_clip_buffer_length_sec_static;
         
         static readonly int aspect = Shader.PropertyToID("_Aspect");
         static readonly int one_over_aspect = Shader.PropertyToID("_OneOverAspect");
@@ -154,7 +155,7 @@ namespace DefaultNamespace
             media_info = new MediaInfo();
             trim_seconds_static = trimSeconds;
             trim_after_reaching_seconds_static = trimAfterReachingSeconds;
-            track_audio_clip_buffer_length_sec_static = trackAudioClipBufferLengthSec;
+            //track_audio_clip_buffer_length_sec_static = trackAudioClipBufferLengthSec;
 
             vp = GetComponent<VideoPlayer>();
             vp.audioOutputMode = VideoAudioOutputMode.APIOnly;
@@ -233,19 +234,33 @@ namespace DefaultNamespace
 
         void Update()
         {
+            ProfilingUtility.BeginSample("Set Delay");
             set_delay();
+            ProfilingUtility.EndSample();
             
+            ProfilingUtility.BeginSample("Handle check track request");
             handle_change_track_request();
+            ProfilingUtility.EndSample();
 
+            ProfilingUtility.BeginSample("Update light");
             update_light();
+            ProfilingUtility.EndSample();
             
+            ProfilingUtility.BeginSample("Update light affect screen");
             update_light_affects_screen();
+            ProfilingUtility.EndSample();
 
+            ProfilingUtility.BeginSample("Check input");
             check_input();
+            ProfilingUtility.EndSample();
             
+            ProfilingUtility.BeginSample("Handle audio available");
             handle_audio_data_available();
+            ProfilingUtility.EndSample();
             
+            ProfilingUtility.BeginSample("Handle command request");
             handle_player_command_request();
+            ProfilingUtility.EndSample();
         }
 
         void Prepared(VideoPlayer source)
@@ -375,7 +390,10 @@ namespace DefaultNamespace
         
         void SampleFramesAvailable(AudioSampleProvider provider, uint sampleFrameCount)
         {
-            using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
+            var track = tracks[provider.trackIndex];
+            var channel_count = track.channels.Length;
+            //using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
+            var buffer = track.get_sized_track_buffer((int) sampleFrameCount * channel_count);
 
             var sf_count = provider.ConsumeSampleFrames(buffer);
 
@@ -396,9 +414,7 @@ namespace DefaultNamespace
                 Debug.Log("Finally all sample frames consumed!");
             }
             
-            var track = tracks[provider.trackIndex];
-            
-            track.add_samples(sf_count, buffer, provider.channelCount);
+            track.add_samples(sf_count, buffer, channel_count);
 
             if (tracks_in_sync)
                 samples_received = true;
@@ -569,7 +585,7 @@ namespace DefaultNamespace
         {
             var target_light = player_state == PlayerStates.playing ? movie_light_strength : 1;
 
-            if (!(Mathf.Abs(light_strength - target_light) > 0.01f)) return;
+            if (!(Mathf.Abs(light_strength - target_light) > 0.0001f)) return;
             
             light_strength = Mathf.Lerp(light_strength, target_light,Time.deltaTime);
             
@@ -683,11 +699,17 @@ namespace DefaultNamespace
             
             if (iterations<buffer_iterations) return;
 
+            ProfilingUtility.BeginSample("Handle audio started");
             handle_audio_started();
+            ProfilingUtility.EndSample();
             
+            ProfilingUtility.BeginSample("Update track data");
             update_track_data();
+            ProfilingUtility.EndSample();
 
+            ProfilingUtility.BeginSample("Set correct frame");
             set_correct_frame();
+            ProfilingUtility.EndSample();
 
             return;
             
@@ -696,13 +718,18 @@ namespace DefaultNamespace
                 if(audioSources[0].isPlaying)
                     sample_time = audioSources[0].timeSamples;
 
+                ProfilingUtility.BeginSample("Trim");
                 if (sample_time > tracks[current_track_idx].trim_threshold_samples)
                 {
                     tracks.for_each(x => x?.trim());
                     audio_trimmed_time += trimSeconds;
                 }
+                ProfilingUtility.EndSample();
 
+                
+                ProfilingUtility.BeginSample("Update track data on track");
                 tracks[current_track_idx].update_data_track();
+                ProfilingUtility.EndSample();
 
                 sync_audio_to_video();
             }
@@ -829,6 +856,8 @@ namespace DefaultNamespace
             AudioSampleProvider.SampleFramesHandler samples_overflow_callback;
             
             int trim_seconds_samples;
+            Dictionary<uint, float[]> channel_samples_buffers_dictionary;
+            Dictionary<int, NativeArray<float>> track_samples_buffers_dictionary;
 
             public void init(AudioSampleProvider p, AudioSource[] audioSources, AudioSampleProvider.SampleFramesHandler sa_callback, AudioSampleProvider.SampleFramesHandler so_callback)
             {
@@ -847,6 +876,9 @@ namespace DefaultNamespace
 
                 var channel_count = provider.channelCount;
                 var audio_source_idx = 0;
+                
+                channel_samples_buffers_dictionary = new Dictionary<uint, float[]>();
+                track_samples_buffers_dictionary = new Dictionary<int, NativeArray<float>>();
 
                 for (var i = 0; i < channel_count; i++)
                 {
@@ -862,9 +894,35 @@ namespace DefaultNamespace
                     audio_source_idx += 1;
                 }
             }
+
+            float[] get_sized_channel_buffer(uint size)
+            {
+                float[] buffer;
+                
+                if(!channel_samples_buffers_dictionary.TryGetValue(size, out buffer))
+                    channel_samples_buffers_dictionary.Add(size, buffer = new float[size]);
+                
+                return buffer;
+            }
+            
+            public NativeArray<float> get_sized_track_buffer(int size)
+            {
+                NativeArray<float> buffer;
+                
+                if(!track_samples_buffers_dictionary.TryGetValue(size, out buffer))
+                    track_samples_buffers_dictionary.Add(size, buffer = new NativeArray<float>(size, Allocator.Persistent));
+                
+                return buffer;
+            }
             
             public void clear_data()
             {
+                if (track_samples_buffers_dictionary != null)
+                {
+                    track_samples_buffers_dictionary.for_each(x => x.Value.Dispose());
+                    track_samples_buffers_dictionary.Clear();
+                }
+                channel_samples_buffers_dictionary?.Clear();
                 channels.for_each(x=>x?.clear_data());
                 add_count = 0;
             }
@@ -882,7 +940,8 @@ namespace DefaultNamespace
                     return;
                 
                 var samples_buffer_length = samples_buffer.Length;
-                var chnnel_buffer = new float[sfCount];
+                //var chnnel_buffer = new float[sfCount];
+                var chnnel_buffer = get_sized_channel_buffer(sfCount);
                 
                 for (var c = 0; c < channelCount; c++)
                 {
@@ -915,7 +974,17 @@ namespace DefaultNamespace
                 channels?.for_each(x=>x?.Dispose());
 
                 channels = null;
-                
+
+                if (track_samples_buffers_dictionary != null)
+                {
+                    track_samples_buffers_dictionary.for_each(x => x.Value.Dispose());
+                    track_samples_buffers_dictionary.Clear();
+                    track_samples_buffers_dictionary = null;
+                }
+
+                channel_samples_buffers_dictionary?.Clear();
+                channel_samples_buffers_dictionary = null;
+
                 if(provider == null) return;
                 
                 provider.sampleFramesOverflow -= samples_overflow_callback;
@@ -932,7 +1001,8 @@ namespace DefaultNamespace
             public AudioSource audio_source;
             
             AudioClip audio_clip;
-            List<float> data;
+            //List<float> data;
+            MyFloatList data2;
             
             public void set_clip(float t)
             {
@@ -951,21 +1021,29 @@ namespace DefaultNamespace
 
                 var sample_rate = (int) p.sampleRate;
 
-                var sample_length = track_audio_clip_buffer_length_sec_static * sample_rate;
+                var sample_length = trim_after_reaching_seconds_static * sample_rate * 2;
                 
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
-                data = new List<float>(sample_length);
+                //data = new List<float>(sample_length);
+                data2 = new MyFloatList(sample_length);
             }
 
-            public void add_data(IEnumerable<float> d)
+            //public void add_data(IEnumerable<float> d)
+            //{
+            //    data.AddRange(d);
+            //}
+            
+            public void add_data(float[] d)
             {
-                data.AddRange(d);
+                //data.AddRange(d);
+                data2.AddRange(d);
             }
 
             public void trim(int trim_seconds_samples)
             {
-                data.RemoveRange(0, trim_seconds_samples);
+                //data.RemoveRange(0, trim_seconds_samples);
+                data2.RemoveFromStart(trim_seconds_samples);
             }
 
             public void trim_audio_source(int trim_seconds_samples)
@@ -975,12 +1053,14 @@ namespace DefaultNamespace
             
             public void set_clip_data()
             {
-                audio_clip.SetData(data.ToArray(), 0);
+                //audio_clip.SetData(data.ToArray(), 0);
+                audio_clip.SetData(data2.array, 0);
             }
 
             public void clear_data()
             {
-                data.Clear();
+                //data?.Clear();
+                data2?.Clear();
             }
 
             public void Dispose()
@@ -994,8 +1074,44 @@ namespace DefaultNamespace
                     audio_clip = null;
                 }
 
-                data?.Clear();
+                //data?.Clear();
+                data2?.Clear();
             }
+        }
+    }
+
+    public class MyFloatList
+    {
+        public float[] array { get; }
+        private int length;
+        private int max_length;
+
+        public MyFloatList(int size)
+        {
+            array = new float[size];
+            length = 0;
+        }
+        
+        public void AddRange(float[] array_to_add)
+        {
+            var arr_length = array_to_add.Length;
+            Buffer.BlockCopy(array_to_add, 0, array, length*4, arr_length*4);
+            length += arr_length;
+            
+            if(length > max_length)
+                max_length = length;
+        }
+
+        public void RemoveFromStart(int remove_count)
+        {
+            length -= remove_count;
+            Buffer.BlockCopy(array, remove_count*4, array, 0, length*4);
+        }
+
+        public void Clear()
+        {
+            length = 0;
+            Array.Clear(array, 0, array.Length);
         }
     }
 }

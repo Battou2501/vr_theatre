@@ -7,15 +7,15 @@ using VrTheatre.Hands;
 public class FingerRigController : MonoBehaviour
 {
     [SerializeField] 
-    Transform rootBone;
+    public Transform rootBone;
     [SerializeField] 
-    Transform secondPhalanxBone;
+    public Transform secondPhalanxBone;
     [SerializeField] 
-    Transform thirdPhalanxBone;
-    [SerializeField]
-    Quaternion[] minBendRotations;
-    [SerializeField]
-    Quaternion[] maxBendRotations;
+    public Transform thirdPhalanxBone;
+    //[SerializeField]
+    //Quaternion[] minBendRotations;
+    //[SerializeField]
+    //Quaternion[] maxBendRotations;
 
     public void set_pose(FingerPoseData poseData)
     {
@@ -23,14 +23,17 @@ public class FingerRigController : MonoBehaviour
               rootBone == null 
            || secondPhalanxBone == null 
            || thirdPhalanxBone == null 
-           || minBendRotations is not {Length: 2} 
-           || maxBendRotations is not {Length: 2}
+           //|| minBendRotations is not {Length: 2} 
+           //|| maxBendRotations is not {Length: 2}
            ) 
             return;
         
         rootBone.localRotation = poseData.rootRotation;
-        secondPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], poseData.bend);
-        thirdPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], poseData.bend);
+        secondPhalanxBone.localRotation = poseData.secondPhalanxRotation;
+        thirdPhalanxBone.localRotation = poseData.thirdPhalanxRotation;
+        
+        //secondPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[0], maxBendRotations[0], poseData.bend);
+        //thirdPhalanxBone.localRotation = Quaternion.Slerp(minBendRotations[1], maxBendRotations[1], poseData.bend);
     }
     
 #if UNITY_EDITOR

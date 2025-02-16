@@ -54,7 +54,7 @@ public class BootLoader : MonoBehaviour
     void Start()
     {
         QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 900;
+        Application.targetFrameRate = -1;
         
         if(!pre_load_check()) return;
         
@@ -121,7 +121,8 @@ public class BootLoader : MonoBehaviour
         await camera_black_out.show();
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         await seat_change_system.change_seat(defaultRow,defaultSeat, false);
-        loadingScreen.gameObject.SetActive(false);
+        //loadingScreen.gameObject.SetActive(false);
+        Destroy(loadingScreen.gameObject);
         movieTheatreRoom.SetActive(true);
         lod_system.gameObject.SetActive(true);
         ui_manager.gameObject.SetActive(true);

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Hands;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,8 +13,8 @@ namespace DefaultNamespace
     public class MainControls : MonoBehaviour
     {
         [Header("Hand controls")]
-        public GameObject leftHandTriggerCollider;
-        public GameObject rightHandTriggerCollider;
+        private GameObject _leftHandTriggerCollider;
+        private GameObject _rightHandTriggerCollider;
         
         public InputAction leftTriggerPressedAction;
         public InputAction rightTriggerPressedAction;
@@ -23,9 +24,11 @@ namespace DefaultNamespace
         UIManager ui_manager;
         
         [Inject]
-        public void Construct( UIManager u)
+        public void Construct( UIManager u, LeftHandPointer leftHandTriggerCollider, RightHandPointer rightHandTriggerCollider)
         {
             ui_manager = u;
+            _leftHandTriggerCollider = leftHandTriggerCollider.gameObject;
+            _rightHandTriggerCollider = rightHandTriggerCollider.gameObject;
         }
         
         public void init()
@@ -58,15 +61,15 @@ namespace DefaultNamespace
         
         void show_hands()
         {
-            leftHandTriggerCollider.real_null()?.SetActive(true);
-            rightHandTriggerCollider.real_null()?.SetActive(true);
+            _leftHandTriggerCollider.real_null()?.SetActive(true);
+            _rightHandTriggerCollider.real_null()?.SetActive(true);
             //disable_trigger_check();
         }
         
         void hide_hands()
         {
-            leftHandTriggerCollider.real_null()?.SetActive(false);
-            rightHandTriggerCollider.real_null()?.SetActive(false);
+            _leftHandTriggerCollider.real_null()?.SetActive(false);
+            _rightHandTriggerCollider.real_null()?.SetActive(false);
             //enable_trigger_check();
         }
 

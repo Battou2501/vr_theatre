@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DefaultNamespace;
+using Hands;
 using UnityEngine;
 using Zenject;
 
@@ -15,21 +16,22 @@ public abstract class BaseControl : MonoBehaviour
     
     protected bool is_initiated;
 
-    protected bool is_hovered => hovered_by.Count > 0;
+    private bool is_hovered => hovered_by.Count > 0;
     protected HashSet<GameObject> hovered_by;
 
     protected Transform this_transform;
     
+    protected GameObject _leftHandTriggerCollider;
+    protected GameObject _rightHandTriggerCollider;
+    
     //protected DiContainer container;
     
     [Inject]
-    public void Construct(MainControls m, UIManager u, ManageVideoPlayerAudio v, FileNavigationManager f, DiContainer dc)
+    public void Construct(MainControls m, LeftHandPointer leftHandTriggerCollider, RightHandPointer rightHandTriggerCollider)
     {
         main_controls = m;
-        //video_manager = v;
-        //file_navigation_manager = f;
-        //ui_manager = u;
-        //container = dc;
+        _leftHandTriggerCollider = leftHandTriggerCollider.gameObject;
+        _rightHandTriggerCollider = rightHandTriggerCollider.gameObject;
     }
     
     public virtual void init()
@@ -59,7 +61,7 @@ public abstract class BaseControl : MonoBehaviour
     {
         if(is_hovered) return;
         
-        if(other.gameObject != main_controls.leftHandTriggerCollider && other.gameObject != main_controls.rightHandTriggerCollider ) return;
+        if(other.gameObject != _leftHandTriggerCollider && other.gameObject != _rightHandTriggerCollider ) return;
         
         hovered_by.Add(other.gameObject);
         

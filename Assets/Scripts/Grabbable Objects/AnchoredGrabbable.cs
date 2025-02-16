@@ -5,7 +5,7 @@ public class AnchoredGrabbable : GrabbableObject
     [SerializeField]
     private Transform anchorPoint;
 
-    protected override void OnGrabbed(HandController hand_controller)
+    public override void OnGrabbed(HandController hand_controller)
     {
         anchorPoint.SetParent(null);
         base.OnGrabbed(hand_controller);

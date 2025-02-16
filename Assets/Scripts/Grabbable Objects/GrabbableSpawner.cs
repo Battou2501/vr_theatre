@@ -15,22 +15,22 @@ public class GrabbableSpawner : HoverableObjectBase
         container = c;
     }
     
-    protected override void OnGrabbed(HandController hand_controller)
-    {
-        spawn_grabbable(hand_controller);
-        
-        hovered_by_hand_collider_dict.Remove(hand_controller);
-        
-        switch (grabbedWith)
-        {
-            case GrabbedWith.Trigger:
-                hand_controller.triggerPressed -= OnGrabbed;
-                break;
-            case GrabbedWith.Grip:
-                hand_controller.gripPressed -= OnGrabbed;
-                break;
-        }
-    }
+    //protected virtual void OnGrabbed(HandController hand_controller)
+    //{
+    //    spawn_grabbable(hand_controller);
+    //    
+    //    hovered_by_hand_collider_dict.Remove(hand_controller);
+    //    
+    //    switch (grabbedWith)
+    //    {
+    //        case GrabbedWith.Trigger:
+    //            hand_controller.triggerPressed -= OnGrabbed;
+    //            break;
+    //        case GrabbedWith.Grip:
+    //            hand_controller.gripPressed -= OnGrabbed;
+    //            break;
+    //    }
+    //}
 
 
     private void spawn_grabbable(HandController hand_controller)
@@ -39,7 +39,7 @@ public class GrabbableSpawner : HoverableObjectBase
         
         var spawned = container.InstantiatePrefab(spawnedObjectPrefab);
         
-        var spawned_grabbable = spawned.GetComponent<GrabbableSpawner>();
+        var spawned_grabbable = spawned.GetComponent<GrabbableObject>();
         
         spawned_grabbable.OnGrabbed(hand_controller);
     }

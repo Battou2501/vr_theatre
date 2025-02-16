@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b212ca2e28996d04287f1f889626719e, type: 3}
+  m_Name: Special Pose
+  m_EditorClassIdentifier: 
+  pose_data:
+  - rootRotation: {x: 0.73087794, y: -0.3696987, z: 0.2269153, w: 0.5269249}
+    secondPhalanxRotation: {x: -0.016040737, y: -0.16051446, z: -0.1281575, w: 0.97854656}
+    thirdPhalanxRotation: {x: 0.026451435, y: -0.010361747, z: 0.36459184, w: 0.930734}
+  - rootRotation: {x: 0.7579695, y: 0.051933445, z: 0.06954551, w: 0.6464894}
+    secondPhalanxRotation: {x: 0, y: 0, z: 0, w: 1}
+    thirdPhalanxRotation: {x: 0, y: 0, z: 0, w: 1}
+  - rootRotation: {x: 0.87546706, y: 0.03330612, z: -0.05179278, w: 0.4793387}
+    secondPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+    thirdPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+  - rootRotation: {x: 0.9100803, y: -0.00025101376, z: -0.11891182, w: 0.39700598}
+    secondPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+    thirdPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+  - rootRotation: {x: 0.9311484, y: -0.04658676, z: -0.18927789, w: 0.30816612}
+    secondPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+    thirdPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}

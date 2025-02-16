@@ -12,7 +12,7 @@ public class RigidGrabbable : GrabbableObject
         rigid_body = GetComponent<Rigidbody>();
     }
 
-    protected override void OnGrabbed(HandController hand_controller)
+    public override void OnGrabbed(HandController hand_controller)
     {
         rigid_body.detectCollisions = false;
         rigid_body.isKinematic = true;

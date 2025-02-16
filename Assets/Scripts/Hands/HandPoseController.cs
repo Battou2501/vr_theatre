@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VrTheatre.Hands;
@@ -22,27 +24,29 @@ public class HandPoseController : MonoBehaviour
     private bool current_thumb_touched;
     private float current_grip_value;
 
-    private InputAction trigger_touched_action;
-    private InputAction trigger_value_action;
-    private InputAction thumb_touched_action;
-    private InputAction grip_value_action;
+    //private InputAction trigger_touched_action;
+    //private InputAction trigger_value_action;
+    //private InputAction thumb_touched_action;
+    //private InputAction grip_value_action;
     
     private bool is_initialized; 
     private bool is_left;
     private int fingers_count;
-    private InputActionMap action_map;
+    //private InputActionMap action_map;
     private FingersPoseSO target_pose;
     private FingersPoseSO current_pose;
     private FingersPoseSO grab_override_pose;
     private HandControlSystem hand_control_system;
+    private VrInputSystem _vrInputSystem;
     
     private float pose_update_speed => hand_control_system == null ? 1 : hand_control_system.poseUpdateSpeed;
     public bool has_grab_override_pose => grab_override_pose != null;
 
     [Inject]
-    public void Construct(HandControlSystem handControlSystem)
+    public void Construct(HandControlSystem handControlSystem, VrInputSystem vrInputSystem)
     {
         hand_control_system = handControlSystem;
+        _vrInputSystem = vrInputSystem;
     }
 
     public void init(Handedness handedness)
@@ -70,66 +74,50 @@ public class HandPoseController : MonoBehaviour
 
         set_fingers_pose();
 
-        action_map = InputSystem.actions.FindActionMap(is_left ? "Left Controller" : "Right Controller");
-        
-        if( action_map == null ) return;
-        
-        thumb_touched_action = action_map.FindAction("Thumb Touched");
-        
-        if (thumb_touched_action != null)
+        if (is_left)
         {
-            thumb_touched_action.performed += update_thumb_touched;
-            thumb_touched_action.canceled += update_thumb_touched;
+            _vrInputSystem.leftThumbTouchedChanged += update_thumb_touched;
+            _vrInputSystem.leftTriggerTouchedChanged += update_trigger_touched;
+            _vrInputSystem.leftTriggerValueChanged += update_trigger_value;
+            _vrInputSystem.leftGripValueChanged += update_grip_value;
         }
-        
-        trigger_touched_action = action_map.FindAction("Trigger Touched");
-
-        if (trigger_touched_action != null)
+        else
         {
-            trigger_touched_action.performed += update_trigger_touched;
-            trigger_touched_action.canceled += update_trigger_touched;
+            _vrInputSystem.rightThumbTouchedChanged += update_thumb_touched;
+            _vrInputSystem.rightTriggerTouchedChanged += update_trigger_touched;
+            _vrInputSystem.rightTriggerValueChanged += update_trigger_value;
+            _vrInputSystem.rightGripValueChanged += update_grip_value;
         }
 
-        trigger_value_action = action_map.FindAction("Trigger Value");
-
-        if (trigger_value_action != null)
-        {
-            trigger_value_action.performed += update_trigger_value;
-            trigger_value_action.canceled += update_trigger_value;
-        }
-        
-        grip_value_action = action_map.FindAction("Grip Value");
-
-        if (grip_value_action != null)
-        {
-            grip_value_action.performed += update_grip_value;
-            grip_value_action.canceled += update_grip_value;
-        }
-        
         is_initialized = true;
     }
-    
-    private void update_thumb_touched(InputAction.CallbackContext context)
+
+    private void Update()
     {
-        current_thumb_touched = context.ReadValueAsButton();
+        update_current_pose();
+    }
+
+    private void update_thumb_touched(bool state)
+    {
+        current_thumb_touched = state;
         update_target_pose();
     }
     
-    private void update_trigger_touched(InputAction.CallbackContext context)
+    private void update_trigger_touched(bool state)
     {
-        current_trigger_touched = context.ReadValueAsButton();
+        current_trigger_touched = state;
         update_target_pose();
     }
     
-    private void update_trigger_value(InputAction.CallbackContext context)
+    private void update_trigger_value(float value)
     {
-        current_trigger_value = context.ReadValue<float>();
+        current_trigger_value = value;
         update_target_pose();
     }
     
-    private void update_grip_value(InputAction.CallbackContext context)
+    private void update_grip_value(float value)
     {
-        current_grip_value = context.ReadValue<float>();
+        current_grip_value = value;
         update_target_pose();
     }
     
@@ -145,6 +133,8 @@ public class HandPoseController : MonoBehaviour
     public void remove_grab_override_pose()
     {
         grab_override_pose = null;
+        update_target_pose();
+        //update_current_pose();
     }
 
     public void update_current_pose()
@@ -209,4 +199,51 @@ public class HandPoseController : MonoBehaviour
             FingerPoseData.Lerp(poseIdle.pose_data[i], poseFist.pose_data[i], current_grip_value, ref target_pose.pose_data[i]);
         }
     }
+    
+#if UNITY_EDITOR
+    [CustomEditor(typeof(HandPoseController))]
+    public class HandPoseControllerEditor : Editor
+    {
+        
+        HandPoseController controller;
+        
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            
+            controller = (HandPoseController)target;
+            
+            if(controller == null) return;
+
+            if (GUILayout.Button("Set Idle Pose"))
+            {
+                if(controller.poseIdle == null) return;
+
+                Undo.RecordObject(controller.fingerControllers[0].rootBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[0].secondPhalanxBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[0].thirdPhalanxBone.transform, "Set Idle Pose");
+                
+                Undo.RecordObject(controller.fingerControllers[1].rootBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[1].secondPhalanxBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[1].thirdPhalanxBone.transform, "Set Idle Pose");
+                
+                Undo.RecordObject(controller.fingerControllers[2].rootBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[2].secondPhalanxBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[2].thirdPhalanxBone.transform, "Set Idle Pose");
+                
+                Undo.RecordObject(controller.fingerControllers[3].rootBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[3].secondPhalanxBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[3].thirdPhalanxBone.transform, "Set Idle Pose");
+                
+                Undo.RecordObject(controller.fingerControllers[4].rootBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[4].secondPhalanxBone.transform, "Set Idle Pose");
+                Undo.RecordObject(controller.fingerControllers[4].thirdPhalanxBone.transform, "Set Idle Pose");
+                
+                controller.current_pose = controller.poseIdle;
+                controller.fingers_count = controller.fingerControllers.Length;
+                controller.set_fingers_pose();
+            }
+        }
+    }
+#endif
 }

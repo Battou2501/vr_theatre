@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Zenject;
 
 public class HandController : MonoBehaviour
 {
@@ -16,20 +17,28 @@ public class HandController : MonoBehaviour
     [SerializeField] 
     public Transform grabPoint;
     [SerializeField] 
-    public Collider grabCollider;
+    public Rigidbody grabBody;
 
     public bool is_grabbing => poseController.has_grab_override_pose;
     public Vector3 get_move_vector { get; private set; }
-
-
-    InputAction trigger_pressed_action;
-    InputAction grip_pressed_action;
 
     private Vector3 position_previous_frame;
     
     private Transform this_transform;
     
     private float fixed_delta_time_multiplier;
+
+    private VrInputSystem _vrInputSystem;
+    
+    private bool _is_initialized;
+
+    private bool _is_left;
+    
+    [Inject]
+    private void Construct(VrInputSystem vrInputSystem)
+    {
+        _vrInputSystem = vrInputSystem;
+    }
     
     public void init()
     {
@@ -37,26 +46,19 @@ public class HandController : MonoBehaviour
         
         poseController.init(hand);
         
-        var is_left = hand == HandControlSystem.Handedness.Left;
+        this_transform = transform;
         
-        var action_map = InputSystem.actions.FindActionMap(is_left ? "Left Controller" : "Right Controller");
-        
-        if( action_map == null ) return;
-        
-        trigger_pressed_action = action_map.FindAction("Trigger Pressed");
+        _is_left = hand == HandControlSystem.Handedness.Left;
 
-        if (trigger_pressed_action != null)
+        if (_is_left)
         {
-            trigger_pressed_action.performed += OnTriggerPressed;
-            trigger_pressed_action.canceled += OnTriggerReleased;
+            _vrInputSystem.leftTriggerPressedChanged += OnTriggerPressedChanged;
+            _vrInputSystem.leftGripPressedChanged += OnGripPressedChanged;
         }
-        
-        grip_pressed_action = action_map.FindAction("Grip Pressed");
-
-        if (grip_pressed_action != null)
+        else
         {
-            grip_pressed_action.performed += OnGripPressed;
-            grip_pressed_action.canceled += OnGripReleased;
+            _vrInputSystem.rightTriggerPressedChanged += OnTriggerPressedChanged;
+            _vrInputSystem.rightGripPressedChanged += OnGripPressedChanged;
         }
 
         position_previous_frame = this_transform.position;
@@ -64,8 +66,26 @@ public class HandController : MonoBehaviour
         fixed_delta_time_multiplier = 1f / Time.fixedDeltaTime;
     }
 
+    private void OnDestroy()
+    {
+        if (!_is_initialized) return;
+        
+        if (_is_left)
+        {
+            _vrInputSystem.leftTriggerPressedChanged -= OnTriggerPressedChanged;
+            _vrInputSystem.leftGripPressedChanged -= OnGripPressedChanged;
+        }
+        else
+        {
+            _vrInputSystem.rightTriggerPressedChanged -= OnTriggerPressedChanged;
+            _vrInputSystem.rightGripPressedChanged -= OnGripPressedChanged;
+        }
+    }
+
     private void FixedUpdate()
     {
+        if(this_transform == null) return;
+        
         get_move_vector = (this_transform.position - position_previous_frame) * fixed_delta_time_multiplier;
         position_previous_frame = this_transform.position;
     }
@@ -73,33 +93,29 @@ public class HandController : MonoBehaviour
     public void set_grab_pose(FingersPoseSO pose)
     {
         poseController.set_grab_override_pose(pose);
-        grabCollider.enabled = false;
+        grabBody.detectCollisions = false;
     }
 
     public void remove_grab_pose()
     {
         poseController.remove_grab_override_pose();
-        grabCollider.enabled = true;
+        grabBody.detectCollisions = true;
     }
     
-    void OnTriggerPressed(InputAction.CallbackContext obj)
+    void OnTriggerPressedChanged(bool state)
     {
-        triggerPressed?.Invoke(this);
+        if(state)
+            triggerPressed?.Invoke(this);
+        else
+            triggerReleased?.Invoke(this);
     }
     
-    void OnTriggerReleased(InputAction.CallbackContext obj)
+    void OnGripPressedChanged(bool state)
     {
-        triggerReleased?.Invoke(this);
-    }
-    
-    void OnGripPressed(InputAction.CallbackContext obj)
-    {
-        gripPressed?.Invoke(this);
-    }
-    
-    void OnGripReleased(InputAction.CallbackContext obj)
-    {
-        gripReleased?.Invoke(this);
+        if(state)
+            gripPressed?.Invoke(this);
+        else
+            gripReleased?.Invoke(this);
     }
     
     

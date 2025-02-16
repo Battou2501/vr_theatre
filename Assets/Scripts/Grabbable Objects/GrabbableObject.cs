@@ -12,13 +12,46 @@ public class GrabbableObject : HoverableObjectBase
     private Transform grab_point;
     
     private HandController grabbed_by_hand_controller;
+    
+    protected Dictionary<GameObject, HandController> hovered_by_hand_object_dict;
 
+    public override void init()
+    {
+        base.init();
+        hovered_by_hand_object_dict = new Dictionary<GameObject, HandController>();
+    }
 
     protected override void OnTriggerEnter(Collider other)
     {
         if (grabbed_by_hand_controller != null) return;
         
         base.OnTriggerEnter(other);
+
+        if(other.attachedRigidbody == null) return;
+        
+        if(!other.attachedRigidbody.gameObject.CompareTag(hand_tag_handle)) return;
+        
+        var body = other.attachedRigidbody.gameObject;
+        
+        if(hovered_by_hand_object_dict.ContainsKey(body)) return;
+
+        var hand_controller = other.GetComponentInParent<HandController>();
+        
+        if(hand_controller == null) return;
+        
+        hovered_by_hand_object_dict.Add(body, hand_controller);
+        
+        switch (grabbedWith)
+        {
+            case GrabbedWith.Trigger:
+                hand_controller.triggerPressed += OnGrabbed;
+                break;
+            case GrabbedWith.Grip:
+                hand_controller.gripPressed += OnGrabbed;
+                break;
+        }
+        
+        Debug.Log("Entered");
     }
 
 
@@ -27,10 +60,46 @@ public class GrabbableObject : HoverableObjectBase
         if(grabbed_by_hand_controller != null) return;
 
         base.OnTriggerExit(other);
+        
+        if(other.attachedRigidbody == null) return;
+        
+        //if(!other.attachedRigidbody.gameObject.CompareTag(hand_tag_handle)) return;
+        
+        var body = other.attachedRigidbody.gameObject;
+        
+        //if(hovered_by_hand_object_dict.ContainsKey(body)) return;
+        
+        if(!hovered_by_hand_object_dict.ContainsKey(body)) return;
+        
+        switch (grabbedWith)
+        {
+            case GrabbedWith.Trigger:
+                hovered_by_hand_object_dict[body].triggerPressed -= OnGrabbed;
+                break;
+            case GrabbedWith.Grip:
+                hovered_by_hand_object_dict[body].gripPressed -= OnGrabbed;
+                break;
+        }
+        
+        hovered_by_hand_object_dict.Remove(body);
+        
+        Debug.Log("Exited");
     }
 
-    protected override void OnGrabbed(HandController hand_controller)
+    public virtual void OnGrabbed(HandController hand_controller)
     {
+        switch (grabbedWith)
+        {
+            case GrabbedWith.Trigger:
+                hand_controller.triggerPressed -= OnGrabbed;
+                break;
+            case GrabbedWith.Grip:
+                hand_controller.gripPressed -= OnGrabbed;
+                break;
+        }
+        
+        if(hand_controller.is_grabbing) return;
+        
         grabbed_by_hand_controller = hand_controller;
         
         grabbed_by_hand_controller.set_grab_pose(grabPose);
@@ -38,27 +107,46 @@ public class GrabbableObject : HoverableObjectBase
         switch (grabbedWith)
         {
             case GrabbedWith.Trigger:
-                hand_controller.triggerPressed -= OnGrabbed;
-                hand_controller.triggerPressed += OnReleased;
+                hand_controller.triggerReleased += OnReleased;
                 break;
             case GrabbedWith.Grip:
-                hand_controller.gripPressed -= OnGrabbed;
-                hand_controller.gripPressed += OnReleased;
+                hand_controller.gripReleased += OnReleased;
                 break;
         }
         
         hovered_by_hand_collider_dict.Clear();
-        
-        
-        transform.SetParent(grabbed_by_hand_controller.grabPoint);
-        transform.localRotation = Quaternion.Inverse(grab_point.localRotation);
-        transform.localPosition = Vector3.zero;
-        transform.position += transform.position - grab_point.position;
 
+        transform.SetParent(hand_controller.grabPoint);
+        
+        align();
     }
 
-    protected override void OnReleased(HandController hand_controller)
+    private void align()
     {
+        transform.localRotation = Quaternion.Inverse(grab_point.localRotation);
+        if (transform.localScale.x < 0)
+        {
+            var r = transform.localRotation.eulerAngles;
+            transform.localRotation = Quaternion.Euler(r.x, -r.y, -r.z);
+        }
+        transform.localPosition = Vector3.zero;
+        transform.position += transform.position - grab_point.position;
+    }
+    
+    protected virtual void OnReleased(HandController hand_controller)
+    {
+        Debug.Log("Released");
+        
+        switch (grabbedWith)
+        {
+            case GrabbedWith.Trigger:
+                hand_controller.triggerReleased -= OnReleased;
+                break;
+            case GrabbedWith.Grip:
+                hand_controller.gripReleased -= OnReleased;
+                break;
+        }
+        
         transform.SetParent(null);
         grabbed_by_hand_controller = null;
         hand_controller.remove_grab_pose();

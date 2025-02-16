@@ -28,8 +28,8 @@ namespace DefaultNamespace
         {
             if(!callbackContext.control.IsPressed()) return;
             
-            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.leftHandTriggerCollider)) return;
-            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(main_controls.rightHandTriggerCollider)) return;
+            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(_leftHandTriggerCollider)) return;
+            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(_rightHandTriggerCollider)) return;
             
             Click_Action();
             

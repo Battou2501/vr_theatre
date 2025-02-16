@@ -1,4 +1,5 @@
 using DefaultNamespace;
+using Hands;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -15,6 +16,9 @@ public class SceneDepInjInstaller : MonoInstaller
     public CameraBlackOut cameraBlackOut;
     public XROrigin xrOrigin;
     public AudioSource headAudioSource;
+    [FormerlySerializedAs("letHandPointer")] public LeftHandPointer leftHandPointer;
+    public RightHandPointer rightHandPointer;
+    public VrInputSystem vrInputSystem;
     
     public override void InstallBindings()
     {
@@ -29,6 +33,9 @@ public class SceneDepInjInstaller : MonoInstaller
         Container.Bind<CameraBlackOut>().FromInstance(cameraBlackOut).AsSingle();
         Container.Bind<XROrigin>().FromInstance(xrOrigin).AsSingle();
         Container.Bind<AudioSource>().FromInstance(headAudioSource).AsSingle();
+        Container.Bind<LeftHandPointer>().FromInstance(leftHandPointer).AsSingle();
+        Container.Bind<RightHandPointer>().FromInstance(rightHandPointer).AsSingle();
+        Container.Bind<VrInputSystem>().FromInstance(vrInputSystem).AsSingle();
         Container.Bind<FileNavigationManager>().AsSingle();
     }
 }
