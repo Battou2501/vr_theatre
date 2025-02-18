@@ -8,6 +8,7 @@ using MediaInfoLib;
 using NReco.VideoConverter;
 using Unity.Collections;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
 using UnityEngine.Experimental.Video;
@@ -37,6 +38,15 @@ namespace DefaultNamespace
             paused
         }
 
+        public enum VideoTypes
+        {
+            Flat = 0,
+            halfSBS,
+            fullSBS,
+            halfOU,
+            fullOU
+        }
+
         public event Action AudioTrackChanged;
         public event Action VideoPrepared;
         public event Action<string> ErrorOccured;
@@ -46,6 +56,7 @@ namespace DefaultNamespace
         public AudioSource[] audioSources;
         public Material mat;
         public Material blitMat;
+        public Material pixelAspectFixMat;
         public RenderTexture lightRT;
         public Transform[] screenLightSamplePoints;
         public Transform screenPointsRoot;
@@ -62,6 +73,8 @@ namespace DefaultNamespace
         public bool loop_video;
         public int maxMovieTextureResolution = 1024;
         double skip_seconds = 10;
+        public VideoTypes videoType;
+        public bool invertStereoOrder;
         [HideInInspector]
         public double seek_time;
         [HideInInspector]
@@ -84,7 +97,8 @@ namespace DefaultNamespace
         public bool IsPlaying => vp.isPlaying;
         public int CurrentTrackNumber => tracks != null ? current_track_idx : -1;
         public string CurrentTrackLang => tracks != null && current_track_idx >= 0 && current_track_idx < tracks.Length ? tracks[current_track_idx].lang : "";
-        
+
+        public RenderTexture rtttt;
         
         
         PlayerCommands requested_command; 
@@ -149,7 +163,13 @@ namespace DefaultNamespace
         static readonly int vec_arr_x = Shader.PropertyToID("_VecArrX");
         static readonly int vec_arr_y = Shader.PropertyToID("_VecArrY");
         static readonly int vec_arr_z = Shader.PropertyToID("_VecArrZ");
-        
+        private static readonly int x_border_coef = Shader.PropertyToID("_xBorderCoef");
+        private static readonly int y_border_coef = Shader.PropertyToID("_yBorderCoef");
+        private static readonly int video_type = Shader.PropertyToID("_VideoType");
+        private static readonly int pixel_aspect_ratio = Shader.PropertyToID("_PixelAspectRatio");
+        private static readonly int aspect_type = Shader.PropertyToID("_AspectType");
+        private static readonly int invert_order = Shader.PropertyToID("_InvertOrder");
+
         public void init()
         {
             media_info = new MediaInfo();
@@ -212,6 +232,8 @@ namespace DefaultNamespace
             
             tracks?.for_each(x=>x.Dispose());
             tracks = null;
+            rt_pool.for_each(Destroy);
+            rt_pool = null;
             
             if(vp == null) return;
             
@@ -234,6 +256,10 @@ namespace DefaultNamespace
 
         void Update()
         {
+            Shader.SetGlobalInt(invert_order, invertStereoOrder ? 1 : 0);
+                
+            update_video_type_shader_parameters();
+            
             ProfilingUtility.BeginSample("Set Delay");
             set_delay();
             ProfilingUtility.EndSample();
@@ -267,9 +293,12 @@ namespace DefaultNamespace
         {
             var w = (int) source.width;
             var h = (int) source.height;
+
+            var a = (float) w / (float) h;// * (float)source.pixelAspectRatioNumerator / source.pixelAspectRatioDenominator);
             
-            Shader.SetGlobalFloat(aspect, (float)w/h);
-            Shader.SetGlobalFloat(one_over_aspect, 1f/((float)w/h));
+            Shader.SetGlobalFloat(aspect, a);
+            Shader.SetGlobalFloat(one_over_aspect, 1f/a);
+            update_video_type_shader_parameters();
 
             var frame_buffer_size = Mathf.FloorToInt(frame_buffer_seconds * source.frameRate);
             
@@ -277,14 +306,25 @@ namespace DefaultNamespace
 
             rt_pool = new RenderTexture[frame_buffer_size];
 
-            var ratio_bigger = (float) w / h >= 1.0f;
+            //var h2 = (float)h * (float)source.pixelAspectRatioNumerator / source.pixelAspectRatioDenominator;
+
+            set_pixel_aspect_type(source);
             
+            var tex_width = w;
+            var tex_height = h;
+
+            if (tex_width > maxMovieTextureResolution || tex_height > maxMovieTextureResolution)
+            {
+                var max_height = maxMovieTextureResolution / 1.9f;
+                var ratio_bigger = (float) w / h >= 1.0f;
+                tex_width = ratio_bigger ? maxMovieTextureResolution : (int) (max_height * ((float) w / h));
+                tex_height = !ratio_bigger ? (int) max_height : (int) (maxMovieTextureResolution * ((float) h / w));
+            }
+
+
             for (var i = 0; i < frame_buffer_size; i++)
             {
-                if(ratio_bigger)
-                    rt_pool[i] = new RenderTexture(maxMovieTextureResolution, (int)(maxMovieTextureResolution*((float)h/w)), 0, RenderTextureFormat.Default,0);
-                else
-                    rt_pool[i] = new RenderTexture((int)(maxMovieTextureResolution*((float)w/h)), maxMovieTextureResolution, 0, RenderTextureFormat.Default,0);
+                rt_pool[i] = new RenderTexture(tex_width, tex_height, 0, RenderTextureFormat.ARGB64,0);
             }
 
             is_prepared = true;
@@ -366,10 +406,43 @@ namespace DefaultNamespace
                 frame_to_play_idx = 0;
         }
 
-        void render_frame_to_screen(int idx)
+        void set_pixel_aspect_type(VideoPlayer source)
         {
+            var pixelAspectRatio =  (float) source.pixelAspectRatioNumerator /(float)source.pixelAspectRatioDenominator;
+            var a_type = pixelAspectRatio > 1.001f ? 1 : pixelAspectRatio < 0.999f ? -1 : 0;
+            pixelAspectRatio = pixelAspectRatio > 1 ? 1.0f / pixelAspectRatio : pixelAspectRatio;
+            Shader.SetGlobalFloat(pixel_aspect_ratio, pixelAspectRatio);
+            Shader.SetGlobalFloat(aspect_type, a_type);
+        }
+        
+        void update_video_type_shader_parameters()
+        {
+            var x_coef = videoType switch
+            {
+                VideoTypes.Flat => 1f,
+                VideoTypes.halfOU => 1f,
+                VideoTypes.fullOU => 1f,
+                VideoTypes.halfSBS => 0.5f,
+                VideoTypes.fullSBS => 0.5f
+            };
+            Shader.SetGlobalFloat(x_border_coef, x_coef );
+            var y_coef = videoType switch
+            {
+                VideoTypes.Flat => 1f,
+                VideoTypes.halfOU => 0.5f,
+                VideoTypes.fullOU => 0.5f,
+                VideoTypes.halfSBS => 1f,
+                VideoTypes.fullSBS => 1f
+            };
+            Shader.SetGlobalFloat(y_border_coef, y_coef );
+            Shader.SetGlobalInt(video_type, (int)videoType);
+        }
+        
+        void render_frame_to_screen(int idx)
+        { 
             mat.SetTexture(movie_tex, rt_pool[idx]);
             Graphics.Blit(rt_pool[idx], lightRT, blitMat);
+            //Graphics.Blit(rt_pool[idx], lightRT);
         }
 
         void clear_screen()
@@ -380,7 +453,8 @@ namespace DefaultNamespace
         
         void Get2DTexture(VideoPlayer vp, int i)
         {
-            Graphics.Blit(vp.texture, rt_pool[i]);
+            Graphics.Blit(vp.texture, rt_pool[i], pixelAspectFixMat);
+            Graphics.Blit(vp.texture, rtttt, pixelAspectFixMat);
         }
 
         static void ProviderOnSampleFramesOverflow(AudioSampleProvider provider, uint sampleFrameCount)

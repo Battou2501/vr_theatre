@@ -17,7 +17,7 @@ public class SetLightOnStartUp
 
     static void EditorApplicationOnplayModeStateChanged(PlayModeStateChange obj)
     {
-        if (obj == PlayModeStateChange.ExitingPlayMode)
+        if (obj == PlayModeStateChange.EnteredEditMode)
             set_light_values();
     }
 

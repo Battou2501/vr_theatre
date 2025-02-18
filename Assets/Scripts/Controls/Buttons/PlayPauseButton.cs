@@ -45,6 +45,8 @@ namespace DefaultNamespace
             
             mesh_filter.mesh = playButtonMesh;
             current_mesh_type = MeshTypes.Play;
+            
+            change_mesh_type();
         }
 
         protected override void OnDestroy()

@@ -106,7 +106,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AOStrength: 0.501
+    - _AOStrength: 0.725
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -114,13 +114,13 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightMaxStrength: 1.89
+    - _LightMaxStrength: 1.63
     - _Metallic: 0
     - _MipLevel: 2
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _ScreenLightMult: 2.1
+    - _ScreenLightMult: 1.1
     - _Shininess: 0
     - _ShininessBrightness: 1
     - _SmoothnessTextureChannel: 0

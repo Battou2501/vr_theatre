@@ -222,8 +222,8 @@ Shader "Unlit/CinemaRoomShader"
                 const int light_tex_idx = floor(i.color.r * 6);
                 const int light_tex_channel_idx = floor(i.color.g * 3);
                 
-                const fixed4 tex_light = tex2D(_LightTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_LightTex2,i.uv_light) * (light_tex_idx > 2);
-                const fixed4 tex_ao = tex2D(_AOTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_AOTex2,i.uv_light) * (light_tex_idx > 2);
+                const fixed4 tex_light = (tex2D(_LightTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_LightTex2,i.uv_light) * (light_tex_idx > 2))*5;
+                const fixed4 tex_ao = (tex2D(_AOTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_AOTex2,i.uv_light) * (light_tex_idx > 2))*5;
                 //const fixed4 tex_spec = tex2D(_SpecTex1,i.uv_light) * (light_tex_idx < 3) + tex2D(_SpecTex2,i.uv_light) * (light_tex_idx > 2);
 
                 const fixed ao = (

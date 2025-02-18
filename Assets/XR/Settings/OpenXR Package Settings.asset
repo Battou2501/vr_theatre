@@ -35,7 +35,7 @@ MonoBehaviour:
   m_renderMode: 0
   m_autoColorSubmissionMode: 0
   m_colorSubmissionModes:
-    m_List: 02000000040000000100000000000000
+    m_List: 0200000000000000
   m_depthSubmissionMode: 0
   m_spacewarpMotionVectorTextureFormat: 0
   m_optimizeBufferDiscards: 0

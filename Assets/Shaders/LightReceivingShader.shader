@@ -215,15 +215,17 @@ Shader "Unlit/LightReceivingShader"
 
                 const float3 norm = normalize(i.normal);
 
-                const float4 light_tex = tex2D(_LightTex, i.uv_light);
-                const float4 ao_tex = tex2D(_AOTex, i.uv_light);
+                const float4 light_tex = tex2D(_LightTex, i.uv_light)*2;
+                const float4 ao_tex = tex2D(_AOTex, i.uv_light)*2;
                 const float ao = lerp(1,ao_tex.r * i.color.x + ao_tex.g * (1- i.color.x),_AOStrength);
                 const float light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * _LightMaxStrength;
                 
                 
                 const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
                 const float4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x);
-
+                const float tex_white_col_coef = pow(tex_white.a,0.4);
+                const float tex_black_col_coef = pow(tex_black.a,0.4);
+                
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
                 const float3 viewDir = normalize(i.viewDir);
@@ -233,11 +235,11 @@ Shader "Unlit/LightReceivingShader"
 
                 #ifdef _TYPE_GLOSSY
                 const float view_norm_dot = 1-saturate(dot(viewDir,norm));
-                const float4 tex = lerp(tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a), reflections, r_factor * view_norm_dot);
+                const float4 tex = lerp(tex_black * lerp(1,_Color, tex_black_col_coef) + tex_white * lerp(1,_Color, tex_white_col_coef), reflections, r_factor * view_norm_dot);
                 #elif _TYPE_METALIC
-                const float4 tex = lerp(reflections*0.6+0.4,reflections,_Shininess) * (tex_black * lerp(1,_Color, tex_black.a) + tex_white * lerp(1,_Color, tex_white.a));
+                const float4 tex = lerp(reflections*0.6+0.4,reflections,_Shininess) * (tex_black * lerp(1,_Color, tex_black_col_coef) + tex_white * lerp(1,_Color, tex_white_col_coef));
                 #else 
-                const float4 tex = tex_black * lerp(1,_Color* _ColorB, tex_black.a) + tex_white * lerp(1,_Color* _ColorB, tex_white.a);
+                const float4 tex = tex_black * lerp(1,_Color* _ColorB, tex_black_col_coef) + tex_white * lerp(1,_Color* _ColorB, tex_white_col_coef);
                 #endif
                 
                 
@@ -302,6 +304,8 @@ Shader "Unlit/LightReceivingShader"
                 #elif _TYPE_METALIC
                 return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) * ao + specular ) * _Color;
                 #else
+
+                
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
                 #endif

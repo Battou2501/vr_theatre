@@ -42241,7 +42241,7 @@ VideoPlayer:
   - 1
   - 1
   - 1
-  m_Url: "F:\\Movies\\4K\\Aliens\\\u0427\u0443\u0436\u043E\u0439 \u0420\u043E\u043C\u0443\u043B.2024.WEB-DL.2160p.DV.mp4"
+  m_Url: G:/Torrents_Movies_G/out.mp4
   m_EnabledAudioTracks: 01010101010101010101
   m_DirectAudioMutes: 00000000000000000000
   m_ControlledAudioTrackCount: 10
@@ -42287,6 +42287,7 @@ MonoBehaviour:
   - {fileID: 1011948148}
   mat: {fileID: 2100000, guid: 1d90c53ccd0d3c34ea3765b9b7b964c1, type: 2}
   blitMat: {fileID: 2100000, guid: d93d95f8a5fc29e48bd8ade69c6ad4e1, type: 2}
+  pixelAspectFixMat: {fileID: 2100000, guid: c04fa746f1859dc4e8dd226e3a8af3dc, type: 2}
   lightRT: {fileID: 8400000, guid: 5656cc3434d20ed4dae946d0599e450a, type: 2}
   screenLightSamplePoints:
   - {fileID: 80558941}
@@ -42359,10 +42360,13 @@ MonoBehaviour:
   sync_audio_if_needed: 1
   movie_light_strength: 0
   loop_video: 0
-  maxMovieTextureResolution: 1024
+  maxMovieTextureResolution: 1920
+  videoType: 3
+  invertStereoOrder: 0
   seek_time: 0
   is_seeking: 0
   player_state: 0
+  rtttt: {fileID: 8400000, guid: 13a912b84ed02b7448cda90f7449cdbf, type: 2}
 --- !u!1 &1807052150
 GameObject:
   m_ObjectHideFlags: 0
@@ -46202,7 +46206,7 @@ MonoBehaviour:
   m_Camera: {fileID: 2084324062}
   m_OriginBaseGameObject: {fileID: 1976068638}
   m_CameraFloorOffsetObject: {fileID: 16862729}
-  m_RequestedTrackingOriginMode: 1
+  m_RequestedTrackingOriginMode: 2
   m_CameraYOffset: 0
 --- !u!114 &1976068640
 MonoBehaviour:
@@ -48250,6 +48254,7 @@ GameObject:
   - component: {fileID: 2084324062}
   - component: {fileID: 2084324061}
   - component: {fileID: 2084324063}
+  - component: {fileID: 2084324064}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -48426,6 +48431,20 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+--- !u!114 &2084324064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084324059}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cbdf22f9002d24469cf2d93b72afecf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  material: {fileID: 2100000, guid: 4be95dccefc0e9149aa7f7dd8266b802, type: 2}
+  cam: {fileID: 2084324062}
 --- !u!1 &2089730790
 GameObject:
   m_ObjectHideFlags: 0
