@@ -63,10 +63,19 @@ Shader "Unlit/LightReceivingShader"
                 float3 reflect_viewDir : TEXCOORD5;
                 float3 viewDir : TEXCOORD6;
                 float3 lightDir : TEXCOORD7;
+                fixed3 color_mod : TEXCOORD8;
                 fixed4 color : COLOR0;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct instance_data
+            {
+                float4x4 trs;
+                float col_mod;
+                float hue_mod;
+                float alpha_mod;
             };
 
             sampler2D _MainTex_White;
@@ -83,7 +92,7 @@ Shader "Unlit/LightReceivingShader"
             float _LightMaxStrength;
             int _LightUV;
 
-            StructuredBuffer<float4x4> _TRS_Array;
+            StructuredBuffer<instance_data> _TRS_Array;
             int _Instanced;
             
             static float2 _SamplePointsUV[60]=
@@ -176,15 +185,19 @@ Shader "Unlit/LightReceivingShader"
 
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
-                
-                float4 wpos = mul(_TRS_Array[svInstanceID], v.vertex)  * _Instanced + (1-_Instanced) * mul (unity_ObjectToWorld, v.vertex);
-                
+
+                o.color_mod.x = lerp(1,_TRS_Array[svInstanceID].col_mod, _Instanced);
+                o.color_mod.y = lerp(1,_TRS_Array[svInstanceID].hue_mod, _Instanced);
+                o.color_mod.z = lerp(1,_TRS_Array[svInstanceID].alpha_mod, _Instanced);
+                //o.color_mod = svInstanceID==10;
+                float4 wpos = mul(_TRS_Array[svInstanceID].trs, v.vertex + float4(0,0.5,1,0)*_TRS_Array[svInstanceID].alpha_mod*0.05)  * _Instanced + (1-_Instanced) * mul (unity_ObjectToWorld, v.vertex);
+                //o.color_mod = _TRS_Array[svInstanceID][0][2] > 0;
                 //o.vertex = UnityObjectToClipPos(v.vertex);
                 o.vertex = mul(UNITY_MATRIX_VP, wpos) * _Instanced + (1-_Instanced) * UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex_White);
                 //o.worldPos = mul (unity_ObjectToWorld, v.vertex);
                 o.worldPos = wpos;
-                o.normal = normalize(mul (_TRS_Array[svInstanceID] * _Instanced + (1-_Instanced) * unity_ObjectToWorld, v.normal));
+                o.normal = normalize(mul (_TRS_Array[svInstanceID].trs * _Instanced + (1-_Instanced) * unity_ObjectToWorld, v.normal));
                 const float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - o.worldPos.xyz);
 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
@@ -202,7 +215,6 @@ Shader "Unlit/LightReceivingShader"
                 //o.lightDir = float3(0,1,0);
                 //#endif
                 
-
                 o.color = v.color;
                 o.uv_light = v.uv * (_LightUV == 0) + v.uv2 * (_LightUV == 1) + v.uv3 * (_LightUV == 2) + v.uv4 * (_LightUV == 3);
                 UNITY_TRANSFER_FOG(o,o.vertex);
@@ -221,10 +233,10 @@ Shader "Unlit/LightReceivingShader"
                 const float light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * _LightMaxStrength;
                 
                 
-                const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;
-                const float4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x);
-                const float tex_white_col_coef = pow(tex_white.a,0.4);
-                const float tex_black_col_coef = pow(tex_black.a,0.4);
+                const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,0.8 + (1-i.color_mod.y),i.color_mod.z*0.1+0.9,1);
+                const float4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x) * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,1,0.8 + (1-i.color_mod.y),1);
+                const float tex_white_col_coef = lerp(pow(tex_white.a,0.4), 1 , i.color_mod.z*0.6+0.2);
+                const float tex_black_col_coef = lerp(pow(tex_black.a,0.4), 1 , i.color_mod.z*0.6+0.2);
                 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
@@ -305,7 +317,7 @@ Shader "Unlit/LightReceivingShader"
                 return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) * ao + specular ) * _Color;
                 #else
 
-                
+                //return fixed4(i.color_mod.y,1,0.5 + (1-i.color_mod.y),1);
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
                 #endif

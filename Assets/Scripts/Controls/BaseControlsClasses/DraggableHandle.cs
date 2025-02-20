@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Zenject;
 
 namespace DefaultNamespace
 {
@@ -13,20 +14,24 @@ namespace DefaultNamespace
         bool is_dragged;
         Transform dragged_by;
         double min_max_distance_ratio;
+        VrInputSystem _inputSystem;
         
         protected double slider_position => Vector3.Distance(minPoint.localPosition, transform.localPosition) * min_max_distance_ratio;
-
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v, MainControls m, VrInputSystem inputSystem)
+        {
+            _inputSystem = inputSystem;
+        }
+        
         public override void init()
         {
             base.init();
             
             min_max_distance_ratio = 1f / Vector3.Distance(minPoint.localPosition, maxPoint.localPosition);
             
-            main_controls.leftTriggerPressedAction.performed += StartDrag;
-            main_controls.rightTriggerPressedAction.performed += StartDrag;
-            
-            main_controls.leftTriggerPressedAction.canceled += StopDrag;
-            main_controls.rightTriggerPressedAction.canceled += StopDrag;
+            _inputSystem.leftLowerButtonPressedChanged += OnPressedLeft;
+            _inputSystem.rightLowerButtonPressedChanged += OnPressedRight;
             
             if(valueBar == null) return;
             
@@ -45,36 +50,48 @@ namespace DefaultNamespace
         {
             if(!is_initiated) return;
             
-            main_controls.leftTriggerPressedAction.performed -= StartDrag;
-            main_controls.rightTriggerPressedAction.performed -= StartDrag;
-            
-            main_controls.leftTriggerPressedAction.canceled -= StopDrag;
-            main_controls.rightTriggerPressedAction.canceled -= StopDrag;
+            _inputSystem.leftLowerButtonPressedChanged -= OnPressedLeft;
+            _inputSystem.rightLowerButtonPressedChanged -= OnPressedRight;
         }
 
-        void StartDrag(InputAction.CallbackContext callbackContext)
+        void OnPressedLeft(bool is_pressed)
         {
-            if(!callbackContext.control.IsPressed()) return;
-            
-            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(_leftHandTriggerCollider)) return;
-            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(_rightHandTriggerCollider)) return;
-            
+            OnPressed(_leftHandTriggerCollider, is_pressed);
+        }
+        
+        void OnPressedRight(bool is_pressed)
+        {
+            OnPressed(_rightHandTriggerCollider, is_pressed);
+        }
+
+        void OnPressed(GameObject hand, bool is_pressed)
+        {
+            if(is_pressed)
+                StartDrag(hand);
+            else
+            {
+                StopDrag(hand);
+            }
+        }
+
+        void StartDrag(GameObject hand)
+        {
             if(is_dragged) return;
+            
+            if(!hovered_by.Contains(hand)) return;
             
             is_dragged = true;
 
-            dragged_by = main_controls.leftTriggerPressedAction.id == callbackContext.action.id ? _leftHandTriggerCollider.transform : _rightHandTriggerCollider.transform;
+            dragged_by = hand.transform;
 
             StartDrag_Action();
         }
 
-        void StopDrag(InputAction.CallbackContext callbackContext)
+        void StopDrag(GameObject hand)
         {
-            if(callbackContext.control.IsPressed()) return;
-            
             if(!is_dragged) return;
-            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && dragged_by.gameObject != _leftHandTriggerCollider) return;
-            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && dragged_by.gameObject != _rightHandTriggerCollider) return;
+            
+            if(dragged_by != hand.transform) return;
             
             is_dragged = false;
 

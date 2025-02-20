@@ -12,6 +12,7 @@ public class VrInputSystem : MonoBehaviour
     public event Action<bool>  leftTriggerPressedChanged;
     public event Action<float> leftGripValueChanged;
     public event Action<bool>  leftGripPressedChanged;
+    public event Action<bool>  leftLowerButtonPressedChanged;
     
     public event Action<bool>  rightThumbTouchedChanged;
     public event Action<bool>  rightTriggerTouchedChanged;
@@ -19,6 +20,7 @@ public class VrInputSystem : MonoBehaviour
     public event Action<bool>  rightTriggerPressedChanged;
     public event Action<float> rightGripValueChanged;
     public event Action<bool>  rightGripPressedChanged;
+    public event Action<bool>  rightLowerButtonPressedChanged;
     
     public InputActionAsset actionAsset;
     
@@ -34,6 +36,8 @@ public class VrInputSystem : MonoBehaviour
     private float leftGripValue;
     public InputActionReference leftGripPressedAction;
     private bool leftGripPressed;
+    public InputActionReference leftLowerButtonPressedAction;
+    private bool leftLowerButtonPressed;
     public InputActionReference rightThumbTouchAction;
     private bool rightThumbTouch;
     public InputActionReference rightTriggerTouchAction;
@@ -46,6 +50,8 @@ public class VrInputSystem : MonoBehaviour
     private float rightGripValue;
     public InputActionReference rightGripPressedAction;
     private bool rightGripPressed;
+    public InputActionReference rightLowerButtonPressedAction;
+    private bool rightLowerButtonPressed;
     
     void Start()
     {
@@ -87,6 +93,11 @@ public class VrInputSystem : MonoBehaviour
             leftGripPressedAction.action.canceled += update_left_grip_pressed;
         }
         
+        if (leftLowerButtonPressedAction != null)
+        {
+            leftLowerButtonPressedAction.action.performed += update_left_lower_button_pressed;
+            leftLowerButtonPressedAction.action.canceled += update_left_lower_button_pressed;
+        }
         
         
         if (rightThumbTouchAction != null)
@@ -124,8 +135,20 @@ public class VrInputSystem : MonoBehaviour
             rightGripPressedAction.action.performed += update_right_grip_pressed;
             rightGripPressedAction.action.canceled += update_right_grip_pressed;
         }
+        
+        if (rightLowerButtonPressedAction != null)
+        {
+            rightLowerButtonPressedAction.action.performed += update_right_lower_button_pressed;
+            rightLowerButtonPressedAction.action.canceled += update_right_lower_button_pressed;
+        }
     }
 
+    private void update_left_lower_button_pressed(InputAction.CallbackContext context)
+    {
+        leftLowerButtonPressed = context.ReadValueAsButton();
+        leftLowerButtonPressedChanged?.Invoke(leftLowerButtonPressed);
+    }
+    
     private void update_left_grip_pressed(InputAction.CallbackContext context)
     {
         leftGripPressed = context.ReadValueAsButton();
@@ -163,6 +186,11 @@ public class VrInputSystem : MonoBehaviour
     }
     
     
+    private void update_right_lower_button_pressed(InputAction.CallbackContext context)
+    {
+        rightLowerButtonPressed = context.ReadValueAsButton();
+        rightLowerButtonPressedChanged?.Invoke(rightLowerButtonPressed);
+    }
     
     private void update_right_grip_pressed(InputAction.CallbackContext context)
     {

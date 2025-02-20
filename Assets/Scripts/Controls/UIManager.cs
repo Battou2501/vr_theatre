@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     BaseControlsPanel[] panels;
     ManageVideoPlayerAudio video_manager;
     MainControls main_controls;
+    VrInputSystem _inputSystem;
     bool is_initialized;
     
     bool is_all_panels_closed
@@ -34,10 +35,11 @@ public class UIManager : MonoBehaviour
     }
     
     [Inject]
-    public void Construct(ManageVideoPlayerAudio v, MainControls m)
+    public void Construct(ManageVideoPlayerAudio v, MainControls m, VrInputSystem inputSystem)
     {
         video_manager = v;
         main_controls = m;
+        _inputSystem = inputSystem;
     }
     
     public void init()
@@ -54,11 +56,8 @@ public class UIManager : MonoBehaviour
             video_manager.VideoEnded += OnVideoEnded;
         }
 
-        if (main_controls.leftTriggerPressedAction != null)
-            main_controls.leftTriggerPressedAction.performed += TriggerPressedActionOnStarted;
-        
-        if (main_controls.rightTriggerPressedAction != null)
-            main_controls.rightTriggerPressedAction.performed += TriggerPressedActionOnStarted;
+        _inputSystem.leftLowerButtonPressedChanged += TriggerPressedActionOnStarted;
+        _inputSystem.rightLowerButtonPressedChanged += TriggerPressedActionOnStarted;
         
         //if(video_manager.FilePath == "")
         //    fileSelectPanel.show();
@@ -79,11 +78,8 @@ public class UIManager : MonoBehaviour
 
         if(main_controls == null) return;
         
-        if (main_controls.leftTriggerPressedAction != null)
-            main_controls.leftTriggerPressedAction.performed -= TriggerPressedActionOnStarted;
-        
-        if (main_controls.rightTriggerPressedAction != null)
-            main_controls.rightTriggerPressedAction.performed -= TriggerPressedActionOnStarted;
+        _inputSystem.leftLowerButtonPressedChanged -= TriggerPressedActionOnStarted;
+        _inputSystem.rightLowerButtonPressedChanged -= TriggerPressedActionOnStarted;
     }
 
     void OnVideoEnded()
@@ -126,9 +122,9 @@ public class UIManager : MonoBehaviour
         PanelCchanged?.Invoke(is_all_panels_closed);
     }
     
-    void TriggerPressedActionOnStarted(InputAction.CallbackContext callbackContext)
+    void TriggerPressedActionOnStarted(bool is_pressed)
     {
-        if (!callbackContext.control.IsPressed()) return;
+        if (!is_pressed) return;
             
         show_ui().Forget();
     }

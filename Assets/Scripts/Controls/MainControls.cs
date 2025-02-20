@@ -16,8 +16,8 @@ namespace DefaultNamespace
         private GameObject _leftHandTriggerCollider;
         private GameObject _rightHandTriggerCollider;
         
-        public InputAction leftTriggerPressedAction;
-        public InputAction rightTriggerPressedAction;
+        //public InputAction leftTriggerPressedAction;
+        //public InputAction rightTriggerPressedAction;
         
         bool subscriber_to_trigger_actions;
 
@@ -36,8 +36,8 @@ namespace DefaultNamespace
 
             ui_manager.PanelCchanged += OnPanelChanged;
             
-            leftTriggerPressedAction?.Enable();
-            rightTriggerPressedAction?.Enable();
+            //leftTriggerPressedAction?.Enable();
+            //rightTriggerPressedAction?.Enable();
             
             //enable_trigger_check();
         }

@@ -17,6 +17,8 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
 
     protected Dictionary<GameObject, List<Collider>> hovered_by_hand_collider_dict;
     
+    public bool IsHovered => hovered_by_hand_collider_dict is {Count: > 0};
+    
     public virtual void init()
     {
         hovered_by_hand_collider_dict = new Dictionary<GameObject, List<Collider>>();

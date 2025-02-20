@@ -3,34 +3,56 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Zenject;
 
 namespace DefaultNamespace
 {
     public class ClickableButton : BaseControl
     {
+        VrInputSystem _inputSystem;
+        
+        [Inject]
+        public void Construct(ManageVideoPlayerAudio v, MainControls m, VrInputSystem inputSystem)
+        {
+            _inputSystem = inputSystem;
+        }
+        
         public override void init()
         {
             base.init();
 
-            main_controls.leftTriggerPressedAction.performed += OnClick;
-            main_controls.rightTriggerPressedAction.performed += OnClick;
+            _inputSystem.leftLowerButtonPressedChanged += OnClickLeft;
+            _inputSystem.rightLowerButtonPressedChanged += OnClickRight;
         }
 
         protected virtual void OnDestroy()
         {
             if(!is_initiated) return;
             
-            main_controls.leftTriggerPressedAction.performed -= OnClick;
-            main_controls.rightTriggerPressedAction.performed -= OnClick;
+            _inputSystem.leftLowerButtonPressedChanged -= OnClickLeft;
+            _inputSystem.rightLowerButtonPressedChanged -= OnClickRight;
         }
 
-        void OnClick(InputAction.CallbackContext callbackContext)
+        void OnClickLeft(bool is_pressed)
         {
-            if(!callbackContext.control.IsPressed()) return;
+            if(!is_pressed) return;
             
-            if(main_controls.leftTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(_leftHandTriggerCollider)) return;
-            if(main_controls.rightTriggerPressedAction.id == callbackContext.action.id && !hovered_by.Contains(_rightHandTriggerCollider)) return;
+            if(!hovered_by.Contains(_leftHandTriggerCollider)) return;
+
+            Press();
+        }
+        
+        void OnClickRight(bool is_pressed)
+        {
+            if(!is_pressed) return;
             
+            if(!hovered_by.Contains(_rightHandTriggerCollider)) return;
+
+            Press();
+        }
+
+        private void Press()
+        {
             Click_Action();
             
             animation_feedback.real_null()?.OnTriggerPressed();

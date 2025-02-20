@@ -15,6 +15,8 @@ public class GrabbableObject : HoverableObjectBase
     
     protected Dictionary<GameObject, HandController> hovered_by_hand_object_dict;
 
+    public bool IsGRabbed => grabbed_by_hand_controller != null;
+    
     public override void init()
     {
         base.init();
@@ -88,17 +90,24 @@ public class GrabbableObject : HoverableObjectBase
 
     public virtual void OnGrabbed(HandController hand_controller)
     {
-        switch (grabbedWith)
-        {
-            case GrabbedWith.Trigger:
-                hand_controller.triggerPressed -= OnGrabbed;
-                break;
-            case GrabbedWith.Grip:
-                hand_controller.gripPressed -= OnGrabbed;
-                break;
-        }
-        
         if(hand_controller.is_grabbing) return;
+        
+        gameObject.SetActive(true);
+        
+        foreach (var (obj, controller) in hovered_by_hand_object_dict)
+        {
+            switch (grabbedWith)
+            {
+                case GrabbedWith.Trigger:
+                    controller.triggerPressed -= OnGrabbed;
+                    break;
+                case GrabbedWith.Grip:
+                    controller.gripPressed -= OnGrabbed;
+                    break;
+            }
+        }
+
+        hovered_by_hand_object_dict.Clear();
         
         grabbed_by_hand_controller = hand_controller;
         

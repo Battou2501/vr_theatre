@@ -1,7 +1,28 @@
 #pragma kernel CSMain
 
+struct instance_data
+{
+    float4x4 trs;
+    float col_mod;
+    float hue_mod;
+    float alpha_mod;
+};
+
+float rand(float2 co)
+{
+    float a = 12.9898;
+    float b = 78.233;
+    float c = 43758.5453;
+    float dt= dot(co.xy ,float2(a,b));
+    float sn= dt%3.14;
+    return frac(sin(sn) * c);
+}
+
+
+
 StructuredBuffer<float4x4> model_positions_buffer;
-AppendStructuredBuffer<float4x4> lod_buffers[4];
+
+AppendStructuredBuffer<instance_data> lod_buffers[4];
 
 uint model_count;
 uint lod_count;
@@ -20,6 +41,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     float3 vec_from_cam_dist = float3(model_position._m03-cam_pos.x,model_position._m13-cam_pos.y,model_position._m23-cam_pos.z);
     float3 vec_from_cam_fov = float3(model_position._m03-cam_pos.x+cam_dir.x*2,model_position._m13-cam_pos.y+cam_dir.y*2,model_position._m23-cam_pos.z+cam_dir.z*2);
+
+    //float col_mod = frac(sin(dot(float2(model_position._m03,model_position._m23),float2(12.9898,78.233))) * 43758.5453)*0.05+0.95;
+    float col_mod = rand(float2(model_position._m03,model_position._m23))*0.1+0.9;
+    float hue_mod = rand(float2(model_position._m23,col_mod))*0.2+0.8;
+    float alpha_mod = rand(float2(model_position._m03,hue_mod));//*0.4+0.6;
+
+    instance_data in_data;
+    in_data.trs = model_position;
+    in_data.col_mod = col_mod;
+    in_data.hue_mod = hue_mod;
+    in_data.alpha_mod = alpha_mod;
     
     float dot1 = dot(normalize(vec_from_cam_fov),cam_dir.xyz);
 
@@ -29,21 +61,21 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     if(lod_count >= 3 && dist > lod_distances[2])
     {
-        lod_buffers[3].Append(model_position);
+        lod_buffers[3].Append(in_data);
         return;
     }
     
     if(lod_count >= 2 && dist > lod_distances[1])
     {
-        lod_buffers[2].Append(model_position);
+        lod_buffers[2].Append(in_data);
         return;
     }
     
     if(lod_count >= 1 && dist > lod_distances[0])
     {
-        lod_buffers[1].Append(model_position);
+        lod_buffers[1].Append(in_data);
         return;
     }
     
-    lod_buffers[0].Append(model_position);
+    lod_buffers[0].Append(in_data);
 }

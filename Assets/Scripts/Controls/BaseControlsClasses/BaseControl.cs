@@ -7,7 +7,7 @@ using Zenject;
 
 public abstract class BaseControl : MonoBehaviour
 {
-    protected MainControls main_controls;
+    //protected MainControls main_controls;
     //protected ManageVideoPlayerAudio video_manager;
     //protected FileNavigationManager file_navigation_manager;
     //protected UIManager ui_manager;
@@ -27,9 +27,8 @@ public abstract class BaseControl : MonoBehaviour
     //protected DiContainer container;
     
     [Inject]
-    public void Construct(MainControls m, LeftHandPointer leftHandTriggerCollider, RightHandPointer rightHandTriggerCollider)
+    public void Construct(LeftHandPointer leftHandTriggerCollider, RightHandPointer rightHandTriggerCollider)
     {
-        main_controls = m;
         _leftHandTriggerCollider = leftHandTriggerCollider.gameObject;
         _rightHandTriggerCollider = rightHandTriggerCollider.gameObject;
     }

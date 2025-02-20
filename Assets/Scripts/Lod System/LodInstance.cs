@@ -6,6 +6,12 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(LodSystem))]
 public class LodInstance : MonoBehaviour
 {
+    struct instance_data
+    {
+        public Matrix4x4 trs;
+        public float col_mod;
+    }
+    
     public enum LodLevels
     {
         _ONLY_DRAW_DIST_LIMIT = 0,
@@ -126,11 +132,12 @@ public class LodInstance : MonoBehaviour
     {
         lod_positions_buffer = new ComputeBuffer[4];
         
-        lod_positions_buffer[0] = new ComputeBuffer(max_objects_count, sizeof(float) * 4 * 4, ComputeBufferType.Append);
-        lod_positions_buffer[1] = new ComputeBuffer(max_objects_count, sizeof(float) * 4 * 4, ComputeBufferType.Append);
-        lod_positions_buffer[2] = new ComputeBuffer(max_objects_count, sizeof(float) * 4 * 4, ComputeBufferType.Append);
-        lod_positions_buffer[3] = new ComputeBuffer(max_objects_count, sizeof(float) * 4 * 4, ComputeBufferType.Append);
+        lod_positions_buffer[0] = new ComputeBuffer(max_objects_count, sizeof(float) * (4 * 4 + 3), ComputeBufferType.Append);
+        lod_positions_buffer[1] = new ComputeBuffer(max_objects_count, sizeof(float) * (4 * 4 + 3), ComputeBufferType.Append);
+        lod_positions_buffer[2] = new ComputeBuffer(max_objects_count, sizeof(float) * (4 * 4 + 3), ComputeBufferType.Append);
+        lod_positions_buffer[3] = new ComputeBuffer(max_objects_count, sizeof(float) * (4 * 4 + 3), ComputeBufferType.Append);
     }
+    
 
     void init_positions_buffer(Matrix4x4[] positions)
     {
@@ -200,22 +207,19 @@ public class LodInstance : MonoBehaviour
         command_buffer.SetExecutionFlags(CommandBufferExecutionFlags.AsyncCompute);
         
         command_buffer.SetBufferCounterValue(lod_positions_buffer[0],0);
-        if((int)maxLodLevel > (int)LodLevels._ONLY_DRAW_DIST_LIMIT)
-            command_buffer.SetBufferCounterValue(lod_positions_buffer[1],0);
-        if((int)maxLodLevel > (int)LodLevels._1_LEVEL)
-            command_buffer.SetBufferCounterValue(lod_positions_buffer[2],0);
-        if((int)maxLodLevel > (int)LodLevels._2_LEVELS)
-            command_buffer.SetBufferCounterValue(lod_positions_buffer[3],0);
+        command_buffer.SetBufferCounterValue(lod_positions_buffer[1],0);
+        command_buffer.SetBufferCounterValue(lod_positions_buffer[2],0);
+        command_buffer.SetBufferCounterValue(lod_positions_buffer[3],0);
         
         command_buffer.DispatchCompute(compute_shader, kernel_index, dispatch_buffer, 0);
         
         command_buffer.CopyCounterValue(lod_positions_buffer[0],arguments_buffer[0],sizeof(uint));
-        if(maxLodLevel == LodLevels._ONLY_DRAW_DIST_LIMIT) return;
-        command_buffer.CopyCounterValue(lod_positions_buffer[1],arguments_buffer[1],sizeof(uint));
-        if(maxLodLevel == LodLevels._1_LEVEL) return;
-        command_buffer.CopyCounterValue(lod_positions_buffer[2],arguments_buffer[2],sizeof(uint));
-        if(maxLodLevel == LodLevels._2_LEVELS) return;
-        command_buffer.CopyCounterValue(lod_positions_buffer[3],arguments_buffer[3],sizeof(uint));
+        if((int)maxLodLevel > (int)LodLevels._ONLY_DRAW_DIST_LIMIT)
+            command_buffer.CopyCounterValue(lod_positions_buffer[1],arguments_buffer[1],sizeof(uint));
+        if((int)maxLodLevel > (int)LodLevels._1_LEVEL)
+            command_buffer.CopyCounterValue(lod_positions_buffer[2],arguments_buffer[2],sizeof(uint));
+        if((int)maxLodLevel > (int)LodLevels._2_LEVELS)
+            command_buffer.CopyCounterValue(lod_positions_buffer[3],arguments_buffer[3],sizeof(uint));
     }
     
     void init_rendering_params()

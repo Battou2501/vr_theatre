@@ -4,16 +4,18 @@ using Zenject;
 
 public class GrabbableSpawner : HoverableObjectBase
 {
+    //[SerializeField]
+    //private GameObject spawnedObjectPrefab;
     [SerializeField]
-    private GameObject spawnedObjectPrefab;
+    private GrabbableObjectsPool grabbableObjectsPool;
 
-    DiContainer container;
-    
-    [Inject]
-    public void Construct(DiContainer c)
-    {
-        container = c;
-    }
+    //DiContainer container;
+    //
+    //[Inject]
+    //public void Construct(DiContainer c)
+    //{
+    //    container = c;
+    //}
     
     //protected virtual void OnGrabbed(HandController hand_controller)
     //{
@@ -37,10 +39,10 @@ public class GrabbableSpawner : HoverableObjectBase
     {
         if(hand_controller.is_grabbing) return;
         
-        var spawned = container.InstantiatePrefab(spawnedObjectPrefab);
+        var spawned = grabbableObjectsPool.GetObject();
         
-        var spawned_grabbable = spawned.GetComponent<GrabbableObject>();
+        //var spawned_grabbable = spawned.GetComponent<GrabbableObject>();
         
-        spawned_grabbable.OnGrabbed(hand_controller);
+        spawned.OnGrabbed(hand_controller);
     }
 }
