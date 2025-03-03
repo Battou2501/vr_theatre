@@ -12,6 +12,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Audio;
 using UnityEngine.Experimental.Video;
+using UnityEngine.Serialization;
 using UnityEngine.Video;
 using Zenject;
 using Debug = UnityEngine.Debug;
@@ -38,7 +39,7 @@ namespace DefaultNamespace
             paused
         }
 
-        public enum VideoTypes
+        public enum StereoTypes
         {
             Flat = 0,
             halfSBS,
@@ -52,6 +53,8 @@ namespace DefaultNamespace
         public event Action<string> ErrorOccured;
         public event Action PlayerStateChanged;
         public event Action VideoEnded;
+
+        public event Action StereoTypeChanged;
         
         public AudioSource[] audioSources;
         public Material mat;
@@ -73,7 +76,8 @@ namespace DefaultNamespace
         public bool loop_video;
         public int maxMovieTextureResolution = 1024;
         double skip_seconds = 10;
-        public VideoTypes videoType;
+        [SerializeField]
+        private StereoTypes _stereoType;
         public bool invertStereoOrder;
         [HideInInspector]
         public double seek_time;
@@ -406,6 +410,17 @@ namespace DefaultNamespace
                 frame_to_play_idx = 0;
         }
 
+        public void SetStereoType(StereoTypes type)
+        {
+            _stereoType = type;
+            StereoTypeChanged?.Invoke();
+        }
+        
+        public StereoTypes GetStereoType()
+        {
+            return _stereoType;
+        }
+        
         void set_pixel_aspect_type(VideoPlayer source)
         {
             var pixelAspectRatio =  (float) source.pixelAspectRatioNumerator /(float)source.pixelAspectRatioDenominator;
@@ -417,25 +432,25 @@ namespace DefaultNamespace
         
         void update_video_type_shader_parameters()
         {
-            var x_coef = videoType switch
+            var x_coef = _stereoType switch
             {
-                VideoTypes.Flat => 1f,
-                VideoTypes.halfOU => 1f,
-                VideoTypes.fullOU => 1f,
-                VideoTypes.halfSBS => 0.5f,
-                VideoTypes.fullSBS => 0.5f
+                StereoTypes.Flat => 1f,
+                StereoTypes.halfOU => 1f,
+                StereoTypes.fullOU => 1f,
+                StereoTypes.halfSBS => 0.5f,
+                StereoTypes.fullSBS => 0.5f
             };
             Shader.SetGlobalFloat(x_border_coef, x_coef );
-            var y_coef = videoType switch
+            var y_coef = _stereoType switch
             {
-                VideoTypes.Flat => 1f,
-                VideoTypes.halfOU => 0.5f,
-                VideoTypes.fullOU => 0.5f,
-                VideoTypes.halfSBS => 1f,
-                VideoTypes.fullSBS => 1f
+                StereoTypes.Flat => 1f,
+                StereoTypes.halfOU => 0.5f,
+                StereoTypes.fullOU => 0.5f,
+                StereoTypes.halfSBS => 1f,
+                StereoTypes.fullSBS => 1f
             };
             Shader.SetGlobalFloat(y_border_coef, y_coef );
-            Shader.SetGlobalInt(video_type, (int)videoType);
+            Shader.SetGlobalInt(video_type, (int)_stereoType);
         }
         
         void render_frame_to_screen(int idx)

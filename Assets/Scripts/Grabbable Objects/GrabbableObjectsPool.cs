@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 using Zenject;
 
@@ -7,8 +9,7 @@ public class GrabbableObjectsPool : MonoBehaviour, IInitable
     private GameObject objectPrefab;
     [SerializeField]
     private int size;
-    private GrabbableObject[] pool;
-    private int nextFreeIndex;
+    private List<GrabbableObject> pool;
     private DiContainer _container;
 
     [Inject]
@@ -21,55 +22,58 @@ public class GrabbableObjectsPool : MonoBehaviour, IInitable
     {
         if(objectPrefab == null) return;
         
-        pool = new GrabbableObject[size];
+        pool = new List<GrabbableObject>();
         
         for (int i = 0; i < size; i++)
         {
             var obj = _container.InstantiatePrefab(objectPrefab);
             obj.transform.SetParent(transform);
             obj.SetActive(false);
-            pool[i] = obj.GetComponent<GrabbableObject>();
+            obj.name = i.ToString();
+            pool.Add(obj.GetComponent<GrabbableObject>());
+            pool[i].init();
+            pool[i].GetComponent<ConsumableItem>().real_null()?.init();
         }
     }
     
     public GrabbableObject GetObject()
     {
-        for (var i = 0; i < pool.Length; i++)
+
+        GrabbableObject takenObj = null;
+        int takenIndex = -1;
+        for (var i = 0; i < size; i++)
         {
             var obj = pool[i];
-
-            if (obj.IsGRabbed) continue;
             
-            nextFreeIndex = i+1;
-            
-            if(nextFreeIndex >= size)
-                nextFreeIndex = 0;
+            if (obj.IsGrabbed) continue;
 
-            return obj;
+            takenObj = obj;
+            
+            takenIndex = i;
+            
+            break;
         }
         
-        return null;
+        if(takenObj == null) return null;
+        
+        pool.RemoveAt(takenIndex);
+        
+        pool.Insert(size-2, takenObj);
+        
+        return takenObj;
     }
 
     public void Reset()
     {
-        nextFreeIndex = 0;
-        
-        for (var i = 0; i < pool.Length; i++)
+        for (var i = 0; i < size; i++)
         {
             var obj = pool[i];
-
-            if (obj.IsGRabbed)
-                nextFreeIndex = i + 1;
             
-            if(obj.IsGRabbed) continue;
+            if(obj.IsGrabbed) continue;
             
             obj.transform.SetParent(transform);
             obj.transform.localPosition = Vector3.zero;
             obj.gameObject.SetActive(false);
         }
-        
-        if(nextFreeIndex >= size)
-            nextFreeIndex = 0;
     }
 }

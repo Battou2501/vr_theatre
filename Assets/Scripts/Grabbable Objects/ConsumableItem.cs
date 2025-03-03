@@ -1,4 +1,5 @@
 using System;
+using Grabbable_Objects;
 using UnityEngine;
 using Zenject;
 
@@ -27,23 +28,28 @@ public class ConsumableItem : MonoBehaviour, IInitable
 
     private AudioSource head_audio_source;
 
+    private PooledObject _pooledObject;
+    
     private bool is_initialized;
     
     [Inject]
     public void Construct(AudioSource headAudioSource)
     {
-        head_audio_source = headAudioSource;    
+        head_audio_source = headAudioSource;
+        grabbable_object = GetComponent<GrabbableObject>();
+        _pooledObject = GetComponent<PooledObject>();
     }
     
     public void init()
     {
         consumer_tag_handle = TagHandle.GetExistingTag(consumerTag);
-        grabbable_object = GetComponent<GrabbableObject>();
         is_initialized = true;
     }
     
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log(other.tag);
+        
         if(!is_initialized) return;
         
         if(!other.CompareTag(consumer_tag_handle)) return;
@@ -55,6 +61,13 @@ public class ConsumableItem : MonoBehaviour, IInitable
         play_audio_clip();
         
         if(itemType != ConsumableItemType.Destroy_On_Consume) return;
+
+        if (_pooledObject != null)
+        {
+            transform.position = _pooledObject.pool.transform.position;
+            transform.SetParent(_pooledObject.pool.transform);
+            gameObject.SetActive(false);
+        }
         
         Destroy(gameObject);
     }

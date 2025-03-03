@@ -19,14 +19,10 @@ public class HandController : MonoBehaviour
     [SerializeField] 
     public Rigidbody grabBody;
 
+    public HandControlSystem.Handedness Handedness => hand;
     public bool is_grabbing => poseController.has_grab_override_pose;
-    public Vector3 get_move_vector { get; private set; }
-
-    private Vector3 position_previous_frame;
     
     private Transform this_transform;
-    
-    private float fixed_delta_time_multiplier;
 
     private VrInputSystem _vrInputSystem;
     
@@ -60,10 +56,6 @@ public class HandController : MonoBehaviour
             _vrInputSystem.rightTriggerPressedChanged += OnTriggerPressedChanged;
             _vrInputSystem.rightGripPressedChanged += OnGripPressedChanged;
         }
-
-        position_previous_frame = this_transform.position;
-        
-        fixed_delta_time_multiplier = 1f / Time.fixedDeltaTime;
     }
 
     private void OnDestroy()
@@ -80,14 +72,6 @@ public class HandController : MonoBehaviour
             _vrInputSystem.rightTriggerPressedChanged -= OnTriggerPressedChanged;
             _vrInputSystem.rightGripPressedChanged -= OnGripPressedChanged;
         }
-    }
-
-    private void FixedUpdate()
-    {
-        if(this_transform == null) return;
-        
-        get_move_vector = (this_transform.position - position_previous_frame) * fixed_delta_time_multiplier;
-        position_previous_frame = this_transform.position;
     }
 
     public void set_grab_pose(FingersPoseSO pose)

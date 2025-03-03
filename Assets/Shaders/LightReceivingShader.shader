@@ -233,7 +233,7 @@ Shader "Unlit/LightReceivingShader"
                 const float light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * _LightMaxStrength;
                 
                 
-                const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,0.8 + (1-i.color_mod.y),i.color_mod.z*0.1+0.9,1);
+                const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,i.color_mod.y,i.color_mod.z,1);
                 const float4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x) * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,1,0.8 + (1-i.color_mod.y),1);
                 const float tex_white_col_coef = lerp(pow(tex_white.a,0.4), 1 , i.color_mod.z*0.6+0.2);
                 const float tex_black_col_coef = lerp(pow(tex_black.a,0.4), 1 , i.color_mod.z*0.6+0.2);
@@ -317,6 +317,8 @@ Shader "Unlit/LightReceivingShader"
                 return ((lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) * ao + specular ) * _Color;
                 #else
 
+
+                //return tex_white;
                 //return fixed4(i.color_mod.y,1,0.5 + (1-i.color_mod.y),1);
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;

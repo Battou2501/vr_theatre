@@ -43,8 +43,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 vec_from_cam_fov = float3(model_position._m03-cam_pos.x+cam_dir.x*2,model_position._m13-cam_pos.y+cam_dir.y*2,model_position._m23-cam_pos.z+cam_dir.z*2);
 
     //float col_mod = frac(sin(dot(float2(model_position._m03,model_position._m23),float2(12.9898,78.233))) * 43758.5453)*0.05+0.95;
-    float col_mod = rand(float2(model_position._m03,model_position._m23))*0.1+0.9;
-    float hue_mod = rand(float2(model_position._m23,col_mod))*0.2+0.8;
+    float col_mod = rand(float2(model_position._m03,model_position._m23))*0.2+0.9-0.1;
+    float hue_mod = rand(float2(model_position._m23,col_mod))*0.4+0.8-0.2;
     float alpha_mod = rand(float2(model_position._m03,hue_mod));//*0.4+0.6;
 
     instance_data in_data;

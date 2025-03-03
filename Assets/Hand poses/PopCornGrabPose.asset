@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b212ca2e28996d04287f1f889626719e, type: 3}
+  m_Name: PopCornGrabPose
+  m_EditorClassIdentifier: 
+  pose_data:
+  - rootRotation: {x: 0.8937, y: 0.079795845, z: 0.13226351, w: 0.4212354}
+    secondPhalanxRotation: {x: -0.016040737, y: -0.16051446, z: -0.1281575, w: 0.97854656}
+    thirdPhalanxRotation: {x: 0.02834034, y: 0.0019661032, z: -0.06917543, w: 0.9972}
+  - rootRotation: {x: 0.92326844, y: 0.094017155, z: 0.011297551, w: 0.37230176}
+    secondPhalanxRotation: {x: 0.2783039, y: 0.000000054948018, z: -0.000000014901158, w: 0.9604931}
+    thirdPhalanxRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
+  - rootRotation: {x: 0.95170695, y: 0.07752995, z: -0.07432117, w: 0.28760967}
+    secondPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+    thirdPhalanxRotation: {x: 0.2164396, y: 0, z: 0, w: 0.97629607}
+  - rootRotation: {x: 0.98447025, y: -0.03320691, z: -0.11418132, w: 0.12914437}
+    secondPhalanxRotation: {x: 0.6427876, y: 0, z: 0, w: 0.7660445}
+    thirdPhalanxRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
+  - rootRotation: {x: 0.9759847, y: -0.08682081, z: -0.1745237, w: 0.09724934}
+    secondPhalanxRotation: {x: 0.6427876, y: 0, z: 0, w: 0.7660445}
+    thirdPhalanxRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}

@@ -1,24 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 
 public class HoverableObjectBase : MonoBehaviour, IInitable
 {
-    protected enum GrabbedWith
-    {
-        Trigger = 0,
-        Grip
-    }
-
-    [SerializeField]
-    protected GrabbedWith grabbedWith;
-    
     protected TagHandle hand_tag_handle;
 
     protected Dictionary<GameObject, List<Collider>> hovered_by_hand_collider_dict;
     
     public bool IsHovered => hovered_by_hand_collider_dict is {Count: > 0};
-    
+
+    protected virtual void OnDisable()
+    {
+        hovered_by_hand_collider_dict?.Clear();
+    }
+
     public virtual void init()
     {
         hovered_by_hand_collider_dict = new Dictionary<GameObject, List<Collider>>();
@@ -31,13 +28,7 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
         if(other.attachedRigidbody == null) return;
         
         if(!other.attachedRigidbody.gameObject.CompareTag(hand_tag_handle)) return;
-    
-        //var hand_controller = other.GetComponentInParent<HandController>();
-    
-        //if(hand_controller == null) return;
-    
-        //if(hand_controller.is_grabbing) return;
-
+        
         var body_object = other.attachedRigidbody.gameObject;
         
         if(!hovered_by_hand_collider_dict.ContainsKey(body_object))
@@ -49,34 +40,17 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
     
     protected virtual void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag(hand_tag_handle)) return;
+        if(other.attachedRigidbody == null) return;
         
-        //var hand_controller = other.GetComponentInParent<HandController>();
-    
-        //if(hand_controller == null) return;
-    
         var body_object = other.attachedRigidbody.gameObject;
         
         if(!hovered_by_hand_collider_dict.ContainsKey(body_object)) return;
     
         hovered_by_hand_collider_dict[body_object].Remove(other);
     
-        //if(hovered_by_hand_collider_dict[hand_controller].Count > 0) return;
+        if(hovered_by_hand_collider_dict[body_object].Count > 0) return;
 
-        //if (hovered_by_hand_object_dict.ContainsKey(other.attachedRigidbody.gameObject))
-        //    hovered_by_hand_object_dict.Remove(other.attachedRigidbody.gameObject);
-
-        //hovered_by_hand_collider_dict.Remove(hand_controller);
-        //
-        //switch (grabbedWith)
-        //{
-        //    case GrabbedWith.Trigger:
-        //        hand_controller.triggerPressed -= OnGrabbed;
-        //        break;
-        //    case GrabbedWith.Grip:
-        //        hand_controller.gripPressed -= OnGrabbed;
-        //        break;
-        //}
+        hovered_by_hand_collider_dict.Remove(body_object);
     }
     
 }
