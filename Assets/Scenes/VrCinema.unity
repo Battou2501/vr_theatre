@@ -7197,12 +7197,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 243021670}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
-  m_LocalPosition: {x: 0.12, y: -0.1082, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.3, z: 0.2}
+  m_LocalRotation: {x: -1, y: -0, z: -0, w: 0}
+  m_LocalPosition: {x: -0.24, y: 0.004807472, z: 0.022999985}
+  m_LocalScale: {x: 0.4, y: 0.6, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1965751717}
+  m_Father: {fileID: 1621194916}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!114 &243021672
 MonoBehaviour:
@@ -11497,7 +11497,7 @@ MonoBehaviour:
   angle: 14
   followSpeed: 2
   maxTurnAngle: 60
-  turnAngleDeadZone: 20
+  turnAngleDeadZone: 25
   moveDeadZone: 0.2
   stationaryModeThreshold: 0.04
   minHeight: 1
@@ -14999,6 +14999,7 @@ GameObject:
   m_Component:
   - component: {fileID: 653097477}
   - component: {fileID: 653097478}
+  - component: {fileID: 653097479}
   m_Layer: 0
   m_Name: SeatSelectPanel
   m_TagString: Untagged
@@ -15038,13 +15039,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c366a6f0dd6a6684c826d247258278a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  display_scale_multiplier: 1
+  display_scale_multiplier: 0.05
   seatSelectButtonPrefab: {fileID: 5083354874219812444, guid: 857b83cc8c49afa478915a4d99a1d558, type: 3}
   seatSelectButtonsContainer: {fileID: 1202300714}
   rowStep: 0.032
   seatStep: 0.026
   defaultButtonColor: {r: 1, g: 0.972549, b: 0.3137255, a: 1}
   selectedButtonColor: {r: 0, g: 1, b: 0.9254902, a: 1}
+--- !u!114 &653097479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653097476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7f79f16d8b24554b8a6cde675c7eeaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2084324060}
+  faceTargetType: 1
+  followTarget: 1
+  distance: 0.7
+  angle: 14
+  followSpeed: 2
+  maxTurnAngle: 60
+  turnAngleDeadZone: 20
+  moveDeadZone: 0.2
+  stationaryModeThreshold: 0.04
+  minHeight: 1
+  fixedHeight: 1
 --- !u!1 &653138854
 GameObject:
   m_ObjectHideFlags: 0
@@ -16236,12 +16261,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 703455455}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.12, y: -0.10819998, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.3, z: 0.2}
+  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
+  m_LocalPosition: {x: 0.24, y: 0.004807532, z: 0.022999985}
+  m_LocalScale: {x: 0.4, y: 0.6, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1965751717}
+  m_Father: {fileID: 1621194916}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &703455457
 MonoBehaviour:
@@ -23690,6 +23715,7 @@ GameObject:
   m_Component:
   - component: {fileID: 968236492}
   - component: {fileID: 968236493}
+  - component: {fileID: 968236494}
   m_Layer: 0
   m_Name: FilePanel
   m_TagString: Untagged
@@ -23733,7 +23759,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae8106cd9fc74401ba0b5d49b55b7e5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  display_scale_multiplier: 1
+  display_scale_multiplier: 0.05
   directoryButtonPrefab: {fileID: 822127967639205470, guid: 3490e071615d97b46a66565b46807ebd, type: 3}
   fileButtonPrefab: {fileID: 822127967639205470, guid: d32a9e8b142ff5b4cac48251bdb7efc1, type: 3}
   contentBlock: {fileID: 847347854}
@@ -23746,6 +23772,30 @@ MonoBehaviour:
   nextPageButton: {fileID: 51586525}
   previousPageButton: {fileID: 1354913768}
   goUpPathButton: {fileID: 1272893129}
+--- !u!114 &968236494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 968236491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7f79f16d8b24554b8a6cde675c7eeaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2084324060}
+  faceTargetType: 1
+  followTarget: 1
+  distance: 0.7
+  angle: 5
+  followSpeed: 2
+  maxTurnAngle: 60
+  turnAngleDeadZone: 20
+  moveDeadZone: 0.2
+  stationaryModeThreshold: 0.04
+  minHeight: 1
+  fixedHeight: 1
 --- !u!1 &975549180 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8195775582351976078, guid: 1e83015cc8a8c794193123814b6eb70d, type: 3}
@@ -40406,6 +40456,8 @@ RectTransform:
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 703455456}
+  - {fileID: 243021671}
   - {fileID: 191530419}
   m_Father: {fileID: 1965751717}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
@@ -48664,8 +48716,6 @@ Transform:
   - {fileID: 942555175}
   - {fileID: 2105027628}
   - {fileID: 103098850}
-  - {fileID: 703455456}
-  - {fileID: 243021671}
   - {fileID: 1621194916}
   m_Father: {fileID: 1937286223}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -53843,7 +53893,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1843746679334591980, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.0616
+      value: -0.0466
       objectReference: {fileID: 0}
     - target: {fileID: 1843746679334591980, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -53983,7 +54033,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6362075651151517377, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.17
+      value: -0.155
       objectReference: {fileID: 0}
     - target: {fileID: 6362075651151517377, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -54308,7 +54358,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1350925497009732154, guid: 7a9903baa6d448a40a9028a696e8a8e9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.0616
+      value: -0.0466
       objectReference: {fileID: 0}
     - target: {fileID: 1350925497009732154, guid: 7a9903baa6d448a40a9028a696e8a8e9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -54372,7 +54422,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2032750438075154903, guid: 7a9903baa6d448a40a9028a696e8a8e9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.17
+      value: -0.155
       objectReference: {fileID: 0}
     - target: {fileID: 2032750438075154903, guid: 7a9903baa6d448a40a9028a696e8a8e9, type: 3}
       propertyPath: m_LocalRotation.w
