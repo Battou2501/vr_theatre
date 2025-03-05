@@ -560,7 +560,8 @@ namespace DefaultNamespace
             }
             
             vp.Stop();
-            change_player_state(PlayerStates.stopped);
+            //change_player_state(PlayerStates.stopped);
+            //player_state = PlayerStates.stopped;
             vp.url = file;
             vp.Prepare();
         }
@@ -748,10 +749,10 @@ namespace DefaultNamespace
             if (!tracks_in_sync)
                 return;
             
-            if(player_state == PlayerStates.playing && Time.unscaledTimeAsDouble - samples_receive_time > 0.3f)
+            if(player_state == PlayerStates.playing && vp.isPlaying && Time.unscaledTimeAsDouble - samples_receive_time > 0.3f)
                 return;
             
-            if(!no_audio && !audio_started && player_state == PlayerStates.playing)
+            if(!no_audio && !audio_started && player_state == PlayerStates.playing && vp.isPlaying)
                 return;
 
             switch (requested_command)

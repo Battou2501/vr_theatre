@@ -42,6 +42,7 @@ public class FacePlayer : MonoBehaviour
 
     private Vector3 follow_forward;
     private Vector3 follow_position;
+    private Vector3 target_recorded_position;
     private Vector3 follow_right => Vector3.Cross(Vector3.up, follow_forward);
 
     private Modes currentMode;
@@ -85,7 +86,7 @@ public class FacePlayer : MonoBehaviour
         follow_forward = view_dot > 0 ? rightLimit : leftLimit;
     }
 
-    private void calculate_target_follow_forward()
+    private void calculate_target_follow_forward(bool ignoreModeAndDeadZone = false)
     {
         var target_forward = Vector3.Cross(target.right, Vector3.up);
         //var follow_dot = Vector3.Dot(target_forward, follow_right);
@@ -98,7 +99,10 @@ public class FacePlayer : MonoBehaviour
         if(target_position.y < min_height_adjusted || fixedHeight)
             target_position.y = min_height_adjusted;
         
-        if (follow_angle <= turnAngleDeadZone && Vector3.Distance(target_position, follow_position) <= moveDeadZone && currentMode == Modes.Stationary) return;
+        //Debug.Log(Vector3.Distance(target.position , target_recorded_position) );
+        
+        //if (!ignoreModeAndDeadZone && follow_angle <= turnAngleDeadZone && Vector3.Distance(target_position, follow_position) <= moveDeadZone && currentMode == Modes.Stationary) return;
+        if (!ignoreModeAndDeadZone && follow_angle <= turnAngleDeadZone && Vector3.Distance(target.position , target_recorded_position) <= moveDeadZone && currentMode == Modes.Stationary) return;
         
         //follow_forward = Quaternion.AngleAxis(follow_dot > 0 ? -turnAngleDeadZone : turnAngleDeadZone, Vector3.up) * target_forward;
         //follow_forward = target_forward;
@@ -111,8 +115,10 @@ public class FacePlayer : MonoBehaviour
     private void InitializeFollow()
     {
         if (!followTarget) return;
-        calculate_target_follow_forward();
+        calculate_target_follow_forward(true);
         this_transform.position = follow_position;
+        target_recorded_position = target.position;
+        currentMode = Modes.Stationary;
     }
     
     private void follow()
@@ -123,9 +129,12 @@ public class FacePlayer : MonoBehaviour
         
         //if(currentMode == Modes.Follow)
         this_transform.position = Vector3.Slerp(this_transform.position, follow_position, followSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(this_transform.position, follow_position) >= stationaryModeThreshold || currentMode == Modes.Stationary) return;
+
+        target_recorded_position = target.position;
         
-        if(Vector3.Distance(this_transform.position, follow_position) < stationaryModeThreshold && currentMode == Modes.Follow)
-            currentMode = Modes.Stationary;
+        currentMode = Modes.Stationary;
     }
 
     private void face()

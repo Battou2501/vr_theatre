@@ -11497,7 +11497,7 @@ MonoBehaviour:
   angle: 14
   followSpeed: 2
   maxTurnAngle: 60
-  turnAngleDeadZone: 25
+  turnAngleDeadZone: 30
   moveDeadZone: 0.2
   stationaryModeThreshold: 0.04
   minHeight: 1
@@ -15065,7 +15065,7 @@ MonoBehaviour:
   angle: 14
   followSpeed: 2
   maxTurnAngle: 60
-  turnAngleDeadZone: 20
+  turnAngleDeadZone: 30
   moveDeadZone: 0.2
   stationaryModeThreshold: 0.04
   minHeight: 1
@@ -23791,10 +23791,10 @@ MonoBehaviour:
   angle: 5
   followSpeed: 2
   maxTurnAngle: 60
-  turnAngleDeadZone: 20
+  turnAngleDeadZone: 30
   moveDeadZone: 0.2
   stationaryModeThreshold: 0.04
-  minHeight: 1
+  minHeight: 1.07
   fixedHeight: 1
 --- !u!1 &975549180 stripped
 GameObject:
@@ -44411,7 +44411,7 @@ MonoBehaviour:
   angle: 14
   followSpeed: 2
   maxTurnAngle: 60
-  turnAngleDeadZone: 20
+  turnAngleDeadZone: 25
   moveDeadZone: 0.2
   stationaryModeThreshold: 0.04
   minHeight: 1
@@ -48763,7 +48763,7 @@ MonoBehaviour:
   angle: 14
   followSpeed: 2
   maxTurnAngle: 60
-  turnAngleDeadZone: 15
+  turnAngleDeadZone: 25
   moveDeadZone: 0.2
   stationaryModeThreshold: 0.04
   minHeight: 1
