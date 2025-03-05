@@ -21,8 +21,8 @@ public class GrabbableObject : HoverableObjectBase
     private Transform grabPointRight;
     
     private HandController grabbed_by_hand_controller;
-    
-    protected Dictionary<GameObject, HandController> hovered_by_hand_object_dict;
+
+    private Dictionary<GameObject, HandController> hovered_by_hand_object_dict;
 
     public bool IsGrabbed => grabbed_by_hand_controller != null;
     

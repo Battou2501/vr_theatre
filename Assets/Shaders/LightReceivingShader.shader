@@ -233,10 +233,10 @@ Shader "Unlit/LightReceivingShader"
                 const float light = (light_tex.r * i.color.x + light_tex.g * (1- i.color.x)) * _LightMaxStrength;
                 
                 
-                const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,i.color_mod.y,i.color_mod.z,1);
-                const float4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x) * fixed4(i.color_mod.xxx,1) * fixed4(i.color_mod.y,1,0.8 + (1-i.color_mod.y),1);
-                const float tex_white_col_coef = lerp(pow(tex_white.a,0.4), 1 , i.color_mod.z*0.6+0.2);
-                const float tex_black_col_coef = lerp(pow(tex_black.a,0.4), 1 , i.color_mod.z*0.6+0.2);
+                const float4 tex_white = tex2D(_MainTex_White,i.uv*_MainTex_White_ST) * i.color.x;// * fixed4(i.color_mod.xxx,1) * fixed4(0.5 + (0.2+i.color_mod.y)*0.5,1 + (1 - i.color_mod.y)*0.5,1,1);
+                const float4 tex_black = tex2D(_MainTex_Black,i.uv*_MainTex_Black_ST) * (1.0-i.color.x);// * fixed4(i.color_mod.xxx,1) * fixed4(0.5 + (0.2+ i.color_mod.y)*0.5,1 + (1 - i.color_mod.y)*0.5,1,1);
+                const float tex_white_col_coef = lerp(pow(tex_white.a,0.4), 1 , i.color_mod.z*0.6+0.0) * saturate(tex_white.a*20);
+                const float tex_black_col_coef = lerp(pow(tex_black.a,0.4), 1 , i.color_mod.z*0.6+0.0) * saturate(tex_black.a*20);
                 
                 #if defined(_TYPE_GLOSSY) || defined(_TYPE_METALIC)
                 const float3 reflect_viewDir = normalize(i.reflect_viewDir);
@@ -245,13 +245,15 @@ Shader "Unlit/LightReceivingShader"
                 const float4 reflections = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflect_viewDir, lerp(6,0,r_factor)) * lerp(0.3,_LightStrength,0.5);
                 #endif
 
+                float4 color_mod = fixed4(i.color_mod.xxx,1) * fixed4(0.5 + (0.2+i.color_mod.y)*0.5,1 + (1 - i.color_mod.y)*0.5,1,1);
+                
                 #ifdef _TYPE_GLOSSY
                 const float view_norm_dot = 1-saturate(dot(viewDir,norm));
                 const float4 tex = lerp(tex_black * lerp(1,_Color, tex_black_col_coef) + tex_white * lerp(1,_Color, tex_white_col_coef), reflections, r_factor * view_norm_dot);
                 #elif _TYPE_METALIC
                 const float4 tex = lerp(reflections*0.6+0.4,reflections,_Shininess) * (tex_black * lerp(1,_Color, tex_black_col_coef) + tex_white * lerp(1,_Color, tex_white_col_coef));
                 #else 
-                const float4 tex = tex_black * lerp(1,_Color* _ColorB, tex_black_col_coef) + tex_white * lerp(1,_Color* _ColorB, tex_white_col_coef);
+                const float4 tex = tex_black * lerp(1,_Color * _ColorB * color_mod, tex_black_col_coef) + tex_white * lerp(1,_Color * _ColorB * color_mod, tex_white_col_coef);
                 #endif
                 
                 
@@ -318,7 +320,7 @@ Shader "Unlit/LightReceivingShader"
                 #else
 
 
-                //return tex_white;
+                //return i.color_mod.z;
                 //return fixed4(i.color_mod.y,1,0.5 + (1-i.color_mod.y),1);
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;

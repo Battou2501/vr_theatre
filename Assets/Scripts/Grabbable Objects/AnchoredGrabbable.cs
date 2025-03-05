@@ -1,3 +1,6 @@
+using System;
+using DG.Tweening;
+using UnityEditor;
 using UnityEngine;
 
 public class AnchoredGrabbable : GrabbableObject
@@ -11,21 +14,58 @@ public class AnchoredGrabbable : GrabbableObject
         
         transform.position = anchorPoint.position;
         transform.rotation = anchorPoint.rotation;
-        anchorPoint.SetParent(transform);
+        transform.SetParent(anchorPoint);
+        //anchorPoint.SetParent(transform);
     }
 
-    public override void OnGrabbed(HandController hand_controller)
+    private void OnEnable()
     {
-        anchorPoint.SetParent(null);
-        base.OnGrabbed(hand_controller);
+        transform.position = anchorPoint.position;
+        transform.rotation = anchorPoint.rotation;
+        transform.SetParent(anchorPoint);
     }
+
+    //public override void OnGrabbed(HandController hand_controller)
+    //{
+    //    anchorPoint.SetParent(null);
+    //    base.OnGrabbed(hand_controller);
+    //}
 
     protected override void OnReleased(HandController hand_controller)
     {
         base.OnReleased(hand_controller);
-        
-        transform.position = anchorPoint.position;
-        transform.rotation = anchorPoint.rotation;
-        anchorPoint.SetParent(transform);
+
+        ReturnToAnchorPoint();
+
+        //transform.position = anchorPoint.position;
+        //transform.rotation = anchorPoint.rotation;
+        //anchorPoint.SetParent(transform);
     }
+    
+    private void ReturnToAnchorPoint()
+    {
+        transform.SetParent(anchorPoint);
+        
+        Sequence moveSequence = DOTween.Sequence();
+        moveSequence
+            .Append(transform.DOMove(anchorPoint.position, 0.5f).SetEase( Ease.OutElastic, 0.1f, 0.4f))
+            .Join(transform.DORotate(anchorPoint.rotation.eulerAngles, 0.5f).SetEase( Ease.OutElastic, 0.5f, 0.5f));
+    }
+
+    [CustomEditor(typeof(AnchoredGrabbable))]
+    class AnchoredGrabbableEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            var obj = (AnchoredGrabbable) target;
+
+            if (!Application.isPlaying) return;
+            
+            if (GUILayout.Button("Return to Anchor Point"))
+                obj.ReturnToAnchorPoint();
+        }
+    }
+    
 }

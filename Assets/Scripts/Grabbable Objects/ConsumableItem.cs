@@ -1,7 +1,9 @@
 using System;
+using DG.Tweening;
 using Grabbable_Objects;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 public class ConsumableItem : MonoBehaviour, IInitable
 {
@@ -83,10 +85,15 @@ public class ConsumableItem : MonoBehaviour, IInitable
         if(head_audio_source == null) return;
         
         if(head_audio_source.clip != consumedClip) return;
-
-        head_audio_source.loop = false;
-
-        //head_audio_source.Stop();
+        
+        head_audio_source.DOKill();
+        
+        head_audio_source.DOFade(0, 0.2f).onComplete += () =>
+        {
+            head_audio_source.Stop();
+            head_audio_source.clip = null;
+            head_audio_source.loop = false;
+        };
 
         //head_audio_source.clip = null;
     }
@@ -97,13 +104,18 @@ public class ConsumableItem : MonoBehaviour, IInitable
         
         if (itemType == ConsumableItemType.Destroy_On_Consume || !loopAudio)
         {
+            head_audio_source.volume = 1;
             head_audio_source.PlayOneShot(consumedClip);
             return;
         }
-        
+
+        head_audio_source.DOKill();
+        head_audio_source.volume = 0;
         head_audio_source.clip = consumedClip;
         head_audio_source.loop = true;
         head_audio_source.Play();
+        head_audio_source.time = consumedClip.length * Random.value;
+        head_audio_source.DOFade(1, 0.2f);
 
     }
     
