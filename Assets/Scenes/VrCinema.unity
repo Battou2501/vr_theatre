@@ -53983,6 +53983,10 @@ PrefabInstance:
       propertyPath: poseIdle
       value: 
       objectReference: {fileID: 11400000, guid: 3f5ed1dadc399a64bb05298dfdb0750f, type: 2}
+    - target: {fileID: 3662676501321259395, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2e3a4a497a722704caea450a18713ede, type: 2}
     - target: {fileID: 4579059386744650403, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -54816,6 +54820,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8550951439367507605, guid: 7a9903baa6d448a40a9028a696e8a8e9, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2e3a4a497a722704caea450a18713ede, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

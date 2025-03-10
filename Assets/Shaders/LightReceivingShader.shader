@@ -17,6 +17,8 @@ Shader "Unlit/LightReceivingShader"
         _Shininess("Shininess", Range (0,1)) = 0
         _ShininessBrightness("Shininess Brightness", Range (0,10)) = 1
         [Toggle]_ToggleLight("Toggle Light", Range (0,1)) = 1
+        [Toggle]_SHADEBYLIGHT("Shade by light", Int) = 0
+        _GlowInTheDark("Glow in the dark", Range (0,1)) = 0
         _MipLevel("Mip level", Range (0,10)) = 1
         [KeywordEnum(Scene,Above)] _Light_From("Dir light source",int) = 0
     }
@@ -37,6 +39,7 @@ Shader "Unlit/LightReceivingShader"
 
             #pragma shader_feature _TYPE_MATE _TYPE_GLOSSY _TYPE_METALIC
             #pragma shader_feature _LIGHT_FROM_SCENE _LIGHT_FROM_ABOVE
+            #pragma shader_feature _SHADEBYLIGHT_ON
             
             #include "UnityCG.cginc"
             #define UNITY_INDIRECT_DRAW_ARGS IndirectDrawIndexedArgs
@@ -177,6 +180,7 @@ Shader "Unlit/LightReceivingShader"
 
             float _ToggleLight;
             int _MipLevel;
+            float _GlowInTheDark;
 
             
             v2f vert (appdata v, uint svInstanceID : SV_InstanceID)
@@ -311,7 +315,15 @@ Shader "Unlit/LightReceivingShader"
                 #endif
 
                 const float4 screen_light = tex * (screen_col_ambient + screen_col_dots) * _ScreenLightMult;
+                
+
+                #ifdef _SHADEBYLIGHT_ON
+                float lightDot = (dot(norm, float3(0,1,0))*0.5+0.5);
+                lightDot = lightDot*lightDot;
+                const float4 normal_light = tex * light * max(lightDot, _GlowInTheDark);
+                #else
                 const float4 normal_light = tex * light;
+                #endif
 
                 #ifdef _TYPE_GLOSSY
                 return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * (1-saturate(specular)) * ao + specular;
@@ -323,7 +335,7 @@ Shader "Unlit/LightReceivingShader"
                 //return i.color_mod.z;
                 //return fixed4(i.color_mod.y,1,0.5 + (1-i.color_mod.y),1);
                 //return lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1;
-                return (lerp(screen_light * 0.9, normal_light, _LightStrength) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
+                return (lerp(screen_light * 0.9, normal_light, max(_GlowInTheDark, _LightStrength)) + screen_light * 0.1) * ao * _ToggleLight + tex*(1-_ToggleLight)*ao;
                 #endif
                 
             }
