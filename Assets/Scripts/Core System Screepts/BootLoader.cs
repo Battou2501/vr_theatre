@@ -30,6 +30,7 @@ public class BootLoader : MonoBehaviour
     HandControlSystem hand_control_system;
 
     private IEnumerable<IInitable> initializable_objects;
+    private IEnumerable<HideDuringLoad> hide_during_load_objects;
     
     [Inject]
     public void Construct(
@@ -63,6 +64,10 @@ public class BootLoader : MonoBehaviour
         loadingScreen.gameObject.SetActive(true);
         
         movieTheatreRoom.SetActive(false);
+        
+        hide_during_load_objects = FindObjectsByType<HideDuringLoad>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        
+        hide_during_load_objects?.for_each(x=>x.hide());
         
         load_program().Forget();
     }
@@ -126,6 +131,7 @@ public class BootLoader : MonoBehaviour
         movieTheatreRoom.SetActive(true);
         lod_system.gameObject.SetActive(true);
         ui_manager.gameObject.SetActive(true);
+        hide_during_load_objects?.for_each(x=>x.show());
         await ui_manager.show_ui();
         await UniTask.Delay(delayBetweenLoadStepsMillis);
         await camera_black_out.fade();

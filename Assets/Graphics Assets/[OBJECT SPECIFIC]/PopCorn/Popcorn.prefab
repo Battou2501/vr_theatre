@@ -77,6 +77,7 @@ GameObject:
   - component: {fileID: 2235730799964561798}
   - component: {fileID: 2946117195902866061}
   - component: {fileID: 404202770132290969}
+  - component: {fileID: 8529040629975506280}
   m_Layer: 0
   m_Name: Popcorn
   m_TagString: Untagged
@@ -184,8 +185,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemType: 0
   consumerTag: Mouth
-  consumedClip: {fileID: 8300000, guid: 9b0ff09f8c10d314190f31c0cb9af1f4, type: 3}
+  consumedClips:
+  - {fileID: 8300000, guid: 5e1046ee3222b6740bb01eca057a306e, type: 3}
+  - {fileID: 8300000, guid: d3ebe490ead2efd4d89c6fbd2b69dc2b, type: 3}
+  - {fileID: 8300000, guid: ef7b4728916d7e24587e1d171bc37495, type: 3}
+  - {fileID: 8300000, guid: 0c25b82bf1a131c488bc2c6297cbf106, type: 3}
   loopAudio: 0
+  volume: 0.3
 --- !u!135 &2946117195902866061
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -234,3 +240,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
+--- !u!114 &8529040629975506280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7096987554802500045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0a51f7db27745a98e54bbf77c58f46b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

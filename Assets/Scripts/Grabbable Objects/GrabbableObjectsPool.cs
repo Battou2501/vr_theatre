@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DefaultNamespace;
+using Grabbable_Objects;
 using UnityEngine;
 using Zenject;
 
@@ -33,6 +34,11 @@ public class GrabbableObjectsPool : MonoBehaviour, IInitable
             pool.Add(obj.GetComponent<GrabbableObject>());
             pool[i].init();
             pool[i].GetComponent<ConsumableItem>().real_null()?.init();
+            var pooledObject = pool[i].GetComponent<PooledObject>().real_null();
+            
+            if(pooledObject == null) return;
+            
+            pooledObject.pool = this;
         }
     }
     

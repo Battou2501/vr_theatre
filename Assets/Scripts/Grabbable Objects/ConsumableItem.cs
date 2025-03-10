@@ -18,9 +18,14 @@ public class ConsumableItem : MonoBehaviour, IInitable
     [SerializeField]
     private string consumerTag;
     [SerializeField]
-    private AudioClip consumedClip;
+    private AudioClip[] consumedClips;
     [SerializeField]
     private bool loopAudio;
+    
+    [SerializeField][Range(0,1)]
+    private float volume;
+    
+    private int lastUsedAudioClipIndex = -1;
 
     private TagHandle consumer_tag_handle;
     
@@ -69,6 +74,7 @@ public class ConsumableItem : MonoBehaviour, IInitable
             transform.position = _pooledObject.pool.transform.position;
             transform.SetParent(_pooledObject.pool.transform);
             gameObject.SetActive(false);
+            return;
         }
         
         Destroy(gameObject);
@@ -76,15 +82,17 @@ public class ConsumableItem : MonoBehaviour, IInitable
 
     private void OnTriggerExit(Collider other)
     {
-        if(!is_initialized) return;
+        if (!is_initialized) return;
         
-        if(itemType != ConsumableItemType.Play_Sound_On_Consume) return;
+        if (itemType != ConsumableItemType.Play_Sound_On_Consume) return;
         
-        if(other.gameObject != triggered_by) return;
+        if (other.gameObject != triggered_by) return;
         
         if(head_audio_source == null) return;
+
+        if (consumedClips is not {Length: > 0}) return;
         
-        if(head_audio_source.clip != consumedClip) return;
+        if (head_audio_source.clip != consumedClips[0]) return;
         
         head_audio_source.DOKill();
         
@@ -100,22 +108,23 @@ public class ConsumableItem : MonoBehaviour, IInitable
 
     void play_audio_clip()
     {
-        if (head_audio_source == null || consumedClip == null) return;
+        if (head_audio_source == null || consumedClips is not {Length: > 0}) return;
         
         if (itemType == ConsumableItemType.Destroy_On_Consume || !loopAudio)
         {
             head_audio_source.volume = 1;
-            head_audio_source.PlayOneShot(consumedClip);
+            //head_audio_source.PlayOneShot(consumedClip);
+            playConsumeAudio();
             return;
         }
 
         head_audio_source.DOKill();
         head_audio_source.volume = 0;
-        head_audio_source.clip = consumedClip;
+        head_audio_source.clip = consumedClips[0];
         head_audio_source.loop = true;
         head_audio_source.Play();
-        head_audio_source.time = consumedClip.length * Random.value;
-        head_audio_source.DOFade(1, 0.2f);
+        head_audio_source.time = consumedClips[0].length * Random.value;
+        head_audio_source.DOFade(volume, 0.2f);
 
     }
     
@@ -124,5 +133,30 @@ public class ConsumableItem : MonoBehaviour, IInitable
         if(grabbable_object == null) return;
         
         grabbable_object.release();
+    }
+    
+    private void playConsumeAudio()
+    {
+        if(head_audio_source == null) return;
+        
+        if(consumedClips is not {Length: > 0}) return;
+        
+        var clipIndex = -1;
+        var iterations = 0;
+        Random.InitState(Time.frameCount);
+
+        if (_pooledObject != null)
+            lastUsedAudioClipIndex = _pooledObject.lastPooledConsumeAudioIndex;
+        
+        while (clipIndex == -1 || lastUsedAudioClipIndex == clipIndex || iterations++ > 10)
+        {
+            clipIndex = Random.Range(0, consumedClips.Length);
+        }
+        
+        head_audio_source.PlayOneShot(consumedClips[clipIndex], volume * (0.9f + Random.value * 0.1f));
+        lastUsedAudioClipIndex = clipIndex;
+        
+        if (_pooledObject != null)
+            _pooledObject.lastPooledConsumeAudioIndex = clipIndex;
     }
 }

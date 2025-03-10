@@ -47,8 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemType: 1
   consumerTag: Mouth
-  consumedClip: {fileID: 8300000, guid: b24904656c99a0e4ca7734d92bea66e1, type: 3}
+  consumedClips: []
   loopAudio: 1
+  volume: 0
 --- !u!135 &786839527190919554
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -115,6 +116,7 @@ GameObject:
   - component: {fileID: 1012704549110568126}
   - component: {fileID: 7334841045880992134}
   - component: {fileID: 3429094903049206605}
+  - component: {fileID: 8427652587632591718}
   m_Layer: 0
   m_Name: ColaCup
   m_TagString: Untagged
@@ -258,6 +260,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.014, y: 0.014, z: 0.02}
   m_Center: {x: 0, y: 2.5903704e-17, z: -0.007}
+--- !u!114 &8427652587632591718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3081882454768216659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 461652cc5c917cd46be7f4b001beb91b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5678537121613332966
 GameObject:
   m_ObjectHideFlags: 0

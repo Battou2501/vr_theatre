@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Grabbable_Objects
 {
     public class PooledObject : MonoBehaviour
     {
-        [SerializeField] public GrabbableObjectsPool pool { get; private set; }
+        public GrabbableObjectsPool pool { get; set; }
+        
+        [NonSerialized]
+        public int lastPooledConsumeAudioIndex = -1;
     }
 }

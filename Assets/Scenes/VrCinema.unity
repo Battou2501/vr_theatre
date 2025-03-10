@@ -53770,6 +53770,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: ColaCup
       objectReference: {fileID: 0}
+    - target: {fileID: 3971399088651535338, guid: 5e337d4e62b1dcb4f9b9510156aa314c, type: 3}
+      propertyPath: volume
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3971399088651535338, guid: 5e337d4e62b1dcb4f9b9510156aa314c, type: 3}
+      propertyPath: consumedClips.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3971399088651535338, guid: 5e337d4e62b1dcb4f9b9510156aa314c, type: 3}
+      propertyPath: 'consumedClips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: b24904656c99a0e4ca7734d92bea66e1, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -54194,6 +54206,34 @@ PrefabInstance:
       propertyPath: anchorPoint
       value: 
       objectReference: {fileID: 682640905}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: m_Volume
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[1].time
+      value: 0.7616012
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[0].value
+      value: 0.2064453
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[1].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[0].inSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[0].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3087555415441903123, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[0].tangentMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6177916288855968975, guid: 5e9153fd0a44bdc41bd849bcb40fe01c, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.1
