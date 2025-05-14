@@ -53,7 +53,6 @@ namespace DefaultNamespace
         public event Action<string> ErrorOccured;
         public event Action PlayerStateChanged;
         public event Action VideoEnded;
-
         public event Action StereoTypeChanged;
         
         public AudioSource[] audioSources;

@@ -98,8 +98,6 @@ namespace DefaultNamespace
                     
                     var pos = new Vector3(pos_x, pos_y, 0);
                     
-                    Debug.Log(pos);
-                    
                     var button = container.InstantiatePrefab(directoryButtonPrefab, contentBlock);
                     button.transform.localPosition = pos;
                     var dir_button = button.GetComponents<BaseControl>();
@@ -139,8 +137,6 @@ namespace DefaultNamespace
             current_page = 0;
             
             total_pages = ((directories?.Length ?? 0) + files?.Length ?? 0) / max_elements;
-            
-            Debug.Log(file_navigation_manager.Current_directory_has_parent);
             
             goUpPathButton?.gameObject.SetActive(file_navigation_manager.Current_directory_has_parent);
             

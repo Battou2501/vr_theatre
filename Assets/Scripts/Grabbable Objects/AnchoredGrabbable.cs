@@ -1,6 +1,8 @@
 using System;
 using DG.Tweening;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 public class AnchoredGrabbable : GrabbableObject
@@ -51,7 +53,7 @@ public class AnchoredGrabbable : GrabbableObject
             .Append(transform.DOMove(anchorPoint.position, 0.5f).SetEase( Ease.OutElastic, 0.1f, 0.4f))
             .Join(transform.DORotate(anchorPoint.rotation.eulerAngles, 0.5f).SetEase( Ease.OutElastic, 0.5f, 0.5f));
     }
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(AnchoredGrabbable))]
     class AnchoredGrabbableEditor : Editor
     {
@@ -67,5 +69,5 @@ public class AnchoredGrabbable : GrabbableObject
                 obj.ReturnToAnchorPoint();
         }
     }
-    
+#endif
 }

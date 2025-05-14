@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
@@ -13,6 +14,8 @@ namespace DefaultNamespace
     {
         public TMP_Text timeText;
         public TMP_Text trackText;
+        public TMP_Text fileText;
+        
 
         CancellationTokenSource update_time_cancellation_token_source;
 
@@ -33,8 +36,10 @@ namespace DefaultNamespace
             _ = update_time(update_time_cancellation_token_source.Token);
 
             set_track_text();
+            update_file_text();
             
             video_manager.AudioTrackChanged += set_track_text;
+            video_manager.VideoPrepared += update_file_text;
         }
 
         public override async UniTask show()
@@ -44,6 +49,13 @@ namespace DefaultNamespace
             await base.show();
         }
 
+        void update_file_text()
+        {
+            if(video_manager == null || string.IsNullOrWhiteSpace(video_manager.FilePath)) return;
+            
+            fileText.text = Path.GetFileName(video_manager.FilePath);
+        }
+        
         void set_time_text()
         {
             timeText.text = TimeSpan.FromSeconds(video_manager.is_seeking ? video_manager.seek_time : video_manager.Video_time).ToString(@"hh\:mm\:ss");
@@ -67,6 +79,8 @@ namespace DefaultNamespace
             if(!is_initiated || video_manager == null) return;
             
             video_manager.AudioTrackChanged -= set_track_text;
+            
+            video_manager.VideoPrepared -= update_file_text;
         }
 
         async UniTask update_time(CancellationToken token)
