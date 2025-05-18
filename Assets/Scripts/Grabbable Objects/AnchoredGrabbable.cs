@@ -10,6 +10,8 @@ public class AnchoredGrabbable : GrabbableObject
     [SerializeField]
     private Transform anchorPoint;
 
+    private Sequence _moveSequence;
+    
     protected override void OnDisable()
     {
         base.OnDisable();
@@ -27,18 +29,23 @@ public class AnchoredGrabbable : GrabbableObject
         transform.SetParent(anchorPoint);
     }
 
-    //public override void OnGrabbed(HandController hand_controller)
-    //{
-    //    anchorPoint.SetParent(null);
-    //    base.OnGrabbed(hand_controller);
-    //}
-
-    protected override void OnReleased(HandController hand_controller)
+    public override bool OnGrabbed(HandController hand_controller)
     {
-        base.OnReleased(hand_controller);
+        //anchorPoint.SetParent(null);
+        if(!base.OnGrabbed(hand_controller)) return false;
+        
+        _moveSequence.Kill();
+        
+        return true;    
+    }
+
+    protected override bool OnReleased(HandController hand_controller)
+    {
+        if(!base.OnReleased(hand_controller)) return false;
 
         ReturnToAnchorPoint();
 
+        return true;
         //transform.position = anchorPoint.position;
         //transform.rotation = anchorPoint.rotation;
         //anchorPoint.SetParent(transform);
@@ -48,8 +55,10 @@ public class AnchoredGrabbable : GrabbableObject
     {
         transform.SetParent(anchorPoint);
         
-        Sequence moveSequence = DOTween.Sequence();
-        moveSequence
+        _moveSequence.Kill();
+        
+        _moveSequence = DOTween.Sequence();
+        _moveSequence
             .Append(transform.DOMove(anchorPoint.position, 0.5f).SetEase( Ease.OutElastic, 0.1f, 0.4f))
             .Join(transform.DORotate(anchorPoint.rotation.eulerAngles, 0.5f).SetEase( Ease.OutElastic, 0.5f, 0.5f));
     }

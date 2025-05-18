@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -7,9 +8,9 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
 {
     protected TagHandle hand_tag_handle;
 
-    protected Dictionary<GameObject, List<Collider>> hovered_by_hand_collider_dict;
+    private Dictionary<GameObject, List<Collider>> hovered_by_hand_collider_dict;
     
-    public bool IsHovered => hovered_by_hand_collider_dict is {Count: > 0};
+    protected bool IsHovered => hovered_by_hand_collider_dict is {Count: > 0};
 
     protected virtual void OnDisable()
     {
@@ -23,7 +24,7 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
         hand_tag_handle = TagHandle.GetExistingTag("Hand Grab Sphere");
     }
     
-    protected virtual void OnTriggerEnter(Collider other)
+    protected virtual void TriggerEnter(Collider other)
     {
         if(other.attachedRigidbody == null) return;
         
@@ -38,7 +39,7 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
             hovered_by_hand_collider_dict[body_object].Add(other);
     }
     
-    protected virtual void OnTriggerExit(Collider other)
+    protected virtual void TriggerExit(Collider other)
     {
         if(other.attachedRigidbody == null) return;
         
@@ -52,5 +53,44 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
 
         hovered_by_hand_collider_dict.Remove(body_object);
     }
+
+    private HashSet<Collider> hovered_this_frame = new HashSet<Collider>();
+    private HashSet<Collider> hovered_last_frame = new HashSet<Collider>();
     
+    private void FixedUpdate()
+    {
+        CheckEnter();
+        CheckExit();
+        
+        hovered_last_frame.Clear();
+        hovered_last_frame.AddRange(hovered_this_frame);
+        hovered_this_frame.Clear();
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        hovered_this_frame.Add(other);
+    }
+
+    void CheckEnter()
+    {
+        foreach (var collider1 in hovered_this_frame)
+        {
+            if (!hovered_last_frame.Contains(collider1))
+            {
+                TriggerEnter(collider1);
+            }
+        }
+    }
+    
+    void CheckExit()
+    {
+        foreach (var collider1 in hovered_last_frame)
+        {
+            if (!hovered_this_frame.Contains(collider1))
+            {
+                TriggerExit(collider1);
+            }
+        }
+    }
 }

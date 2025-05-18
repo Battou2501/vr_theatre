@@ -14,25 +14,14 @@ public class GrabbableSpawner : GrabbableObject
     private AudioSource audioSource;
     
     private int lastUsedAudioClipIndex = -1;
-    protected override void OnTriggerEnter(Collider other)
-    {
-        base.OnTriggerEnter(other);
-        
-        //Debug.Log("Spawner trigger entered");
-    }
 
-    protected override void OnTriggerExit(Collider other)
+    public override bool OnGrabbed(HandController hand_controller)
     {
-        base.OnTriggerExit(other);
-        
-        //Debug.Log("Spawner trigger exited");
-    }
-
-    public override void OnGrabbed(HandController hand_controller)
-    {
-        if(hand_controller == null || hand_controller.is_grabbing) return;
+        if(hand_controller == null || hand_controller.is_grabbing) return false;
         
         spawn_grabbable(hand_controller);
+        
+        return true;
     }
     
     private void spawn_grabbable(HandController hand_controller)

@@ -1,14 +1,15 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
 
 public class HandController : MonoBehaviour
 {
-    public Action<HandController> triggerPressed;
-    public Action<HandController> triggerReleased;
-    public Action<HandController> gripPressed;
-    public Action<HandController> gripReleased;
+    public Func<HandController, bool> triggerPressed;
+    public Func<HandController, bool> triggerReleased;
+    public Func<HandController, bool> gripPressed;
+    public Func<HandController, bool> gripReleased;
     
     [SerializeField] 
     private HandControlSystem.Handedness hand;
@@ -29,6 +30,8 @@ public class HandController : MonoBehaviour
     private bool _is_initialized;
 
     private bool _is_left;
+    
+    private HashSet<GrabbableObject> _triggerGrabbableObjectsHovered = new HashSet<GrabbableObject>();
     
     [Inject]
     private void Construct(VrInputSystem vrInputSystem)

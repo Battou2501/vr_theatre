@@ -35,7 +35,6 @@ public class GrabbableObject : HoverableObjectBase
     protected override void OnDisable()
     {
         UnsubscribeAll();
-        hovered_by_hand_collider_dict?.Clear();
         hovered_by_hand_object_dict?.Clear();
     }
 
@@ -62,21 +61,20 @@ public class GrabbableObject : HoverableObjectBase
             }
         }
 
-        if (IsGrabbed && grabbed_by_hand_controller != null)
-        {
-            OnReleased(grabbed_by_hand_controller);
-        }
+        if (!IsGrabbed || grabbed_by_hand_controller == null) return;
+        
+        OnReleased(grabbed_by_hand_controller);
     }
 
-    protected override void OnTriggerEnter(Collider other)
+    protected override void TriggerEnter(Collider other)
     {
-        if (IsGrabbed) return;
+        //if (IsGrabbed) return;
 
         if(other.attachedRigidbody == null) return;
         
         if(!other.attachedRigidbody.gameObject.CompareTag(hand_tag_handle)) return;
         
-        base.OnTriggerEnter(other);
+        base.TriggerEnter(other);
         
         var body_object = other.attachedRigidbody.gameObject;
         
@@ -102,19 +100,20 @@ public class GrabbableObject : HoverableObjectBase
     }
 
 
-    protected override void OnTriggerExit(Collider other)
+    protected override void TriggerExit(Collider other)
     {
-        if(IsGrabbed) return;
+        //if(IsGrabbed) return;
         
         if(other.attachedRigidbody == null) return;
+        if(!other.attachedRigidbody.gameObject.CompareTag(hand_tag_handle)) return;
         
-        base.OnTriggerExit(other);
+        base.TriggerExit(other);
         
         var body_object = other.attachedRigidbody.gameObject;
         
         if(!hovered_by_hand_object_dict.ContainsKey(body_object)) return;
         
-        if(hovered_by_hand_collider_dict.ContainsKey(body_object)) return;
+        //if(hovered_by_hand_collider_dict.ContainsKey(body_object)) return;
         
         switch (grabbedWith)
         {
@@ -127,32 +126,30 @@ public class GrabbableObject : HoverableObjectBase
         }
         
         hovered_by_hand_object_dict.Remove(body_object);
-        
-        //Debug.Log("Exited");
     }
 
-    public virtual void OnGrabbed(HandController hand_controller)
+    public virtual bool OnGrabbed(HandController hand_controller)
     {
-        if(hand_controller.is_grabbing) return;
+        if(IsGrabbed || hand_controller.is_grabbing) return false;
         
         //Debug.Log("Grabbed");
         
-        foreach (var (obj, controller) in hovered_by_hand_object_dict)
-        {
-            switch (grabbedWith)
-            {
-                case GrabbedWith.Trigger:
-                    controller.triggerPressed -= OnGrabbed;
-                    break;
-                case GrabbedWith.Grip:
-                    controller.gripPressed -= OnGrabbed;
-                    break;
-            }
-        }
+        //foreach (var (obj, controller) in hovered_by_hand_object_dict)
+        //{
+        //    switch (grabbedWith)
+        //    {
+        //        case GrabbedWith.Trigger:
+        //            controller.triggerPressed -= OnGrabbed;
+        //            break;
+        //        case GrabbedWith.Grip:
+        //            controller.gripPressed -= OnGrabbed;
+        //            break;
+        //    }
+        //}
 
-        hovered_by_hand_object_dict.Clear();
+        //hovered_by_hand_object_dict.Clear();
         
-        hovered_by_hand_collider_dict.Clear();
+        //hovered_by_hand_collider_dict.Clear();
         
         grabbed_by_hand_controller = hand_controller;
         
@@ -173,6 +170,8 @@ public class GrabbableObject : HoverableObjectBase
         align();
         
         gameObject.SetActive(true);
+        
+        return true;
     }
 
     private void align()
@@ -189,9 +188,11 @@ public class GrabbableObject : HoverableObjectBase
         transform.position += transform.position - grabPoint.position;
     }
     
-    protected virtual void OnReleased(HandController hand_controller)
+    protected virtual bool OnReleased(HandController hand_controller)
     {
-        //Debug.Log("Released");
+        //Debug.Log("Released 1");
+        
+        if(!IsGrabbed || grabbed_by_hand_controller != hand_controller) return false;
         
         switch (grabbedWith)
         {
@@ -206,6 +207,8 @@ public class GrabbableObject : HoverableObjectBase
         transform.SetParent(null);
         grabbed_by_hand_controller = null;
         hand_controller.remove_grab_pose();
+        //Debug.Log("Released 2");
+        return true;
     }
 
     public void release()
