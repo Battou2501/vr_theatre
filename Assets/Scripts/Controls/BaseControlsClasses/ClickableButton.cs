@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor;
 #endif
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
@@ -21,16 +22,20 @@ namespace DefaultNamespace
         {
             base.init();
 
-            _inputSystem.leftLowerButtonPressedChanged += OnClickLeft;
-            _inputSystem.rightLowerButtonPressedChanged += OnClickRight;
+            //_inputSystem.leftLowerButtonPressedChanged += OnClickLeft;
+            _inputSystem.leftTriggerPressedChanged += OnClickLeft;
+            //_inputSystem.rightLowerButtonPressedChanged += OnClickRight;
+            _inputSystem.rightTriggerPressedChanged += OnClickRight;
         }
 
         protected virtual void OnDestroy()
         {
             if(!is_initiated) return;
             
-            _inputSystem.leftLowerButtonPressedChanged -= OnClickLeft;
-            _inputSystem.rightLowerButtonPressedChanged -= OnClickRight;
+            //_inputSystem.leftLowerButtonPressedChanged -= OnClickLeft;
+            //_inputSystem.rightLowerButtonPressedChanged -= OnClickRight;
+            _inputSystem.leftTriggerPressedChanged -= OnClickLeft;
+            _inputSystem.rightTriggerPressedChanged -= OnClickRight;
         }
 
         void OnClickLeft(bool is_pressed)
@@ -53,6 +58,8 @@ namespace DefaultNamespace
 
         private void Press()
         {
+            if(GrabbableObject.grabbableObjects.Any(x=>x.IsHovered && x.grabbedWith == GrabbableObject.GrabbedWith.Trigger)) return;
+            
             Click_Action();
             
             animation_feedback.real_null()?.OnTriggerPressed();

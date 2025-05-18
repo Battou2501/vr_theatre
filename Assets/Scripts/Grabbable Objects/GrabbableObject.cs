@@ -5,14 +5,16 @@ using Zenject;
 
 public class GrabbableObject : HoverableObjectBase
 {
-    protected enum GrabbedWith
+    public enum GrabbedWith
     {
         Trigger = 0,
         Grip
     }
 
+    public static HashSet<GrabbableObject> grabbableObjects = new HashSet<GrabbableObject>();
+    
     [SerializeField]
-    protected GrabbedWith grabbedWith;
+    public GrabbedWith grabbedWith;
     [SerializeField]
     private FingersPoseSO grabPose;
     [SerializeField]
@@ -32,10 +34,17 @@ public class GrabbableObject : HoverableObjectBase
         hovered_by_hand_object_dict = new Dictionary<GameObject, HandController>();
     }
 
+    private void OnEnable()
+    {
+        grabbableObjects.Add(this);
+    }
+
     protected override void OnDisable()
     {
+        grabbableObjects.Remove(this);
         UnsubscribeAll();
         hovered_by_hand_object_dict?.Clear();
+        base.OnDisable();
     }
 
     private void OnDestroy()

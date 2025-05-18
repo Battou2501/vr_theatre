@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using DefaultNamespace;
 using UnityEngine;
@@ -56,8 +57,11 @@ public class UIManager : MonoBehaviour
             video_manager.VideoEnded += OnVideoEnded;
         }
 
-        _inputSystem.leftLowerButtonPressedChanged += TriggerPressedActionOnStarted;
-        _inputSystem.rightLowerButtonPressedChanged += TriggerPressedActionOnStarted;
+        //_inputSystem.leftLowerButtonPressedChanged += TriggerPressedActionOnStarted;
+        //_inputSystem.rightLowerButtonPressedChanged += TriggerPressedActionOnStarted;
+        
+        _inputSystem.leftTriggerPressedChanged += TriggerPressedActionOnStarted;
+        _inputSystem.rightTriggerPressedChanged += TriggerPressedActionOnStarted;
         
         //if(video_manager.FilePath == "")
         //    fileSelectPanel.show();
@@ -78,8 +82,11 @@ public class UIManager : MonoBehaviour
 
         if(main_controls == null) return;
         
-        _inputSystem.leftLowerButtonPressedChanged -= TriggerPressedActionOnStarted;
-        _inputSystem.rightLowerButtonPressedChanged -= TriggerPressedActionOnStarted;
+        //_inputSystem.leftLowerButtonPressedChanged -= TriggerPressedActionOnStarted;
+        //_inputSystem.rightLowerButtonPressedChanged -= TriggerPressedActionOnStarted;
+        
+        _inputSystem.leftTriggerPressedChanged -= TriggerPressedActionOnStarted;
+        _inputSystem.rightTriggerPressedChanged -= TriggerPressedActionOnStarted;
     }
 
     void OnVideoEnded()
@@ -124,6 +131,8 @@ public class UIManager : MonoBehaviour
     
     void TriggerPressedActionOnStarted(bool is_pressed)
     {
+        if(GrabbableObject.grabbableObjects.Any(x=>x.IsHovered && x.grabbedWith == GrabbableObject.GrabbedWith.Trigger)) return;
+        
         if (!is_pressed) return;
             
         show_ui().Forget();

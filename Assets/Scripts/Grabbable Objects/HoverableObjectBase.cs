@@ -10,7 +10,7 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
 
     private Dictionary<GameObject, List<Collider>> hovered_by_hand_collider_dict;
     
-    protected bool IsHovered => hovered_by_hand_collider_dict is {Count: > 0};
+    public bool IsHovered => hovered_by_hand_collider_dict is {Count: > 0};
 
     protected virtual void OnDisable()
     {

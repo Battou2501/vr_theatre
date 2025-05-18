@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
@@ -30,8 +31,11 @@ namespace DefaultNamespace
             
             min_max_distance_ratio = 1f / Vector3.Distance(minPoint.localPosition, maxPoint.localPosition);
             
-            _inputSystem.leftLowerButtonPressedChanged += OnPressedLeft;
-            _inputSystem.rightLowerButtonPressedChanged += OnPressedRight;
+            //_inputSystem.leftLowerButtonPressedChanged += OnPressedLeft;
+            //_inputSystem.rightLowerButtonPressedChanged += OnPressedRight;
+            
+            _inputSystem.leftTriggerPressedChanged += OnPressedLeft;
+            _inputSystem.rightTriggerPressedChanged += OnPressedRight;
             
             if(valueBar == null) return;
             
@@ -50,8 +54,11 @@ namespace DefaultNamespace
         {
             if(!is_initiated) return;
             
-            _inputSystem.leftLowerButtonPressedChanged -= OnPressedLeft;
-            _inputSystem.rightLowerButtonPressedChanged -= OnPressedRight;
+            //_inputSystem.leftLowerButtonPressedChanged -= OnPressedLeft;
+            //_inputSystem.rightLowerButtonPressedChanged -= OnPressedRight;
+            
+            _inputSystem.leftTriggerPressedChanged -= OnPressedLeft;
+            _inputSystem.rightTriggerPressedChanged -= OnPressedRight;
         }
 
         void OnPressedLeft(bool is_pressed)
@@ -76,6 +83,8 @@ namespace DefaultNamespace
 
         void StartDrag(GameObject hand)
         {
+            if(GrabbableObject.grabbableObjects.Any(x=>x.IsHovered && x.grabbedWith == GrabbableObject.GrabbedWith.Trigger)) return;
+            
             if(is_dragged) return;
             
             if(!hovered_by.Contains(hand)) return;
