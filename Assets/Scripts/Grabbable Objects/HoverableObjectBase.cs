@@ -62,8 +62,9 @@ public class HoverableObjectBase : MonoBehaviour, IInitable
         CheckEnter();
         CheckExit();
         
-        hovered_last_frame.Clear();
-        hovered_last_frame.AddRange(hovered_this_frame);
+        //hovered_last_frame.Clear();
+        //hovered_last_frame.AddRange(hovered_this_frame);
+        (hovered_this_frame, hovered_last_frame) = (hovered_last_frame, hovered_this_frame);
         hovered_this_frame.Clear();
     }
 

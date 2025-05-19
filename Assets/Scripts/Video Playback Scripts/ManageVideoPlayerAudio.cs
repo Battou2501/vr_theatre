@@ -456,7 +456,6 @@ namespace DefaultNamespace
         { 
             mat.SetTexture(movie_tex, rt_pool[idx]);
             Graphics.Blit(rt_pool[idx], lightRT, blitMat);
-            //Graphics.Blit(rt_pool[idx], lightRT);
         }
 
         void clear_screen()
@@ -479,7 +478,7 @@ namespace DefaultNamespace
         void SampleFramesAvailable(AudioSampleProvider provider, uint sampleFrameCount)
         {
             var track = tracks[provider.trackIndex];
-            var channel_count = track.channels.Length;
+            var channel_count = track.channel_count;
             //using var buffer = new NativeArray<float>((int)sampleFrameCount * provider.channelCount, Allocator.Temp);
             var buffer = track.get_sized_track_buffer((int) sampleFrameCount * channel_count);
 
@@ -506,8 +505,6 @@ namespace DefaultNamespace
 
             if (tracks_in_sync)
                 samples_received = true;
-            
-            //Debug.Log("Track " + provider.trackIndex + " samples received: " + sf_count+ " count: " + track.add_count);
             
             if(provider.trackIndex != current_track_idx) return;
 
@@ -559,8 +556,6 @@ namespace DefaultNamespace
             }
             
             vp.Stop();
-            //change_player_state(PlayerStates.stopped);
-            //player_state = PlayerStates.stopped;
             vp.url = file;
             vp.Prepare();
         }
@@ -772,6 +767,23 @@ namespace DefaultNamespace
             }
             requested_command = PlayerCommands.none;
         }
+
+        async UniTask trim_tracks_data(int current_track_index)
+        {
+            await UniTask.NextFrame(PlayerLoopTiming.Update);
+            
+            for (var i = 0; i < tracks.Length; i++)
+            {
+                if(i == current_track_index) continue;
+                
+                var track = tracks[i];
+                ProfilingUtility.BeginSample("Trim data async");
+                track?.trim_data();
+                ProfilingUtility.EndSample();
+                
+                await UniTask.NextFrame(PlayerLoopTiming.Update);
+            }
+        }
         
         void handle_audio_data_available()
         {
@@ -807,17 +819,28 @@ namespace DefaultNamespace
                 if(audioSources[0].isPlaying)
                     sample_time = audioSources[0].timeSamples;
 
-                ProfilingUtility.BeginSample("Trim");
-                if (sample_time > tracks[current_track_idx].trim_threshold_samples)
+                var current_track = tracks[current_track_idx];
+                
+                
+                if (sample_time > current_track.trim_threshold_samples)
                 {
-                    tracks.for_each(x => x?.trim());
+                    trim_tracks_data(current_track_idx).Forget();
+                    
+                    ProfilingUtility.BeginSample("Trim data");
+                    //tracks.for_each(x => x?.trim_data());
+                    current_track.trim_data();
+                    ProfilingUtility.EndSample();
+                    
                     audio_trimmed_time += trimSeconds;
+                    
+                    ProfilingUtility.BeginSample("Trim audio source");
+                    current_track.trim_audio_source();
+                    ProfilingUtility.EndSample();
                 }
-                ProfilingUtility.EndSample();
 
                 
                 ProfilingUtility.BeginSample("Update track data on track");
-                tracks[current_track_idx].update_data_track();
+                current_track.update_data_track();
                 ProfilingUtility.EndSample();
 
                 sync_audio_to_video();
@@ -827,7 +850,7 @@ namespace DefaultNamespace
             {
                 if (audio_started) return;
                 
-                tracks[current_track_idx].channels.for_each(x=>x?.set_clip(0));
+                tracks[current_track_idx].set_clip(0);
                 
                 audio_started = true;
 
@@ -936,6 +959,7 @@ namespace DefaultNamespace
         public class Track : IDisposable
         {
             public Channel[] channels;
+            public int channel_count;
             public uint add_count;
             public int trim_threshold_samples;
             public string lang;
@@ -952,6 +976,7 @@ namespace DefaultNamespace
             {
                 provider = p;
                 channels = new Channel[provider.channelCount];
+                channel_count = channels.Length;
                 trim_seconds_samples = trim_seconds_static * (int)provider.sampleRate;
                 trim_threshold_samples = trim_after_reaching_seconds_static * (int)provider.sampleRate;
                 
@@ -963,7 +988,7 @@ namespace DefaultNamespace
                 provider.enableSampleFramesAvailableEvents = true;
                 provider.freeSampleFrameCountLowThreshold = provider.sampleRate/2;
 
-                var channel_count = provider.channelCount;
+                //var channel_count = provider.channelCount;
                 var audio_source_idx = 0;
                 
                 channel_samples_buffers_dictionary = new Dictionary<uint, float[]>();
@@ -1012,13 +1037,21 @@ namespace DefaultNamespace
                     track_samples_buffers_dictionary.Clear();
                 }
                 channel_samples_buffers_dictionary?.Clear();
-                channels.for_each(x=>x?.clear_data());
+                //channels.for_each(x=>x?.clear_data());
+                for (var i = 0; i < channel_count; i++)
+                {
+                    channels[i].clear_data();
+                }
                 add_count = 0;
             }
 
             public void set_clip(float t)
             {
-                channels.for_each(t, (x,d) => x?.set_clip(d));
+                //channels.for_each(t, (x,d) => x?.set_clip(d));
+                for (var i = 0; i < channel_count; i++)
+                {
+                    channels[i].set_clip(t);
+                }
             }
             
             public void add_samples(uint sfCount, NativeArray<float> samples_buffer, int channelCount)
@@ -1046,21 +1079,47 @@ namespace DefaultNamespace
 
             public void update_data_track()
             {
-                channels.for_each(x => x?.set_clip_data());
-
-                if(sample_time <= trim_threshold_samples) return;
+                ProfilingUtility.BeginSample("Set clip data");
+                //channels.for_each(x => x?.set_clip_data());
+                var l = channels.Length;
+                for (var i = 0; i < l; i++)
+                {
+                    channels[i].set_clip_data();
+                }
+                ProfilingUtility.EndSample();
                 
-                channels.for_each(trim_seconds_samples, (x,t)=>x?.trim_audio_source(t));
+                //if(sample_time <= trim_threshold_samples) return;
+                //
+                //ProfilingUtility.BeginSample("Trim audio source");
+                //trim_audio_source();
+                //ProfilingUtility.EndSample();
             }
-
-            public void trim()
+            
+            public void trim_data()
             {
-                channels.for_each(trim_seconds_samples, (x, t)=>x?.trim(t));
+                //channels.for_each(trim_seconds_samples, (x, t)=>x?.trim_data(t));
+                for (var i = 0; i < channel_count; i++)
+                {
+                    channels[i].trim_data(trim_seconds_samples);
+                }
+            }
+            
+            public void trim_audio_source()
+            {
+                //channels.for_each(trim_seconds_samples, (x,t)=>x?.trim_audio_source(t));
+                for (var i = 0; i < channel_count; i++)
+                {
+                    channels[i].trim_audio_source(trim_seconds_samples);
+                }
             }
 
             public void Dispose()
             {
-                channels?.for_each(x=>x?.Dispose());
+                //channels?.for_each(x=>x?.Dispose());
+                for (var i = 0; i < channel_count; i++)
+                {
+                    channels?[i]?.Dispose();
+                }
 
                 channels = null;
 
@@ -1090,8 +1149,7 @@ namespace DefaultNamespace
             public AudioSource audio_source;
             
             AudioClip audio_clip;
-            //List<float> data;
-            MyFloatList data2;
+            MyFloatList data;
             
             public void set_clip(float t)
             {
@@ -1114,25 +1172,17 @@ namespace DefaultNamespace
                 
                 audio_clip = AudioClip.Create("", sample_length, 1, sample_rate, false, null);
 
-                //data = new List<float>(sample_length);
-                data2 = new MyFloatList(sample_length);
+                data = new MyFloatList(sample_length);
             }
-
-            //public void add_data(IEnumerable<float> d)
-            //{
-            //    data.AddRange(d);
-            //}
             
             public void add_data(float[] d)
             {
-                //data.AddRange(d);
-                data2.AddRange(d);
+                data.AddRange(d);
             }
 
-            public void trim(int trim_seconds_samples)
+            public void trim_data(int trim_seconds_samples)
             {
-                //data.RemoveRange(0, trim_seconds_samples);
-                data2.RemoveFromStart(trim_seconds_samples);
+                data.RemoveFromStart(trim_seconds_samples);
             }
 
             public void trim_audio_source(int trim_seconds_samples)
@@ -1142,14 +1192,12 @@ namespace DefaultNamespace
             
             public void set_clip_data()
             {
-                //audio_clip.SetData(data.ToArray(), 0);
-                audio_clip.SetData(data2.array, 0);
+                audio_clip.SetData(data.GetSpan(), 0);
             }
 
             public void clear_data()
             {
-                //data?.Clear();
-                data2?.Clear();
+                data?.Clear();
             }
 
             public void Dispose()
@@ -1163,32 +1211,29 @@ namespace DefaultNamespace
                     audio_clip = null;
                 }
 
-                //data?.Clear();
-                data2?.Clear();
+                data?.Clear();
             }
         }
     }
 
     public class MyFloatList
     {
-        public float[] array { get; }
+        private readonly float[] array;
         private int length;
-        private int max_length;
+        private int size;
 
-        public MyFloatList(int size)
+        public MyFloatList(int s)
         {
+            size = s;
             array = new float[size];
             length = 0;
         }
         
         public void AddRange(float[] array_to_add)
         {
-            var arr_length = array_to_add.Length;
+            var arr_length = Mathf.Min(size - length, array_to_add.Length);
             Buffer.BlockCopy(array_to_add, 0, array, length*4, arr_length*4);
             length += arr_length;
-            
-            if(length > max_length)
-                max_length = length;
         }
 
         public void RemoveFromStart(int remove_count)
@@ -1201,6 +1246,11 @@ namespace DefaultNamespace
         {
             length = 0;
             Array.Clear(array, 0, array.Length);
+        }
+
+        public ReadOnlySpan<float> GetSpan()
+        {
+            return new ReadOnlySpan<float>(array, 0, length);
         }
     }
 }

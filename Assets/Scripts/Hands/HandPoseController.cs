@@ -137,9 +137,10 @@ public class HandPoseController : MonoBehaviour
         //update_current_pose();
     }
 
-    public void update_current_pose()
+    private void update_current_pose()
     {
-        if (!is_initialized || current_pose.Equals(target_pose)) return;
+        //if (!is_initialized || current_pose.Equals(target_pose)) return;
+        if (!is_initialized) return;
         
         //current_pose.Lerp(target_pose, Time.deltaTime * poseUpdateSpeed);
         current_pose.move_towards_linear_ease_out(target_pose, Time.deltaTime * pose_update_speed);
