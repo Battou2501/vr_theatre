@@ -40,6 +40,8 @@ namespace DefaultNamespace
         DirectoryInfo[] directories;
         FileInfo[] files;
 
+        private Dictionary<string, int> pathPageDict = new ();
+        private string path;
         int current_page;
         int total_pages;
 
@@ -126,17 +128,36 @@ namespace DefaultNamespace
 
         void update_data()
         {
-            pathText.text = file_navigation_manager.Current_path;
+            if (path != null && pathPageDict.ContainsKey(path))
+            {
+                pathPageDict[path] = current_page;
+            }
+            
+            path = file_navigation_manager.Current_path;
+            
+            pathText.text = path;
             
             file_navigation_manager.get_current_path_data(out directories, out files);
 
             directories = directories?.OrderBy(x=>x.Name).ToArray();
 
             files = files?.OrderBy(x=>x.Name).ToArray();
-            
-            current_page = 0;
-            
+
             total_pages = ((directories?.Length ?? 0) + files?.Length ?? 0) / max_elements;
+            
+            if (!string.IsNullOrWhiteSpace(path) && pathPageDict.TryGetValue(path, out var page))
+            {
+                current_page = page;
+                
+                if(current_page > total_pages)
+                    current_page = total_pages;
+            }
+            else
+            {
+                current_page = 0;
+                if(!string.IsNullOrWhiteSpace(path))
+                    pathPageDict.Add(path, current_page);
+            }
             
             goUpPathButton?.gameObject.SetActive(file_navigation_manager.Current_directory_has_parent);
             

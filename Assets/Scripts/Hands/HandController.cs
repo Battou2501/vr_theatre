@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
@@ -20,6 +21,7 @@ public class HandController : MonoBehaviour
     [SerializeField] 
     public Rigidbody grabBody;
 
+    [SerializeField] private BaseHandPointer pointer;
     public HandControlSystem.Handedness Handedness => hand;
     public bool is_grabbing => poseController.has_grab_override_pose;
     
@@ -32,11 +34,13 @@ public class HandController : MonoBehaviour
     private bool _is_left;
     
     private HashSet<GrabbableObject> _triggerGrabbableObjectsHovered = new HashSet<GrabbableObject>();
+    private MainControls _mainControls;
     
     [Inject]
-    private void Construct(VrInputSystem vrInputSystem)
+    private void Construct(VrInputSystem vrInputSystem, MainControls mainControls)
     {
         _vrInputSystem = vrInputSystem;
+        _mainControls = mainControls;
     }
     
     public void init()
@@ -79,12 +83,14 @@ public class HandController : MonoBehaviour
 
     public void set_grab_pose(FingersPoseSO pose)
     {
+        pointer?.SetActive(false);
         poseController.set_grab_override_pose(pose);
         grabBody.detectCollisions = false;
     }
 
     public void remove_grab_pose()
     {
+        pointer?.SetActive(_mainControls.IsUiOpened);
         poseController.remove_grab_override_pose();
         grabBody.detectCollisions = true;
     }

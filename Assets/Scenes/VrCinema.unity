@@ -54161,6 +54161,10 @@ PrefabInstance:
       propertyPath: poseIdle
       value: 
       objectReference: {fileID: 11400000, guid: 3f5ed1dadc399a64bb05298dfdb0750f, type: 2}
+    - target: {fileID: 3305282388743973625, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3662676501321259395, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -54308,6 +54312,10 @@ PrefabInstance:
     - target: {fileID: 8169065513181802562, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8359683523108665068, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8359683523108665068, guid: 17e8d70d860008945bf8806e25fa13ec, type: 3}
       propertyPath: m_TagString

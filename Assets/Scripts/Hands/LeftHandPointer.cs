@@ -2,7 +2,7 @@
 
 namespace Hands
 {
-    public class LeftHandPointer : MonoBehaviour
+    public class LeftHandPointer : BaseHandPointer
     {
         
     }

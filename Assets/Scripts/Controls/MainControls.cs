@@ -18,7 +18,9 @@ namespace DefaultNamespace
         
         //public InputAction leftTriggerPressedAction;
         //public InputAction rightTriggerPressedAction;
-        
+
+        public bool IsUiOpened { get; private set; }
+
         bool subscriber_to_trigger_actions;
 
         UIManager ui_manager;
@@ -44,6 +46,8 @@ namespace DefaultNamespace
         
         void OnPanelChanged(bool all_panels_closed)
         {
+            IsUiOpened = !all_panels_closed;
+            
             if (all_panels_closed)
                 hide_hands();
             else

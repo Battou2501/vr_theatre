@@ -16,13 +16,16 @@ public abstract class BaseControl : MonoBehaviour
     
     protected bool is_initiated;
 
-    private bool is_hovered => hovered_by.Count > 0;
-    protected HashSet<GameObject> hovered_by;
+    public bool isHovered { get; private set; } // => hovered_by.Count > 0;
+    protected HashSet<GameObject> hovered_by => hovered_this_frame;
 
     protected Transform this_transform;
     
     protected GameObject _leftHandTriggerCollider;
     protected GameObject _rightHandTriggerCollider;
+    
+    private HashSet<GameObject> hovered_this_frame = new HashSet<GameObject>();
+    private HashSet<GameObject> hovered_last_frame = new HashSet<GameObject>();
     
     //protected DiContainer container;
     
@@ -36,7 +39,7 @@ public abstract class BaseControl : MonoBehaviour
     public virtual void init()
     {
         animation_feedback = GetComponent<ControlsAnimationFeedback>();
-        hovered_by = new HashSet<GameObject>();
+        //hovered_by = new HashSet<GameObject>();
 
         //var parent_panel = gameObject.GetComponentInParent<BaseControlsPanel>(true);
         //if (parent_panel != null)
@@ -54,29 +57,67 @@ public abstract class BaseControl : MonoBehaviour
     {
         hovered_by?.Clear();
         animation_feedback?.reset();
+        hovered_this_frame = new HashSet<GameObject>();
+        hovered_last_frame = new HashSet<GameObject>();
+        isHovered = false;
     }
 
-    void OnTriggerEnter(Collider other)
+    void TriggerEnter()
     {
-        if(is_hovered) return;
+        if(isHovered) return;
         
-        if(other.gameObject != _leftHandTriggerCollider && other.gameObject != _rightHandTriggerCollider ) return;
-        
-        hovered_by.Add(other.gameObject);
-        
-        if(hovered_by.Count > 1) return;
+        isHovered = true;
         
         animation_feedback.real_null()?.OnHoverStart();
     }
 
-    void OnTriggerExit(Collider other)
+    void TriggerExit()
     {
-        if(!is_hovered || !hovered_by.Contains(other.gameObject)) return;
+        if(!isHovered) return;
         
-        hovered_by.Remove(other.gameObject);
+        if(hovered_this_frame.Count > 0) return;
         
-        if(hovered_by.Count > 0) return;
+        isHovered = false;
         
         animation_feedback.real_null()?.OnHoverEnd();
+    }
+    
+    private void FixedUpdate()
+    {
+        CheckEnter();
+        CheckExit();
+        
+        (hovered_this_frame, hovered_last_frame) = (hovered_last_frame, hovered_this_frame);
+        
+        hovered_this_frame.Clear();
+    }
+    
+    private void OnTriggerStay(Collider other)
+    {
+        hovered_this_frame.Add(other.gameObject);
+    }
+
+    void CheckEnter()
+    {
+        foreach (var collider1 in hovered_this_frame)
+        {
+            if (!hovered_last_frame.Contains(collider1))
+            {
+                if(collider1 != _leftHandTriggerCollider && collider1 != _rightHandTriggerCollider ) return;
+                
+                TriggerEnter();
+            }
+        }
+    }
+    
+    void CheckExit()
+    {
+        foreach (var collider1 in hovered_last_frame)
+        {
+            if (!hovered_this_frame.Contains(collider1))
+            {
+                TriggerExit();
+            }
+        }
     }
 }

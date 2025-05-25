@@ -428,6 +428,7 @@ MonoBehaviour:
   poseController: {fileID: 7956264260741082277}
   grabPoint: {fileID: 1350925497009732154}
   grabBody: {fileID: 6227867416171099219}
+  pointer: {fileID: 1890724110021679967}
 --- !u!114 &7956264260741082277
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
@@ -9,29 +10,48 @@ public class HighlightOnHover : MonoBehaviour
     
     Material material;
     Color initialColor;
-    
-    void OnEnable()
+
+    private BaseControl _baseControl;
+    private bool highlighted;
+
+    private void Awake()
     {
         if(material != null) return;
         
+        _baseControl = GetComponent<BaseControl>();
         material = GetComponent<Renderer>().material;
         initialColor = material.color;
     }
 
-    void OnDisable()
+    void HighlightOn()
     {
-        if(material == null) return;
+        highlighted = true;
         
-        material.color = initialColor;
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
         material?.DOColor(highlightColor, 0.5f);
     }
 
-    void OnTriggerExit(Collider other)
+    void HighlightOff()
     {
+        highlighted = false;
+        
         material?.DOColor(initialColor, 0.5f);
+    }
+    
+    private void FixedUpdate()
+    {
+        CheckEnter();
+        CheckExit();
+    }
+    
+    void CheckEnter()
+    {
+        if(!highlighted && _baseControl.isHovered)
+            HighlightOn();
+    }
+    
+    void CheckExit()
+    {
+        if(highlighted && !_baseControl.isHovered)
+            HighlightOff();
     }
 }
